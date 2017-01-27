@@ -354,6 +354,8 @@ public final class Compiler {
           out.write("  <uses-feature android:name=\"android.hardware.wifi\" />\n"); // We actually require wifi
       }
 
+      minSDK = "22";
+
       for (String permission : permissionsNeeded) {
         out.write("  <uses-permission android:name=\"" + permission + "\" />\n");
       }

@@ -29,8 +29,14 @@ import android.content.DialogInterface;
 
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.WebChromeClient;
+import android.widget.FrameLayout;
+import android.content.pm.ActivityInfo;
+import android.app.Activity;
+import android.util.Log;
 
 /**
  * Component for displaying web pages
@@ -89,6 +95,8 @@ public final class WebViewer extends AndroidViewComponent {
   // allows passing strings to javascript
   WebViewInterface wvInterface;
 
+  private ComponentContainer webContainer;
+
   /**
    * Creates a new WebViewer component.
    *
@@ -97,9 +105,13 @@ public final class WebViewer extends AndroidViewComponent {
   public WebViewer(ComponentContainer container) {
     super(container);
 
+    Log.v("WEBWEB", "webviewer start");
+
+    webContainer = container;
     webview = new WebView(container.$context());
     resetWebViewClient();       // Set up the web view client
     webview.getSettings().setJavaScriptEnabled(true);
+    webview.getSettings().setDomStorageEnabled(true);
     webview.setFocusable(true);
     // adds a way to send strings to the javascript
     wvInterface = new WebViewInterface(webview.getContext());
@@ -421,12 +433,77 @@ public final class WebViewer extends AndroidViewComponent {
   }
 
   private void resetWebViewClient() {
+    Log.v("WEBWEB", "resetwebview");
     if (SdkLevel.getLevel() >= SdkLevel.LEVEL_FROYO) {
       webview.setWebViewClient(FroyoUtil.getWebViewClient(ignoreSslErrors, followLinks, container.$form(), this));
     } else {
       webview.setWebViewClient(new WebViewerClient());
     }
+    webview.setWebChromeClient(new MyWebChromeClient());
   }
+
+  private class MyWebChromeClient extends WebChromeClient {
+
+        private View myCustomView;
+
+        private int myOriginalSystemUiVisibility;
+
+        private int myOriginalOrientation;
+
+        private WebChromeClient.CustomViewCallback myCustomViewCallback;
+
+        public MyWebChromeClient() {
+          super();
+          Log.v("WEBWEB", "in constructor");
+        }
+
+        @Override
+        public void onShowCustomView(View view, int requestedOrientation, WebChromeClient.CustomViewCallback callback) {
+          Log.v("WEBWEB", "old show");
+          this.onShowCustomView(view, callback);
+        }
+
+        @Override
+        public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+          Log.v("WEBWEB", "onShowCustomView called");
+
+            if (myCustomView != null) {
+                onHideCustomView();
+                return;
+            }
+
+            myCustomView = view;
+            myOriginalSystemUiVisibility = webContainer.$context().getWindow().getDecorView().getSystemUiVisibility();
+            myOriginalOrientation = webContainer.$context().getRequestedOrientation();
+            myCustomViewCallback = callback;
+
+            FrameLayout decor = (FrameLayout) webContainer.$context().getWindow().getDecorView();
+            decor.addView(myCustomView, new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT));
+
+            webContainer.$context().getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                            //View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                            //View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                            View.SYSTEM_UI_FLAG_FULLSCREEN);// |
+                            //View.SYSTEM_UI_FLAG_IMMERSIVE
+            webContainer.$context().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
+
+        @Override
+        public void onHideCustomView() {
+          Log.v("WEBWEB", "onHideCustomView called");
+            FrameLayout decor = (FrameLayout) webContainer.$context().getWindow().getDecorView();
+            decor.removeView(myCustomView);
+            myCustomView = null;
+            webContainer.$context().getWindow().getDecorView().setSystemUiVisibility(myOriginalSystemUiVisibility);
+            webContainer.$context().setRequestedOrientation(myOriginalOrientation);
+            myCustomViewCallback.onCustomViewHidden();
+            myCustomViewCallback = null;
+        }
+    }
 
   /**
    * Clear the webview cache, both ram and disk. This is useful
