@@ -203,7 +203,7 @@ Blockly.unprefixName = function (name) {
  * @param rtl True if the workspace is using a right-to-left language
  * @returns {Blockly.WorkspaceSvg} A newly created workspace
  */
-Blockly.BlocklyEditor['create'] = function(container, formName, readOnly, rtl) {
+Blockly.BlocklyEditor['create'] = function(container, formName, readOnly, rtl, targetLang) {
   var options = new Blockly.Options({
     'readOnly': readOnly,
     'rtl': rtl,
@@ -234,6 +234,7 @@ Blockly.BlocklyEditor['create'] = function(container, formName, readOnly, rtl) {
   workspace.formName = formName;
   workspace.rendered = false;
   workspace.componentDb_ = new Blockly.ComponentDatabase();
+  workspace.componentDb_.typeMappingFunction = AI.Blockly.Target[targetLang].typeMappingFunction;
   workspace.procedureDb_ = new Blockly.ProcedureDatabase(workspace);
   workspace.variableDb_ = new Blockly.VariableDatabase();
   workspace.blocksNeedingRendering = [];

@@ -149,6 +149,9 @@
     './src/blocks/colors.js',
     './src/blocks/components.js',
 
+    // drawer files
+    './src/blocks/yail.js',
+
     //generator files
     "./src/generators/yail.js",
     "./src/generators/yail/componentblock.js",
@@ -160,6 +163,9 @@
     "./src/generators/yail/colors.js",
     "./src/generators/yail/variables.js",
     "./src/generators/yail/procedures.js",
+
+    // Target info
+    "./src/target.js",
 
     // Repl
     "./src/replmgr.js"
