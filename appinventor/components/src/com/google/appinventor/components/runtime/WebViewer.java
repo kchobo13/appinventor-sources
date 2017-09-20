@@ -33,10 +33,12 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
 import android.widget.FrameLayout;
 import android.content.pm.ActivityInfo;
 import android.app.Activity;
 import android.util.Log;
+import android.webkit.ConsoleMessage;
 
 /**
  * Component for displaying web pages
@@ -108,21 +110,26 @@ public final class WebViewer extends AndroidViewComponent {
     Log.v("WEBWEB", "webviewer start");
 
     webContainer = container;
+    Log.v("WEBWEB", "form name is " + webContainer.$form().formName);
     webview = new WebView(container.$context());
     resetWebViewClient();       // Set up the web view client
-    webview.getSettings().setJavaScriptEnabled(true);
-    webview.getSettings().setDomStorageEnabled(true);
-    webview.setFocusable(true);
+    WebSettings webSettings = webview.getSettings();
+    webSettings.setJavaScriptEnabled(true);
+    webSettings.setDomStorageEnabled(true);
+    webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+    //webview.setFocusable(true);
     // adds a way to send strings to the javascript
     wvInterface = new WebViewInterface(webview.getContext());
     webview.addJavascriptInterface(wvInterface, "AppInventor");
     // enable pinch zooming and zoom controls
-    webview.getSettings().setBuiltInZoomControls(true);
+    //webview.getSettings().setBuiltInZoomControls(true);
 
-    if (SdkLevel.getLevel() >= SdkLevel.LEVEL_ECLAIR)
-      EclairUtil.setupWebViewGeoLoc(this, webview, container.$context());
+    //if (SdkLevel.getLevel() >= SdkLevel.LEVEL_ECLAIR)
+    //  EclairUtil.setupWebViewGeoLoc(this, webview, container.$context());
 
     container.$add(this);
+
+    /*
 
     webview.setOnTouchListener(new View.OnTouchListener() {
       @Override
@@ -138,7 +145,7 @@ public final class WebViewer extends AndroidViewComponent {
         return false;
       }
     });
-
+    */
     // set the initial default properties.  Height and Width
     // will be fill-parent, which will be the default for the web viewer.
 
@@ -434,12 +441,27 @@ public final class WebViewer extends AndroidViewComponent {
 
   private void resetWebViewClient() {
     Log.v("WEBWEB", "resetwebview");
-    if (SdkLevel.getLevel() >= SdkLevel.LEVEL_FROYO) {
-      webview.setWebViewClient(FroyoUtil.getWebViewClient(ignoreSslErrors, followLinks, container.$form(), this));
-    } else {
-      webview.setWebViewClient(new WebViewerClient());
-    }
+    Log.v("WEBWEB", "level is " + SdkLevel.getLevel());
     webview.setWebChromeClient(new MyWebChromeClient());
+    //if (SdkLevel.getLevel() >= SdkLevel.LEVEL_FROYO) {
+    //  webview.setWebViewClient(FroyoUtil.getWebViewClient(ignoreSslErrors, followLinks, container.$form(), this));
+    //} else {
+      webview.setWebViewClient(new MyWebViewClient());
+    //}
+  }
+
+  private class MyWebViewClient extends WebViewClient {
+
+    public MyWebViewClient() {
+      super();
+      Log.v("WEBWEB", "in webview constructor");
+    }
+
+    @Override
+    public boolean shouldOverrideUrlLoading(WebView view, String url) {
+      Log.v("WEBWEB", "followLinks33");
+      return !followLinks;
+    }
   }
 
   private class MyWebChromeClient extends WebChromeClient {
@@ -454,7 +476,7 @@ public final class WebViewer extends AndroidViewComponent {
 
         public MyWebChromeClient() {
           super();
-          Log.v("WEBWEB", "in constructor");
+          Log.v("WEBWEB", "in webchrome constructor");
         }
 
         @Override
@@ -473,35 +495,42 @@ public final class WebViewer extends AndroidViewComponent {
             }
 
             myCustomView = view;
-            myOriginalSystemUiVisibility = webContainer.$context().getWindow().getDecorView().getSystemUiVisibility();
-            myOriginalOrientation = webContainer.$context().getRequestedOrientation();
+            myOriginalSystemUiVisibility = webContainer.$form().getWindow().getDecorView().getSystemUiVisibility();
+            myOriginalOrientation = webContainer.$form().getRequestedOrientation();
             myCustomViewCallback = callback;
 
-            FrameLayout decor = (FrameLayout) webContainer.$context().getWindow().getDecorView();
+            FrameLayout decor = (FrameLayout) webContainer.$form().getWindow().getDecorView();
             decor.addView(myCustomView, new FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT));
 
-            webContainer.$context().getWindow().getDecorView().setSystemUiVisibility(
+            webContainer.$form().getWindow().getDecorView().setSystemUiVisibility(
                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
                             //View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
                             //View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
                             View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
                             View.SYSTEM_UI_FLAG_FULLSCREEN);// |
                             //View.SYSTEM_UI_FLAG_IMMERSIVE
-            webContainer.$context().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            webContainer.$form().getWindow().getDecorView().requestFocus();
+            webContainer.$form().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         }
 
         @Override
         public void onHideCustomView() {
           Log.v("WEBWEB", "onHideCustomView called");
-            FrameLayout decor = (FrameLayout) webContainer.$context().getWindow().getDecorView();
+            FrameLayout decor = (FrameLayout) webContainer.$form().getWindow().getDecorView();
             decor.removeView(myCustomView);
             myCustomView = null;
-            webContainer.$context().getWindow().getDecorView().setSystemUiVisibility(myOriginalSystemUiVisibility);
-            webContainer.$context().setRequestedOrientation(myOriginalOrientation);
+            webContainer.$form().getWindow().getDecorView().setSystemUiVisibility(myOriginalSystemUiVisibility);
+            webContainer.$form().setRequestedOrientation(myOriginalOrientation);
             myCustomViewCallback.onCustomViewHidden();
             myCustomViewCallback = null;
+        }
+
+        @Override
+        public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+            Log.v("WEBWEB", "!!! console message is " + consoleMessage.message() + " at line " + consoleMessage.lineNumber());
+            return true;
         }
     }
 

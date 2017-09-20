@@ -14,6 +14,7 @@ import android.view.Display;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.util.Log;
 
 import com.google.appinventor.components.runtime.Component;
 import com.google.appinventor.components.runtime.Form;
@@ -128,6 +129,7 @@ public class FroyoUtil {
     return new WebViewClient() {
       @Override
       public boolean shouldOverrideUrlLoading(WebView view, String url) {
+        Log.v("WEBWEB", "followLinks");
         return !followLinks;
       }
 
