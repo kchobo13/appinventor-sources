@@ -35,7 +35,7 @@ public final class YoungAndroidVRNode extends YoungAndroidSourceNode {
     super(StorageUtil.basename(fileId), fileId);
   }
 
-  public static String getFormFileId(String qualifiedName) {
+  public static String getVRFileId(String qualifiedName) {
     return SRC_PREFIX + qualifiedName.replace('.', '/')
         + YoungAndroidSourceAnalyzer.VR_PROPERTIES_EXTENSION;
   }

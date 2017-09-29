@@ -222,6 +222,10 @@ public final class YoungAndroidProjectService extends CommonProjectService {
         "\"Title\":\"" + formName + "\",\"AppName\":\"" + packageName +"\"}}\n|#";
   }
 
+  public static String getInitialVRSourceFileContents(String qualifiedName) {
+    return "";
+  }
+
   /**
    * Returns the initial contents of a Young Android blockly blocks file.
    */
@@ -327,6 +331,9 @@ public final class YoungAndroidProjectService extends CommonProjectService {
     String blocklyFileName = YoungAndroidBlocksNode.getBlocklyFileId(qualifiedFormName);
     String blocklyFileContents = getInitialBlocklySourceFileContents(qualifiedFormName);
 
+    String vrFileName = YoungAndroidVRNode.getVRFileId(qualifiedFormName);
+    String vrFileContents = getInitialVRSourceFileContents(qualifiedFormName);
+
     String yailFileName = YoungAndroidYailNode.getYailFileId(qualifiedFormName);
     String yailFileContents = "";
 
@@ -336,6 +343,7 @@ public final class YoungAndroidProjectService extends CommonProjectService {
     project.addTextFile(new TextFile(propertiesFileName, propertiesFileContents));
     project.addTextFile(new TextFile(formFileName, formFileContents));
     project.addTextFile(new TextFile(blocklyFileName, blocklyFileContents));
+    project.addTextFile(new TextFile(vrFileName, vrFileContents));
     project.addTextFile(new TextFile(yailFileName, yailFileContents));
 
     // Create new project
@@ -507,11 +515,13 @@ public final class YoungAndroidProjectService extends CommonProjectService {
       String qualifiedFormName = YoungAndroidSourceNode.getQualifiedName(fileId);
       String formFileName = YoungAndroidFormNode.getFormFileId(qualifiedFormName);
       String blocklyFileName = YoungAndroidBlocksNode.getBlocklyFileId(qualifiedFormName);
+      String vrFileName = YoungAndroidVRNode.getVRFileId(qualifiedFormName);
       String yailFileName = YoungAndroidYailNode.getYailFileId(qualifiedFormName);
 
       List<String> sourceFiles = storageIo.getProjectSourceFiles(userId, projectId);
       if (!sourceFiles.contains(formFileName) &&
           !sourceFiles.contains(blocklyFileName) &&
+          !sourceFiles.contains(vrFileName) &&
           !sourceFiles.contains(yailFileName)) {
 
         String formFileContents = getInitialFormPropertiesFileContents(qualifiedFormName);
@@ -522,6 +532,11 @@ public final class YoungAndroidProjectService extends CommonProjectService {
         String blocklyFileContents = getInitialBlocklySourceFileContents(qualifiedFormName);
         storageIo.addSourceFilesToProject(userId, projectId, false, blocklyFileName);
         storageIo.uploadFileForce(projectId, blocklyFileName, userId, blocklyFileContents,
+            StorageUtil.DEFAULT_CHARSET);
+
+        String vrFileContents = getInitialVRSourceFileContents(qualifiedFormName);
+        storageIo.addSourceFilesToProject(userId, projectId, false, vrFileName);
+        storageIo.uploadFileForce(projectId, vrFileName, userId, vrFileContents,
             StorageUtil.DEFAULT_CHARSET);
 
         String yailFileContents = "";  // start empty
@@ -548,14 +563,16 @@ public final class YoungAndroidProjectService extends CommonProjectService {
       String qualifiedFormName = YoungAndroidSourceNode.getQualifiedName(fileId);
       String formFileName = YoungAndroidFormNode.getFormFileId(qualifiedFormName);
       String blocklyFileName = YoungAndroidBlocksNode.getBlocklyFileId(qualifiedFormName);
+      String vrFileName = YoungAndroidVRNode.getVRFileId(qualifiedFormName);
       String codeblocksFileName = YoungAndroidBlocksNode.getCodeblocksFileId(qualifiedFormName);
       String yailFileName = YoungAndroidYailNode.getYailFileId(qualifiedFormName);
       storageIo.deleteFile(userId, projectId, formFileName);
       storageIo.deleteFile(userId, projectId, blocklyFileName);
+      storageIo.deleteFile(userId, projectId, vrFileName);
       storageIo.deleteFile(userId, projectId, codeblocksFileName);
       storageIo.deleteFile(userId, projectId, yailFileName);
       storageIo.removeSourceFilesFromProject(userId, projectId, true,
-          formFileName, blocklyFileName, codeblocksFileName, yailFileName);
+          formFileName, blocklyFileName, vrFileName, codeblocksFileName, yailFileName);
       return storageIo.getProjectDateModified(userId, projectId);
 
     } else {
