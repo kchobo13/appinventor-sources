@@ -124,6 +124,11 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.appinventor.shared.rpc.project.GalleryApp;
 
+import com.google.appinventor.shared.rpc.project.ProjectNode;
+import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidFormNode;
+import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidBlocksNode;
+import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidVRNode;
+
 /**
  * Main entry point for Ode. Defines the startup UI elements in
  * {@link #onModuleLoad()}.
@@ -186,7 +191,7 @@ public class Ode implements EntryPoint {
   // Collection of editors
   private EditorManager editorManager;
 
-  // Currently active file editor, could be a YaFormEditor or a YaBlocksEditor or null.
+  // Currently active file editor, could be a YaFormEditor, a YaBlocksEditor, a YaVREditor, or null.
   private FileEditor currentFileEditor;
 
   private AssetManager assetManager;
@@ -627,23 +632,60 @@ public class Ode implements EntryPoint {
   }
 
   public void openYoungAndroidProjectInDesigner(final Project project) {
+    OdeLog.log("Ode.java: openYoungAndroidProjectInDesigner called");
     ProjectRootNode projectRootNode = project.getRootNode();
     if (projectRootNode == null) {
+      OdeLog.log("Ode.java: projectRootNode is null");
       // The project nodes haven't been loaded yet.
       // Add a ProjectChangeListener so we'll be notified when they have been loaded.
       project.addProjectChangeListener(new ProjectChangeAdapter() {
         @Override
         public void onProjectLoaded(Project projectLoaded) {
           project.removeProjectChangeListener(this);
+          OdeLog.log("Ode.java: calling openYoungAndroidProjectInDesigner in onProjectLoaded");
           openYoungAndroidProjectInDesigner(project);
         }
       });
       project.loadProjectNodes();
-
+      if (projectRootNode != null) {
+        OdeLog.log("Ode.java: projectRootNode is not null anymore");
+        for (ProjectNode source : projectRootNode.getAllSourceNodes()) {
+          if (source instanceof YoungAndroidFormNode) {
+            OdeLog.log("designer");
+          } else if (source instanceof YoungAndroidBlocksNode) {
+            OdeLog.log("blocks");
+          } else if (source instanceof YoungAndroidVRNode) {
+            OdeLog.log("VR");
+          } else {
+            OdeLog.log("unknown");
+            OdeLog.log(source.toString());
+            OdeLog.log(source.getClass().toString());
+            OdeLog.log(source.getClass().getName());
+          }
+        }
+      } else {
+        OdeLog.log("Ode.java: projectRootNode is still null");
+      }
     } else {
+      OdeLog.log("Ode.java: projectRootNode is loaded");
+      for (ProjectNode source : projectRootNode.getAllSourceNodes()) {
+        if (source instanceof YoungAndroidFormNode) {
+          OdeLog.log("designer");
+        } else if (source instanceof YoungAndroidBlocksNode) {
+          OdeLog.log("blocks");
+        } else if (source instanceof YoungAndroidVRNode) {
+          OdeLog.log("VR");
+        } else {
+          OdeLog.log("unknown");
+          OdeLog.log(source.toString());
+          OdeLog.log(source.getClass().toString());
+          OdeLog.log(source.getClass().getName());
+        }
+      }
       // The project nodes have been loaded. Tell the viewer to open
       // the project. This will cause the projects source files to be fetched
       // asynchronously, and loaded into file editors.
+      OdeLog.log("Ode.java: calling show");
       ViewerBox.getViewerBox().show(projectRootNode);
       // Note: we can't call switchToDesignView until the Screen1 file editor
       // finishes loading. We leave that to setCurrentFileEditor(), which

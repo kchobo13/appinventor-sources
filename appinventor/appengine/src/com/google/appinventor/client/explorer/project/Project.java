@@ -7,6 +7,7 @@
 package com.google.appinventor.client.explorer.project;
 
 import com.google.appinventor.client.Ode;
+import com.google.appinventor.client.output.OdeLog;
 import static com.google.appinventor.client.Ode.MESSAGES;
 import com.google.appinventor.client.OdeAsyncCallback;
 import com.google.appinventor.client.settings.project.ProjectSettings;
@@ -51,8 +52,10 @@ public final class Project {
    * Loads the project's nodes from the backend.
    */
   public void loadProjectNodes() {
+    OdeLog.log("Project.java: loadProjectNodes called");
     if (projectRoot == null && !loadingInProgress) {
       loadingInProgress = true;
+      OdeLog.log("Project.loadProjectNodes(): loadingInProgress = true");
       Ode.CLog("Project.loadProjectNodes(): loadingInProgress = true");
 
       if (settings == null) {
@@ -69,6 +72,7 @@ public final class Project {
             public void onSuccess(ProjectRootNode result) {
               projectRoot = result;
 
+              OdeLog.log("Project.loadProjectNodes(): loadingInProgress = false");
               Ode.CLog("Project.loadProjectNodes(): loadingInProgress = false");
               loadingInProgress = false;
               fireProjectLoaded();

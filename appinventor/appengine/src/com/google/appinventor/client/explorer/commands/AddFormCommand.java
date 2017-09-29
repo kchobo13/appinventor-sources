@@ -19,6 +19,7 @@ import com.google.appinventor.client.youngandroid.TextValidators;
 import com.google.appinventor.shared.rpc.project.ProjectNode;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidBlocksNode;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidFormNode;
+import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidVRNode;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidPackageNode;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidProjectNode;
 import com.google.gwt.core.client.Scheduler;
@@ -203,8 +204,9 @@ public final class AddFormCommand extends ChainableCommand {
       final Ode ode = Ode.getInstance();
       final YoungAndroidPackageNode packageNode = projectRootNode.getPackageNode();
       String qualifiedFormName = packageNode.getPackageName() + '.' + formName;
-      final String formFileId = YoungAndroidFormNode.getFormFileId(qualifiedFormName);
+      final String designerFileId = YoungAndroidFormNode.getFormFileId(qualifiedFormName);
       final String blocksFileId = YoungAndroidBlocksNode.getBlocklyFileId(qualifiedFormName);
+      final String vrFileId = YoungAndroidVRNode.getFormFileId(qualifiedFormName);
 
       OdeAsyncCallback<Long> callback = new OdeAsyncCallback<Long>(
           // failure message
@@ -216,8 +218,9 @@ public final class AddFormCommand extends ChainableCommand {
 
           // Add the new form and blocks nodes to the project
           final Project project = ode.getProjectManager().getProject(projectRootNode);
-          project.addNode(packageNode, new YoungAndroidFormNode(formFileId));
+          project.addNode(packageNode, new YoungAndroidFormNode(designerFileId));
           project.addNode(packageNode, new YoungAndroidBlocksNode(blocksFileId));
+          project.addNode(packageNode, new YoungAndroidVRNode(vrFileId));
 
           // Add the screen to the DesignToolbar and select the new form editor. 
           // We need to do this once the form editor and blocks editor have been
@@ -232,13 +235,14 @@ public final class AddFormCommand extends ChainableCommand {
             public void execute() {
               ProjectEditor projectEditor = 
                   ode.getEditorManager().getOpenProjectEditor(project.getProjectId());
-              FileEditor formEditor = projectEditor.getFileEditor(formFileId);
+              FileEditor designerEditor = projectEditor.getFileEditor(designerFileId);
               FileEditor blocksEditor = projectEditor.getFileEditor(blocksFileId);
-              if (formEditor != null && blocksEditor != null && !ode.screensLocked()) {
+              FileEditor vrEditor = projectEditor.getFileEditor(vrFileId);
+              if (designerEditor != null && blocksEditor != null && vrEditor != null && !ode.screensLocked()) {
                 DesignToolbar designToolbar = Ode.getInstance().getDesignToolbar();
-                long projectId = formEditor.getProjectId();
-                designToolbar.addScreen(projectId, formName, formEditor, 
-                    blocksEditor);
+                long projectId = designerEditor.getProjectId();
+                designToolbar.addScreen(projectId, formName, designerEditor, 
+                    blocksEditor, vrEditor);
                 designToolbar.switchToScreen(projectId, formName, DesignToolbar.View.DESIGNER);
                 executeNextCommand(projectRootNode);
               } else {
@@ -259,7 +263,7 @@ public final class AddFormCommand extends ChainableCommand {
 
       // Create the new form on the backend. The backend will create the form (.scm) and blocks
       // (.blk) files.
-      ode.getProjectService().addFile(projectRootNode.getProjectId(), formFileId, callback);
+      ode.getProjectService().addFile(projectRootNode.getProjectId(), designerFileId, callback);
     }
 
     @Override

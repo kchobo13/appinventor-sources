@@ -25,6 +25,8 @@ public class YoungAndroidSourceAnalyzer {
    */
   public static final String FORM_PROPERTIES_EXTENSION = ".scm";
 
+  public static final String VR_PROPERTIES_EXTENSION = ".vr";
+
   /**
    * The filename extension for the file which contains block metadata to be
    * consumed by codeblocks.

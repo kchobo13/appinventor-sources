@@ -23,6 +23,11 @@ import com.google.common.collect.Maps;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 
+import com.google.appinventor.shared.rpc.project.ProjectNode;
+import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidFormNode;
+import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidBlocksNode;
+import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidVRNode;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -97,24 +102,41 @@ public final class EditorManager {
    * @return  project editor for the given project
    */
   public ProjectEditor openProject(ProjectRootNode projectRootNode) {
+    OdeLog.log("EditorManager: openProject called");
+    for (ProjectNode source : projectRootNode.getAllSourceNodes()) {
+      if (source instanceof YoungAndroidFormNode) {
+        OdeLog.log("designer");
+      } else if (source instanceof YoungAndroidBlocksNode) {
+        OdeLog.log("blocks");
+      } else if (source instanceof YoungAndroidVRNode) {
+        OdeLog.log("VR");
+      } else {
+        OdeLog.log("unknown");
+      }
+    }
     long projectId = projectRootNode.getProjectId();
     ProjectEditor projectEditor = openProjectEditors.get(projectId);
     if (projectEditor == null) {
+      OdeLog.log("EditorManager: creating projectEditor");
       // No open editor for this project yet.
       // Use the ProjectEditorRegistry to get the factory and create the project editor.
       ProjectEditorFactory factory = Ode.getProjectEditorRegistry().get(projectRootNode);
       if (factory != null) {
+        OdeLog.log("EditorManager: projectEditor is null");
         projectEditor = factory.createProjectEditor(projectRootNode);
+        OdeLog.log("EditorManager: projectEditor created");
 
         // Add the editor to the openProjectEditors map.
         openProjectEditors.put(projectId, projectEditor);
         
+        OdeLog.log("EditorManager: adding to DesignToolbar");
         // Tell the DesignToolbar about this project
         Ode.getInstance().getDesignToolbar().addProject(projectId, projectRootNode.getName());
 
         // Prepare the project before Loading into the editor.
         // Components are prepared before the project is actually loaded.
         // Load the project into the editor. The actual loading is asynchronous.
+        OdeLog.log("EditorManager: calling processProject");
         projectEditor.processProject();
       }
     }

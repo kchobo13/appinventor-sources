@@ -132,13 +132,17 @@ public interface OdeMessages extends Messages {
   @Description("Label of the button for switching screens")
   String screensButton();
 
+  @DefaultMessage("VR")
+  @Description("Label of the button for switching to the VR editor")
+  String switchToVREditorButton();
+
   @DefaultMessage("Blocks")
   @Description("Label of the button for switching to the blocks editor")
   String switchToBlocksEditorButton();
 
   @DefaultMessage("Designer")
-  @Description("Label of the button for switching to the form editor")
-  String switchToFormEditorButton();
+  @Description("Label of the button for switching to the designer editor")
+  String switchToDesignerEditorButton();
 
   @DefaultMessage("Packaging ...")
   @Description("Label of the button leading to build related cascade items, when building")
@@ -1032,7 +1036,7 @@ public interface OdeMessages extends Messages {
   @Description("Label of the link to a component's reference docs")
   String moreInformation();
 
-  // Used in editor/youngandroid/YaFormEditor.java and YaBlocksEditor.java
+  // Used in editor/youngandroid/YaFormEditor.java, YaBlocksEditor.java, and YaVREditor.java.
 
   @DefaultMessage("Server error: could not load file. Please try again later!")
   @Description("Error message reported when a source file couldn't be loaded from the server.")

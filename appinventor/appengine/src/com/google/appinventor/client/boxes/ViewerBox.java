@@ -47,6 +47,8 @@ public class ViewerBox extends Box {
    * @param projectRootNode  the root node of the project to show in the viewer
    */
   public ProjectEditor show(ProjectRootNode projectRootNode) {
+    OdeLog.log("ViewerBox: show called");
+    OdeLog.log("ViewerBox: calling openProject");
     ProjectEditor projectEditor = Ode.getInstance().getEditorManager().openProject(projectRootNode);
     OdeLog.log("ViewerBox: switching the content in the viewer box");
     setContent(projectEditor);

@@ -109,6 +109,7 @@ public abstract class ProjectEditor extends Composite {
    * @param fileEditor  file editor to add
    */
   public final void addFileEditor(FileEditor fileEditor) {
+    OdeLog.log("addFileEditor called");
     String fileId = fileEditor.getFileId();
     openFileEditors.put(fileId, fileEditor);
     fileIds.add(fileId);

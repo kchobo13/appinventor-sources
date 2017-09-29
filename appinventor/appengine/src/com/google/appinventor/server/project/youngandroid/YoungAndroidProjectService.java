@@ -38,6 +38,7 @@ import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidBlocks
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidComponentNode;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidComponentsFolder;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidFormNode;
+import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidVRNode;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidPackageNode;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidProjectNode;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidSourceFolderNode;
@@ -96,6 +97,8 @@ public final class YoungAndroidProjectService extends CommonProjectService {
   // TODO(user) Source these from a common constants library.
   private static final String FORM_PROPERTIES_EXTENSION =
       YoungAndroidSourceAnalyzer.FORM_PROPERTIES_EXTENSION;
+  private static final String VR_PROPERTIES_EXTENSION =
+      YoungAndroidSourceAnalyzer.VR_PROPERTIES_EXTENSION;
   private static final String CODEBLOCKS_SOURCE_EXTENSION =
       YoungAndroidSourceAnalyzer.CODEBLOCKS_SOURCE_EXTENSION;
   private static final String BLOCKLY_SOURCE_EXTENSION =
@@ -448,6 +451,8 @@ public final class YoungAndroidProjectService extends CommonProjectService {
         YoungAndroidSourceNode sourceNode = null;
         if (fileId.endsWith(FORM_PROPERTIES_EXTENSION)) {
           sourceNode = new YoungAndroidFormNode(fileId);
+        } else if (fileId.endsWith(VR_PROPERTIES_EXTENSION)) {
+          sourceNode = new YoungAndroidVRNode(fileId);
         } else if (fileId.endsWith(BLOCKLY_SOURCE_EXTENSION)) {
           sourceNode = new YoungAndroidBlocksNode(fileId);
         } else if (fileId.endsWith(CODEBLOCKS_SOURCE_EXTENSION)) {
