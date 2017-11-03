@@ -9,6 +9,8 @@ import com.google.appinventor.client.boxes.AssetListBox;
 import com.google.appinventor.client.boxes.PaletteBox;
 import com.google.appinventor.client.boxes.PropertiesBox;
 import com.google.appinventor.client.boxes.SourceStructureBox;
+import com.google.appinventor.client.boxes.ViewerBox;
+import com.google.appinventor.client.editor.vr.js.JSBox;
 import com.google.appinventor.client.editor.ProjectEditor;
 import com.google.appinventor.client.editor.blocks.BlocksEditor;
 import com.google.appinventor.client.editor.simple.SimpleEditor;
@@ -133,6 +135,7 @@ public abstract class DesignerEditor<S extends SourceNode, T extends DesignerRoo
   @Override
   public void onShow() {
     super.onShow();
+    OdeLog.log("DesignerEditor: onShow");
     loadDesigner();
   }
 
@@ -155,6 +158,17 @@ public abstract class DesignerEditor<S extends SourceNode, T extends DesignerRoo
   }
 
   protected void loadDesigner() {
+    OdeLog.log("DesignerEditor: loadDesigner");
+
+    ViewerBox viewerBox = ViewerBox.getViewerBox();
+    viewerBox.setVisible(true);
+
+    JSBox jsBox = JSBox.getJSBox();
+    jsBox.setVisible(false);
+
+    PaletteBox paletteBox = PaletteBox.getPaletteBox();
+    paletteBox.setVisible(true);
+
     // Update the source structure explorer with the tree of this form's components.
     sourceStructureExplorer.updateTree(root.buildComponentsTree(),
         selectedComponent.getSourceStructureExplorerItem());

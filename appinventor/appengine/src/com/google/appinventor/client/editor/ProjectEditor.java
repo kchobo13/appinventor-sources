@@ -112,6 +112,7 @@ public abstract class ProjectEditor extends Composite {
     String fileId = fileEditor.getFileId();
     openFileEditors.put(fileId, fileEditor);
     fileIds.add(fileId);
+    OdeLog.log("ProjectEditor: Added file id " + fileId + " to fileIds with length " + fileIds.size());
     
     deckPanel.add(fileEditor);
 
@@ -134,7 +135,10 @@ public abstract class ProjectEditor extends Composite {
   public final void insertFileEditor(FileEditor fileEditor, int beforeIndex) {
     String fileId = fileEditor.getFileId();
     openFileEditors.put(fileId, fileEditor);
+    OdeLog.log("fileIds is " + fileIds.toString() + ", has length " + fileIds.size());
+    OdeLog.log("adding " + fileId + " to fileIds at beforeIndex " + beforeIndex);
     fileIds.add(beforeIndex, fileId);
+    OdeLog.log("now, fileIds is " + fileIds.toString() + ", has length " + fileIds.size());
     deckPanel.insert(fileEditor, beforeIndex);
     OdeLog.log("Inserted file editor for " + fileEditor.getFileId() + " at pos " + beforeIndex);
 
@@ -173,6 +177,7 @@ public abstract class ProjectEditor extends Composite {
     // to a previously opened project from another project.
     selectedFileEditor = fileEditor;
     deckPanel.showWidget(index);
+    OdeLog.log("selectFileEditor: onShow");
     selectedFileEditor.onShow();
   }
 

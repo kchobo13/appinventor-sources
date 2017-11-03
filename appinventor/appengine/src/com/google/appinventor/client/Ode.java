@@ -26,6 +26,8 @@ import com.google.appinventor.client.boxes.ProfileBox;
 import com.google.appinventor.client.boxes.PropertiesBox;
 import com.google.appinventor.client.boxes.SourceStructureBox;
 import com.google.appinventor.client.boxes.ViewerBox;
+import com.google.appinventor.client.editor.vr.js.JSBox;
+import com.google.appinventor.client.editor.vr.js.JSPanel;
 import com.google.appinventor.client.editor.EditorManager;
 import com.google.appinventor.client.editor.FileEditor;
 import com.google.appinventor.client.editor.blocks.BlocklyPanel;
@@ -977,7 +979,17 @@ public class Ode implements EntryPoint {
     //workColumns.add(switchToBlocksButton);
     dVertPanel.add(workColumns);
     designTabIndex = deckPanel.getWidgetCount();
+    //deckPanel.add(dVertPanel);
+
+    //VerticalPanel jsVertPanel = new VerticalPanel();
+    //jsVertPanel.setWidth("100%");
+    //jsVertPanel.setHeight("100%");
+    Box jsBox = JSBox.getJSBox();
+    dVertPanel.add(jsBox);
     deckPanel.add(dVertPanel);
+    //workColumns.add(jsBox);
+    //workColumns.setCellWidth(jsBox, "50%");
+    //workColumns.setCellHeight(jsBox, "50%");
 
     // Gallery list tab
     VerticalPanel gVertPanel = new VerticalPanel();

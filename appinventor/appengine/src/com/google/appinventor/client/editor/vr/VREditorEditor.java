@@ -1,0 +1,211 @@
+// -*- mode: java; c-basic-offset: 2; -*-
+// Copyright © 2017 Massachusetts Institute of Technology, All rights reserved.
+
+package com.google.appinventor.client.editor.vr;
+
+import com.google.appinventor.client.Ode;
+import com.google.appinventor.client.boxes.AssetListBox;
+import com.google.appinventor.client.boxes.PaletteBox;
+import com.google.appinventor.client.boxes.PropertiesBox;
+import com.google.appinventor.client.boxes.ViewerBox;
+import com.google.appinventor.client.editor.vr.js.JSBox;
+import com.google.appinventor.client.editor.ProjectEditor;
+import com.google.appinventor.client.editor.blocks.BlocksEditor;
+import com.google.appinventor.client.editor.designer.DesignerEditor;
+import com.google.appinventor.client.editor.vr.palette.VRPalettePanel;
+//import com.google.appinventor.client.editor.vr.js.JSPanel;
+import com.google.appinventor.client.editor.simple.SimpleNonVisibleComponentsPanel;
+import com.google.appinventor.client.editor.simple.components.MockComponent;
+import com.google.appinventor.client.editor.simple.components.MockForm;
+// import com.google.appinventor.client.editor.simple.components.MockMicrocontroller;
+import com.google.appinventor.client.editor.simple.SimpleComponentDatabase;
+import com.google.appinventor.client.editor.simple.palette.DropTargetProvider;
+import com.google.appinventor.client.properties.json.ClientJsonParser;
+import com.google.appinventor.client.widgets.dnd.DropTarget;
+import com.google.appinventor.client.widgets.properties.EditableProperties;
+import com.google.appinventor.shared.properties.json.JSONObject;
+import com.google.appinventor.shared.rpc.project.vr.VREditorNode;
+import com.google.appinventor.client.output.OdeLog;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONException;
+import com.google.gwt.json.client.JSONNumber;
+import com.google.gwt.json.client.JSONString;
+import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.ui.HTMLPanel;
+
+import java.util.List;
+
+/**
+ * Design editor for VR.
+ */
+public class VREditorEditor extends DesignerEditor<VREditorNode, MockForm, VRPalettePanel, SimpleComponentDatabase> {
+
+  private String preUpgradeJson = null;
+  private String content = null;
+
+  public VREditorEditor(ProjectEditor projectEditor, VREditorNode sourceNode) {
+    super(projectEditor, sourceNode, SimpleComponentDatabase.getInstance(sourceNode.getProjectId()),
+        new VRVisibleComponentsPanel(new SimpleNonVisibleComponentsPanel<MockForm>()));
+
+    palettePanel = new VRPalettePanel(this);
+    palettePanel.loadComponents(new DropTargetProvider() {
+      @Override
+      public DropTarget[] getDropTargets() {
+        List<DropTarget> dropTargets = root.getDropTargetsWithin();
+        dropTargets.add(getVisibleComponentsPanel());
+        dropTargets.add(getNonVisibleComponentsPanel());
+        return dropTargets.toArray(new DropTarget[dropTargets.size()]);
+      }
+    });
+    palettePanel.setSize("100%", "100%");
+    componentDatabaseChangeListeners.add(palettePanel);
+    exportMethodToJavaScript();
+  }
+
+  @Override
+  public void onHide() {
+    if (Ode.getInstance().getCurrentFileEditor() == this) {
+      super.onHide();
+      unloadDesigner();
+    }
+  }
+
+  @Override
+  public String getRawFileContent() {
+    OdeLog.log("VREditorEditor: getRawFileContent called");
+    String jsonString = encodeVREditorAsJsonString();
+    OdeLog.log(jsonString);
+    return jsonString;
+  }
+
+  @Override
+  public String getJson() {
+    return preUpgradeJson;
+  }
+
+  @Override
+  public MockForm newRootObject() {
+    return new MockForm(this);
+  }
+
+  @Override
+  protected void upgradeFile(FileContentHolder fileContentHolder, Command afterUpgradeCompleted) {
+    preUpgradeJson = fileContentHolder.getFileContent();
+    if (afterUpgradeCompleted != null) {
+      afterUpgradeCompleted.execute();
+    }
+  }
+
+  @Override
+  protected void onFileLoaded(String content) {
+    OdeLog.log("onFileLoaded: start");
+    OdeLog.log("onFileLoaded: content is " + content);
+    this.content = content;
+    loadScene(content);
+    /*
+    try {
+      JSONObject properties = new ClientJsonParser().parse(content).asObject();
+      root = (MockForm) createMockComponent(properties.getProperties().get("Properties").asObject(),
+          null, MockForm.TYPE);
+
+      nonVisibleComponentsPanel.setRoot(root);
+      visibleComponentsPanel.setRoot(root);
+
+      root.select();
+    } catch(JSONException e) {
+      throw new IllegalStateException("Invalid JSON for Sketch", e);
+    } finally {
+      super.onFileLoaded(content);
+    }
+    */
+  }
+
+  @Override
+  protected void loadDesigner() {
+    OdeLog.log("VREditorEditor: loadDesigner start");
+    //root.refresh();
+    //selectedComponent = root.getSelectedComponent();
+    
+    ViewerBox viewerBox = ViewerBox.getViewerBox();
+    viewerBox.setVisible(false);
+
+    JSBox jsBox = JSBox.getJSBox();
+    //jsBox.setSize("100%", "100%");
+    jsBox.setVisible(true);
+
+    PaletteBox paletteBox = PaletteBox.getPaletteBox();
+    paletteBox.setVisible(false);
+
+    AssetListBox assetListBox = AssetListBox.getAssetListBox();
+    assetListBox.setVisible(false);
+
+    /*
+    PropertiesBox propertiesBox = PropertiesBox.getPropertiesBox();
+    propertiesBox.setVisible(false);
+    root.addDesignerChangeListener(this);
+    root.addDesignerChangeListener((BlocksEditor<?, ?>) projectEditor.getFileEditor(sourceNode.getEntityName(), BlocksEditor.EDITOR_TYPE));
+    super.loadDesigner();
+    */
+  }
+
+  protected native String encodeVREditorAsJsonString() /*-{
+    var vr_editor_iframe = $wnd.document.getElementById("vr-editor-iframe");
+    return vr_editor_iframe.contentWindow.generateSceneJSONString();
+  }-*/;
+
+  public void loadScene() {
+    OdeLog.log("VREditorEditor: loadScene");
+    loadScene(this.content);
+  }
+
+  protected native void loadScene(String content) /*-{
+    if (content !== "[]") {
+      var vr_editor_iframe = $wnd.document.getElementById("vr-editor-iframe");
+      if (typeof vr_editor_iframe.contentWindow.clearScene === "function") {
+        vr_editor_iframe.contentWindow.clearScene();
+        vr_editor_iframe.contentWindow.importScene(content);
+      } else {
+        console.log("clearScene not a function");
+      }
+    }
+  }-*/;
+
+  public void saveScene() {
+    OdeLog.log("VREditorEditor: saveScene");
+    Ode.getInstance().getEditorManager().scheduleAutoSave(this);
+  }
+
+  private native void exportMethodToJavaScript() /*-{
+    $wnd.loadScene = $entry(this.@com.google.appinventor.client.editor.vr.VREditorEditor::loadScene()).bind(this);
+    $wnd.saveScene = $entry(this.@com.google.appinventor.client.editor.vr.VREditorEditor::saveScene()).bind(this);
+  }-*/;
+
+  /*`
+  private com.google.gwt.json.client.JSONObject encodeComponentProperties(MockComponent component) {
+    com.google.gwt.json.client.JSONObject result = new com.google.gwt.json.client.JSONObject();
+    EditableProperties properties = component.getProperties();
+    final String type = component.getType();
+    result.put("$Name", new JSONString(properties.getPropertyValue("Name")));
+    result.put("$Type", new JSONString(type));
+    result.put("$Version", new JSONString(Integer.toString(componentDatabase.getComponentVersion(type))));
+
+    com.google.gwt.json.client.JSONObject jsonProperties = properties.encodeAsJson(false, false);
+    if (jsonProperties.size() > 0) {
+      for (String key : jsonProperties.keySet()) {
+        result.put(key, jsonProperties.get(key));
+      }
+    }
+
+    List<MockComponent> children = component.getChildren();
+    if (!children.isEmpty()) {
+      JSONArray childrenJson = new JSONArray();
+      int i = 0;
+      for (MockComponent child : children) {
+        childrenJson.set(i++, encodeComponentProperties(child));
+      }
+      result.put("$Components", childrenJson);
+    }
+    return result;
+  }
+  */
+}

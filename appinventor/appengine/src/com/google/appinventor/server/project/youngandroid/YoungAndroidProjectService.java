@@ -30,7 +30,12 @@ import com.google.appinventor.shared.rpc.project.ProjectNode;
 import com.google.appinventor.shared.rpc.project.ProjectRootNode;
 import com.google.appinventor.shared.rpc.project.ProjectSourceZip;
 import com.google.appinventor.shared.rpc.project.RawFile;
+import com.google.appinventor.shared.rpc.project.SourceNode;
 import com.google.appinventor.shared.rpc.project.TextFile;
+import com.google.appinventor.shared.rpc.project.vr.VRBlocksNode;
+import com.google.appinventor.shared.rpc.project.vr.VREditorNode;
+import com.google.appinventor.shared.rpc.project.vr.VRSourceFolderNode;
+import com.google.appinventor.shared.rpc.project.vr.VRSourceNode;
 import com.google.appinventor.shared.rpc.project.youngandroid.NewYoungAndroidProjectParameters;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidAssetNode;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidAssetsFolder;
@@ -89,6 +94,7 @@ public final class YoungAndroidProjectService extends CommonProjectService {
 
   // Project folder prefixes
   public static final String SRC_FOLDER = YoungAndroidSourceAnalyzer.SRC_FOLDER;
+  public static final String VR_SRC_FOLDER = YoungAndroidSourceAnalyzer.VR_SRC_FOLDER;
   protected static final String ASSETS_FOLDER = "assets";
   private static final String EXTERNAL_COMPS_FOLDER = "assets/external_comps";
   static final String PROJECT_DIRECTORY = "youngandroidproject";
@@ -102,6 +108,11 @@ public final class YoungAndroidProjectService extends CommonProjectService {
       YoungAndroidSourceAnalyzer.BLOCKLY_SOURCE_EXTENSION;
   private static final String YAIL_FILE_EXTENSION =
       YoungAndroidSourceAnalyzer.YAIL_FILE_EXTENSION;
+  private static final String VREDITOR_PROPERTIES_EXTENSION =
+      YoungAndroidSourceAnalyzer.VREDITOR_PROPERTIES_EXTENSION;
+  private static final String VRVM_BLOCKS_EXTENSION =
+      YoungAndroidSourceAnalyzer.VRVM_BLOCKS_EXTENSION;
+
 
   public static final String PROJECT_PROPERTIES_FILE_NAME = PROJECT_DIRECTORY + "/" +
       "project.properties";
@@ -217,6 +228,14 @@ public final class YoungAndroidProjectService extends CommonProjectService {
    * Returns the initial contents of a Young Android blockly blocks file.
    */
   private static String getInitialBlocklySourceFileContents(String qualifiedName) {
+    return "";
+  }
+
+  private static String getInitialVREditorProperties(String qualifiedName) {
+    return "[]";
+  }
+
+  private static String getInitialVRBlocksFileContents(String qualifiedName) {
     return "";
   }
 
@@ -411,10 +430,12 @@ public final class YoungAndroidProjectService extends CommonProjectService {
     ProjectNode assetsNode = new YoungAndroidAssetsFolder(ASSETS_FOLDER);
     ProjectNode sourcesNode = new YoungAndroidSourceFolderNode(SRC_FOLDER);
     ProjectNode compsNode = new YoungAndroidComponentsFolder(EXTERNAL_COMPS_FOLDER);
+    ProjectNode vrScreensNode = new VRSourceFolderNode(VR_SRC_FOLDER);
 
     rootNode.addChild(assetsNode);
     rootNode.addChild(sourcesNode);
     rootNode.addChild(compsNode);
+    rootNode.addChild(vrScreensNode);
 
     // Sources contains nested folders that are interpreted as packages
     Map<String, ProjectNode> packagesMap = Maps.newHashMap();
@@ -425,8 +446,7 @@ public final class YoungAndroidProjectService extends CommonProjectService {
       if (fileId.startsWith(ASSETS_FOLDER + '/')) {
         if (fileId.startsWith(EXTERNAL_COMPS_FOLDER + '/')) {
           compsNode.addChild(new YoungAndroidComponentNode(StorageUtil.basename(fileId), fileId));
-        }
-        else {
+        } else {
           assetsNode.addChild(new YoungAndroidAssetNode(StorageUtil.basename(fileId), fileId));
         }
       } else if (fileId.startsWith(SRC_FOLDER + '/')) {
@@ -439,7 +459,7 @@ public final class YoungAndroidProjectService extends CommonProjectService {
         } else if (fileId.endsWith(CODEBLOCKS_SOURCE_EXTENSION)) {
           String blocklyFileName =
               fileId.substring(0, fileId.lastIndexOf(CODEBLOCKS_SOURCE_EXTENSION))
-              + BLOCKLY_SOURCE_EXTENSION;
+                  + BLOCKLY_SOURCE_EXTENSION;
           if (!sourceFiles.contains(blocklyFileName)) {
             // This is an old project that hasn't been converted yet. Convert
             // the blocks file to Blockly format and name. Leave the old
@@ -462,6 +482,16 @@ public final class YoungAndroidProjectService extends CommonProjectService {
             sourcesNode.addChild(packageNode);
           }
           packageNode.addChild(sourceNode);
+        }
+      } else if (fileId.startsWith(VR_SRC_FOLDER + '/')) {
+        VRSourceNode sourceNode = null;
+        if (fileId.endsWith(VREDITOR_PROPERTIES_EXTENSION)) {
+          sourceNode = new VREditorNode(fileId);
+        } else if (fileId.endsWith(VRVM_BLOCKS_EXTENSION)) {
+          sourceNode = new VRBlocksNode(fileId);
+        }
+        if (sourceNode != null) {
+          vrScreensNode.addChild(sourceNode);
         }
       }
     }
@@ -512,7 +542,24 @@ public final class YoungAndroidProjectService extends CommonProjectService {
       } else {
         throw new IllegalStateException("One or more files to be added already exists.");
       }
-
+    } else if (fileId.endsWith(VRVM_BLOCKS_EXTENSION) ||
+        fileId.endsWith(VREDITOR_PROPERTIES_EXTENSION)) {
+      String qualifiedVRScreenName = SourceNode.getEntityName(fileId);
+      String vrEditorFileName = VREditorNode.getVREditorFileId(qualifiedVRScreenName);
+      String vrBlocksFileName = VRBlocksNode.getBlocksFileId(qualifiedVRScreenName);
+      List<String> sourceFiles = storageIo.getProjectSourceFiles(userId, projectId);
+      if (!sourceFiles.contains(vrEditorFileName) && !sourceFiles.contains(vrBlocksFileName)) {
+        String vrEditorFileContents = getInitialVREditorProperties(qualifiedVRScreenName);
+        storageIo.addSourceFilesToProject(userId, projectId, false, vrEditorFileName);
+        storageIo.uploadFileForce(projectId, vrEditorFileName, userId,
+            vrEditorFileContents, StorageUtil.DEFAULT_CHARSET);
+        String vrBlocksFileContents = getInitialVRBlocksFileContents(qualifiedVRScreenName);
+        storageIo.addSourceFilesToProject(userId, projectId, false, vrBlocksFileName);
+        return storageIo.uploadFileForce(projectId, vrBlocksFileName, userId,
+            vrBlocksFileContents, StorageUtil.DEFAULT_CHARSET);
+      } else {
+        throw new IllegalStateException("One or more files to be added already exists.");
+      }
     } else {
       return super.addFile(userId, projectId, fileId);
     }

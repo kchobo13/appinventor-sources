@@ -1,6 +1,6 @@
 // -*- mode: java; c-basic-offset: 2; -*-
 // Copyright 2009-2011 Google, All Rights reserved
-// Copyright 2011-2012 MIT, All rights reserved
+// Copyright 2011-2017 MIT, All rights reserved
 // Released under the Apache License, Version 2.0
 // http://www.apache.org/licenses/LICENSE-2.0
 
@@ -109,6 +109,14 @@ public interface OdeMessages extends Messages {
   @DefaultMessage("Remove Screen")
   @Description("Label of the button for removing a screen")
   String removeFormButton();
+
+  @DefaultMessage("Add VR Screen ...")
+  @Description("Label of the button for adding a new VR Screen")
+  String addVRScreenButton();
+
+  @DefaultMessage("Remove VR Screen")
+  @Description("Label of the button for removing a sketch")
+  String removeVRScreenButton();
 
   @DefaultMessage("Connect")
   @Description("Label of the button for selecting phone connection")
@@ -1338,6 +1346,18 @@ public interface OdeMessages extends Messages {
   @DefaultMessage("Server error: could not add form. Please try again later!")
   @Description("Error message reported when adding a form failed on the server.")
   String addFormError();
+
+  @DefaultMessage("New VR Screen")
+  @Description("Title of the new VR Screen dialog.")
+  String newVRScreenTitle();
+
+  @DefaultMessage("VR screen name:")
+  @Description("Label in front of name in new VR screen dialog.")
+  String vrScreenNameLabel();
+
+  @DefaultMessage("Server error: could not add VR screen. Please try again later!")
+  @Description("Error message reported when adding a VR screen failed on the server.")
+  String addVRScreenError();
 
   // Used in explorer/commands/BuildCommand.java, and
   // explorer/commands/WaitForBuildResultCommand.java
