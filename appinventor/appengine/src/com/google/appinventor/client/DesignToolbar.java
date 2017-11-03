@@ -11,6 +11,7 @@ import com.google.appinventor.client.editor.ProjectEditor;
 import com.google.appinventor.client.editor.blocks.BlocklyPanel;
 
 import com.google.appinventor.client.explorer.commands.AddFormCommand;
+import com.google.appinventor.client.explorer.commands.AddVRScreenCommand;
 import com.google.appinventor.client.explorer.commands.ChainableCommand;
 import com.google.appinventor.client.explorer.commands.DeleteFileCommand;
 
@@ -25,7 +26,7 @@ import com.google.appinventor.client.widgets.Toolbar;
 import com.google.appinventor.common.version.AppInventorFeatures;
 
 import com.google.appinventor.shared.rpc.project.ProjectRootNode;
-import com.google.appinventor.shared.rpc.project.SourceNode;
+import com.google.appinventor.shared.rpc.project.vr.VRSourceNode;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidSourceNode;
 
 import com.google.common.collect.Lists;
@@ -33,6 +34,7 @@ import com.google.common.collect.Maps;
 
 import com.google.gwt.core.client.Scheduler;
 
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -76,6 +78,12 @@ public class DesignToolbar extends Toolbar {
     }
   }
 
+  public static class VRScreen extends EditorPair {
+    public VRScreen(String name, FileEditor vrEditor, FileEditor blocksEditor) {
+      super(name, vrEditor, blocksEditor);
+    }
+  }
+
   /*
    * A project as represented in the DesignToolbar. Each project has a name
    * (as displayed in the DesignToolbar on the left), a set of named screens,
@@ -84,11 +92,13 @@ public class DesignToolbar extends Toolbar {
   public static class DesignProject {
     public final String name;
     public final Map<String, Screen> screens; // screen name -> Screen
+    public final Map<String, VRScreen> vrScreens; // vr name -> VR
     public String currentScreen; // name of currently displayed screen
 
     public DesignProject(String name, long projectId) {
       this.name = name;
       screens = Maps.newHashMap();
+      vrScreens = Maps.newHashMap();
       // Screen1 is initial screen by default
       currentScreen = YoungAndroidSourceNode.SCREEN1_FORM_NAME;
       // Let BlocklyPanel know which screen to send Yail for
@@ -112,10 +122,29 @@ public class DesignToolbar extends Toolbar {
     public void setCurrentScreen(String name) {
       currentScreen = name;
     }
+    
+    public boolean addVRScreen(String name, FileEditor vrEditor, FileEditor blocksEditor) {
+      OdeLog.log("DesignToolbar: addVRScreen start");
+      name = VRSourceNode.getPrefixedVRScreenName(name);
+      OdeLog.log("addVRScreen: name is " + name);
+      if (!vrScreens.containsKey(name)) {
+        vrScreens.put(name, new VRScreen(name, vrEditor, blocksEditor));
+        OdeLog.log("addVRScreen: returning true");
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    public void removeVRScreen(String name) {
+      vrScreens.remove(name);
+    }
   }
 
   private static final String WIDGET_NAME_ADDFORM = "AddForm";
   private static final String WIDGET_NAME_REMOVEFORM = "RemoveForm";
+  private static final String WIDGET_NAME_ADDVRSCREEN = "AddVRScreen";
+  private static final String WIDGET_NAME_REMOVEVRSCREEN = "RemoveVRScreen";
   private static final String WIDGET_NAME_SCREENS_DROPDOWN = "ScreensDropdown";
   private static final String WIDGET_NAME_SWITCH_TO_BLOCKS_EDITOR = "SwitchToBlocksEditor";
   private static final String WIDGET_NAME_SWITCH_TO_FORM_EDITOR = "SwitchToFormEditor";
@@ -167,6 +196,10 @@ public class DesignToolbar extends Toolbar {
     if (AppInventorFeatures.allowMultiScreenApplications() && !isReadOnly) {
       addButton(new ToolbarItem(WIDGET_NAME_ADDFORM, MESSAGES.addFormButton(),
           new AddFormAction()));
+      if (AppInventorFeatures.enableVREditor() && !isReadOnly) {
+        addButton(new ToolbarItem(WIDGET_NAME_ADDVRSCREEN, MESSAGES.addVRScreenButton(),
+            new AddVRScreenAction()));
+      }
       addButton(new ToolbarItem(WIDGET_NAME_REMOVEFORM, MESSAGES.removeFormButton(),
           new RemoveFormAction()));
     }
@@ -217,6 +250,12 @@ public class DesignToolbar extends Toolbar {
   private class AddFormAction extends AddAction {
     AddFormAction() {
       super(Tracking.PROJECT_ACTION_ADDFORM_YA, new AddFormCommand());
+    }
+  }
+
+  private class AddVRScreenAction extends AddAction {
+    AddVRScreenAction() {
+      super(Tracking.PROJECT_ACTION_ADDVRSCREEN_VR, new AddVRScreenCommand());
     }
   }
 
@@ -334,6 +373,89 @@ public class DesignToolbar extends Toolbar {
     screen.blocksEditor.makeActiveWorkspace();
   }
 
+  private class SwitchVRScreenAction implements Command {
+    private final long projectId;
+    private final String vrScreenId;
+
+    public SwitchVRScreenAction(long projectId, String vrScreenName) {
+      this.projectId = projectId;
+      this.vrScreenId = VRSourceNode.getPrefixedVRScreenName(vrScreenName);
+    }
+
+    @Override
+    public void execute() {
+      if (currentView == View.BLOCKS) {
+        Ode.getInstance().screenShotMaybe(new Runnable() {
+          @Override
+          public void run() {
+            doSwitchVRScreen(projectId, vrScreenId, currentView);
+          }
+        }, false);
+      } else {
+        doSwitchVRScreen(projectId, vrScreenId, currentView);
+      }
+    }
+  }
+
+  private void doSwitchVRScreen(final long projectId, final String vrScreenId, final View view) {
+    Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+      @Override
+      public void execute() {
+        if (Ode.getInstance().screensLocked()) {
+          Scheduler.get().scheduleDeferred(this);
+        } else {
+          doSwitchVRScreen1(projectId, vrScreenId, view);
+        }
+      }
+    });
+  }
+
+  private void doSwitchVRScreen1(long projectId, String vrScreenId, View view) {
+    if (!projectMap.containsKey(projectId)) {
+      OdeLog.wlog("DesignToolbar: no project with id " + projectId
+          + ". Ignoring SwitchVRScreenAction.execute().");
+      return;
+    }
+    DesignProject project = projectMap.get(projectId);
+    if (currentProject != project) {
+      // need to switch projects first. this will not switch screens.
+      if (!switchToProject(projectId, project.name)) {
+        return;
+      }
+    }
+    if (!currentProject.vrScreens.containsKey(vrScreenId)) {
+      // Can't find the requested vrScreen in this project. This shouldn't happen, but if it does
+      // for some reason, try switching to Screen1 instead.
+      OdeLog.wlog("Trying to switch to non-existent vrScreen " +
+          VRSourceNode.getVRScreenDisplayName(vrScreenId) + " in project " + currentProject.name +
+          ". Trying Screen1 instead.");
+      if (currentProject.screens.containsKey(YoungAndroidSourceNode.SCREEN1_FORM_NAME)) {
+        switchToScreen(projectId, YoungAndroidSourceNode.SCREEN1_FORM_NAME, view);
+      } else {
+        // something went seriously wrong!
+        ErrorReporter.reportError("Something is wrong. Can't find Screen1 for project "
+            + currentProject.name);
+      }
+      return;
+    }
+    currentView = view;
+    VRScreen vrScreen = currentProject.vrScreens.get(vrScreenId);
+    ProjectEditor projectEditor = vrScreen.designerEditor.getProjectEditor();
+    currentProject.setCurrentScreen(vrScreenId);
+    setDropDownButtonCaption(WIDGET_NAME_SCREENS_DROPDOWN,
+        VRSourceNode.getVRScreenDisplayName(vrScreenId));
+    if (currentView == View.DESIGNER) {
+      projectEditor.selectFileEditor(vrScreen.designerEditor);
+      toggleEditor(false);
+    } else {
+      projectEditor.selectFileEditor(vrScreen.blocksEditor);
+      toggleEditor(true);
+    }
+    Ode.getInstance().getTopToolbar().updateFileMenuButtons(1);
+    BlocklyPanel.setCurrentForm(projectId + "_" + vrScreenId);
+    vrScreen.blocksEditor.makeActiveWorkspace();
+  }
+
   private class SwitchToBlocksEditorAction implements Command {
     @Override
     public void execute() {
@@ -344,7 +466,11 @@ public class DesignToolbar extends Toolbar {
       }
       if (currentView != View.BLOCKS) {
         long projectId = Ode.getInstance().getCurrentYoungAndroidProjectRootNode().getProjectId();
-        switchToScreen(projectId, currentProject.currentScreen, View.BLOCKS);
+        if (currentProject.currentScreen.startsWith("vr:")) {
+          switchToVRScreen(projectId, currentProject.currentScreen, View.BLOCKS);
+        } else {
+          switchToScreen(projectId, currentProject.currentScreen, View.BLOCKS);
+        }
         toggleEditor(true);       // Gray out the blocks button and enable the designer button
         Ode.getInstance().getTopToolbar().updateFileMenuButtons(1);
       }
@@ -365,7 +491,11 @@ public class DesignToolbar extends Toolbar {
             @Override
             public void run() {
               long projectId = Ode.getInstance().getCurrentYoungAndroidProjectRootNode().getProjectId();
-              switchToScreen(projectId, currentProject.currentScreen, View.DESIGNER);
+              if (currentProject.currentScreen.startsWith("vr:")) {
+                switchToVRScreen(projectId, currentProject.currentScreen, View.DESIGNER);
+              } else {
+                switchToScreen(projectId, currentProject.currentScreen, View.DESIGNER);
+              }
               toggleEditor(false);      // Gray out the Designer button and enable the blocks button
               Ode.getInstance().getTopToolbar().updateFileMenuButtons(1);
             }
@@ -404,6 +534,14 @@ public class DesignToolbar extends Toolbar {
         addDropDownButtonItem(WIDGET_NAME_SCREENS_DROPDOWN, new DropDownItem(screen.screenName,
             screen.screenName, new SwitchScreenAction(projectId, screen.screenName)));
       }
+      if (currentProject.vrScreens.size() > 0) {
+        addDropDownButtonSeparator(WIDGET_NAME_SCREENS_DROPDOWN);
+        for (VRScreen vrScreen : currentProject.vrScreens.values()) {
+          addDropDownButtonItem(WIDGET_NAME_SCREENS_DROPDOWN,
+              new DropDownItem(vrScreen.screenName, vrScreen.screenName.substring(3),  // strip vr: prefix
+                  new SwitchVRScreenAction(projectId, vrScreen.screenName)));
+        }
+      }
       projectNameLabel.setText(projectName);
     } else {
       ErrorReporter.reportError("Design toolbar doesn't know about project " + projectName +
@@ -422,6 +560,7 @@ public class DesignToolbar extends Toolbar {
    */
   public void addScreen(long projectId, String name, FileEditor formEditor,
       FileEditor blocksEditor) {
+    OdeLog.log("addScreen: start");
     if (!projectMap.containsKey(projectId)) {
       OdeLog.wlog("DesignToolbar can't find project " + name + " with id " + projectId
           + ". Ignoring addScreen().");
@@ -503,6 +642,51 @@ public class DesignToolbar extends Toolbar {
       removeDropDownButtonItem(WIDGET_NAME_SCREENS_DROPDOWN, name);
     }
     project.removeScreen(name);
+  }
+
+  public void addVRScreen(long projectId, String name, FileEditor designer, FileEditor blocks) {
+    OdeLog.log("addVRScreen: start");
+    if (!projectMap.containsKey(projectId)) {
+      OdeLog.wlog("DesignToolbar can't find project " + name + " with id " + projectId
+          + ". Ignoring addVRScreen().");
+      return;
+    }
+    DesignProject project = projectMap.get(projectId);
+    if (project.addVRScreen(name, designer, blocks)) {
+      if (currentProject == project) {
+        OdeLog.log("addVRScreen: project.vrScreens.size() is " + project.vrScreens.size());
+        if (project.vrScreens.size() == 1) {
+          addDropDownButtonSeparator(WIDGET_NAME_SCREENS_DROPDOWN);
+        }
+        addDropDownButtonItem(WIDGET_NAME_SCREENS_DROPDOWN, new DropDownItem("vr:" + name,
+            name, new SwitchVRScreenAction(projectId, name)));
+      }
+    }
+  }
+
+  public void switchToVRScreen(long projectId, String vrScreenName, View view) {
+    doSwitchVRScreen(projectId, VRSourceNode.getPrefixedVRScreenName(vrScreenName), view);
+  }
+
+  public void removeVRScreen(long projectId, String name) {
+    if (!projectMap.containsKey(projectId)) {
+      OdeLog.wlog("DesignToolbar can't find project " + name + " with id " + projectId
+          + ". Ignoring removeVRScreen().");
+      return;
+    }
+    DesignProject project = projectMap.get(projectId);
+    if (!project.vrScreens.containsKey(name)) {
+      // already removed this sketch
+      return;
+    }
+    if (currentProject == project) {
+      switchToScreen(projectId, YoungAndroidSourceNode.SCREEN1_FORM_NAME, View.DESIGNER);
+      removeDropDownButtonItem(WIDGET_NAME_SCREENS_DROPDOWN, "vr:" + name);
+    }
+    project.removeVRScreen(name);
+    if (project.vrScreens.size() == 0) {
+      removeDropDownButtonSeparator(WIDGET_NAME_SCREENS_DROPDOWN);
+    }
   }
 
   private void toggleEditor(boolean blocks) {

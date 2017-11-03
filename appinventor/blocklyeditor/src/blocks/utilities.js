@@ -53,6 +53,20 @@ Blockly.Blocks.Utilities.YailTypeToBlocklyType = function(yail,inputOrOutput) {
 };
 
 
+Blockly.Blocks.Utilities.VRTypeToBlocklyTypeMap = {
+};
+
+Blockly.Blocks.Utilities.VRTypeToBlocklyTypeMap = function(type, direction) {
+  var directionName = direction === Blockly.Blocks.Utilities.OUTPUT ? 'output' : 'input';
+  var blockType = Blockly.Blocks.Utilities.VRTypeToBlocklyType[type][directionName];
+
+  if (blockType !== null || type == 'any') {
+    return blockType;
+  } else {
+    throw new Error('Unknown VR Type: ' + type);
+  }
+};
+
 // Blockly doesn't wrap tooltips, so these can get too wide.  We'll create our own tooltip setter
 // that wraps to length 60.
 

@@ -33,6 +33,7 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.appinventor.client.output.OdeLog;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -200,6 +201,7 @@ public final class AddFormCommand extends ChainableCommand {
      */
     protected void addFormAction(final YoungAndroidProjectNode projectRootNode, 
         final String formName) {
+      OdeLog.log("AddFormCommand: addFormAction start");
       final Ode ode = Ode.getInstance();
       final YoungAndroidPackageNode packageNode = projectRootNode.getPackageNode();
       String qualifiedFormName = packageNode.getPackageName() + '.' + formName;

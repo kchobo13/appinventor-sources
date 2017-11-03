@@ -3,6 +3,7 @@
 
 goog.provide('AI.Blockly.Target');
 goog.require('Blockly.Blocks.Utilities');
+goog.require('Blockly.Blocks.VR');
 goog.require('Blockly.Blocks.Yail');
 
 AI.Blockly.Target['Yail'] = {
@@ -10,3 +11,9 @@ AI.Blockly.Target['Yail'] = {
   generateCode: Blockly.Yail.getFormYail,
   typeMappingFunction: Blockly.Blocks.Utilities.YailTypeToBlocklyType
 };
+
+//AI.Blockly.Target['VR'] = {
+//  blocks: Blockly.Blocks.VR,
+//  generateCode: Blockly.VR.getVRCode,
+//  typeMappingFunction: Blockly.Blocks.Utilities.VRTypeToBlocklyType
+//};

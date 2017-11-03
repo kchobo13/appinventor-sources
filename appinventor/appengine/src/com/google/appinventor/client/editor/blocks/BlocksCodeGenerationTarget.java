@@ -10,7 +10,7 @@ package com.google.appinventor.client.editor.blocks;
  */
 public enum BlocksCodeGenerationTarget {
   YAIL("Yail"),
-  IOTVM("IOT");
+  VRVM("VR");
 
   private final String target;
 

@@ -148,6 +148,7 @@
 
     // drawer files
     './src/blocks/yail.js',
+    './src/blocks/vr.js',
 
     //generator files
     "./src/generators/yail.js",

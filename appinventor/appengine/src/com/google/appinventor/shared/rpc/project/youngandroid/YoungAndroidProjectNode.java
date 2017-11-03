@@ -9,6 +9,8 @@ package com.google.appinventor.shared.rpc.project.youngandroid;
 import com.google.appinventor.shared.rpc.project.HasAssetsFolder;
 import com.google.appinventor.shared.rpc.project.ProjectNode;
 import com.google.appinventor.shared.rpc.project.ProjectRootNode;
+import com.google.appinventor.shared.rpc.project.vr.VRPackageNode;
+import com.google.appinventor.shared.rpc.project.vr.VRSourceFolderNode;
 
 
 /**
@@ -94,6 +96,17 @@ public final class YoungAndroidProjectNode extends ProjectRootNode
     for (ProjectNode child : getChildren()) {
       if (child instanceof YoungAndroidComponentsFolder) {
         return (YoungAndroidComponentsFolder) child;
+      }
+    }
+
+    // Should never happen!
+    throw new IllegalStateException("Couldn't find component folder");
+  }
+
+  public VRSourceFolderNode getVRPackageNode() {
+    for (ProjectNode child : getChildren()) {
+      if (child instanceof VRSourceFolderNode) {
+        return (VRSourceFolderNode) child;
       }
     }
 

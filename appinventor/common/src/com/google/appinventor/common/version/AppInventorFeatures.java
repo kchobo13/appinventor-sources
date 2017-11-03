@@ -114,5 +114,15 @@ public final class AppInventorFeatures {
     return false;
   }
 
+  /**
+   * If set to true, additional UI features will be enabled for editing 
+   * VR scenes.
+   *
+   * @return true to enable VR editors
+   */
+  public static boolean enableVREditor() {
+    return true;
+  }
+
 
 }
