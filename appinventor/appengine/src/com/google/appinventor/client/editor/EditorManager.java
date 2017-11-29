@@ -13,6 +13,7 @@ import com.google.appinventor.client.Ode;
 import com.google.appinventor.client.OdeAsyncCallback;
 import com.google.appinventor.client.editor.blocks.BlocksCodeGenerationException;
 import com.google.appinventor.client.editor.youngandroid.YaBlocksEditor;
+import com.google.appinventor.client.editor.vr.VRBlocksEditor;
 import com.google.appinventor.client.explorer.project.Project;
 import com.google.appinventor.client.output.OdeLog;
 import com.google.appinventor.client.settings.project.ProjectSettings;
@@ -307,6 +308,7 @@ public final class EditorManager {
    */
   public void generateYailForBlocksEditors(final Command successCommand, 
       final Command failureCommand) {
+    OdeLog.log("EditorManager: generateYailForBlocksEditors start");
     List<FileDescriptorWithContent> yailFiles =  new ArrayList<FileDescriptorWithContent>();
     long currentProjectId = Ode.getInstance().getCurrentYoungAndroidProjectId();
     for (long projectId : openProjectEditors.keySet()) {
@@ -316,7 +318,9 @@ public final class EditorManager {
         // and return without executing nextCommand.
         ProjectEditor projectEditor = openProjectEditors.get(projectId);
         for (FileEditor fileEditor : projectEditor.getOpenFileEditors()) {
+          OdeLog.log("analyzing fileEditor");
           if (fileEditor instanceof YaBlocksEditor) {
+            OdeLog.log("is YaBlocksEditor");
             YaBlocksEditor yaBlocksEditor = (YaBlocksEditor) fileEditor;
             try {
               yailFiles.add(yaBlocksEditor.getYail());
@@ -328,6 +332,22 @@ public final class EditorManager {
               }
               return;
             }
+          } else if (fileEditor instanceof VRBlocksEditor) {
+            OdeLog.log("is VRBlocksEditor");
+            VRBlocksEditor vrBlocksEditor = (VRBlocksEditor) fileEditor;
+            try {
+              yailFiles.add(vrBlocksEditor.getYail());
+            } catch (BlocksCodeGenerationException e) {
+              ErrorReporter.reportInfo(MESSAGES.yailGenerationError(e.getEntityName(),
+                  e.getMessage()));
+              if (failureCommand != null) {
+                failureCommand.execute();
+              }
+              return;
+            }
+          } else {
+            OdeLog.log("is something else");
+            OdeLog.log(fileEditor.getClass().getName());
           }
         }
         break;

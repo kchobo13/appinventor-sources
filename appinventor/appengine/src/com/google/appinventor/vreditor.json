@@ -1,0 +1,3 @@
+[
+  {"name": "VREditor", "version": "1", "type": "VREditor", "categoryString": "USERINTERFACE", "external": "false", "helpString": "", "showOnPalette": "false", "nonVisible": "false", "iconName": "images/bluetooth.png", "properties": [{"name": "Target", "editorType": "string", "defaultValue": "VR Default"}], "blockProperties": [], "methods": [], "events": []}
+]

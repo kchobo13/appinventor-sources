@@ -17,6 +17,7 @@ import com.google.appinventor.client.editor.simple.components.MockForm;
 import com.google.appinventor.shared.rpc.project.FileDescriptorWithContent;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidBlocksNode;
 import com.google.appinventor.shared.youngandroid.YoungAndroidSourceAnalyzer;
+import com.google.appinventor.client.output.OdeLog;
 import com.google.gwt.core.client.JavaScriptObject;
 
 /**
@@ -76,6 +77,9 @@ public final class YaBlocksEditor extends BlocksEditor<YoungAndroidBlocksNode, Y
   }
 
   public FileDescriptorWithContent getYail() throws BlocksCodeGenerationException {
+    OdeLog.log("YaBlocksEditor: getYail");
+    String blocksAreaCode = blocksArea.getCode(designer.encodeFormAsJsonString(true), packageNameFromPath(getFileId()));
+    OdeLog.log(blocksAreaCode);
     return new FileDescriptorWithContent(getProjectId(), yailFileName(),
         blocksArea.getCode(designer.encodeFormAsJsonString(true),
             packageNameFromPath(getFileId())));

@@ -313,6 +313,7 @@ public class DesignToolbar extends Toolbar {
   }
 
   private void doSwitchScreen(final long projectId, final String screenName, final View view) {
+    OdeLog.log("DesignToolbar: doSwitchScreen1");
     Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
         @Override
         public void execute() {
@@ -326,6 +327,7 @@ public class DesignToolbar extends Toolbar {
   }
 
   private void doSwitchScreen1(long projectId, String screenName, View view) {
+    OdeLog.log("DesignToolbar: doSwitchScreen1");
     if (!projectMap.containsKey(projectId)) {
       OdeLog.wlog("DesignToolbar: no project with id " + projectId
           + ". Ignoring SwitchScreenAction.execute().");
@@ -398,6 +400,7 @@ public class DesignToolbar extends Toolbar {
   }
 
   private void doSwitchVRScreen(final long projectId, final String vrScreenId, final View view) {
+    OdeLog.log("DesignToolbar: doSwitchVRScreen");
     Scheduler.get().scheduleDeferred(new ScheduledCommand() {
       @Override
       public void execute() {
@@ -411,6 +414,7 @@ public class DesignToolbar extends Toolbar {
   }
 
   private void doSwitchVRScreen1(long projectId, String vrScreenId, View view) {
+    OdeLog.log("DesignToolbar: doSwitchVRScreen1");
     if (!projectMap.containsKey(projectId)) {
       OdeLog.wlog("DesignToolbar: no project with id " + projectId
           + ". Ignoring SwitchVRScreenAction.execute().");
@@ -452,7 +456,7 @@ public class DesignToolbar extends Toolbar {
       toggleEditor(true);
     }
     Ode.getInstance().getTopToolbar().updateFileMenuButtons(1);
-    BlocklyPanel.setCurrentForm(projectId + "_" + vrScreenId);
+    BlocklyPanel.setCurrentForm(projectId + "_" + vrScreenId.substring(3));
     vrScreen.blocksEditor.makeActiveWorkspace();
   }
 

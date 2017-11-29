@@ -29,8 +29,14 @@ import android.content.DialogInterface;
 
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.widget.FrameLayout;
+import android.content.pm.ActivityInfo;
+import android.util.Log;
 
 /**
  * Component for displaying web pages
@@ -75,6 +81,8 @@ public final class WebViewer extends AndroidViewComponent {
   // URL for the WebViewer to load initially
   private String homeUrl;
 
+  private String vrJSON;
+
   // whether or not to follow links when they are tapped
   private boolean followLinks = true;
 
@@ -89,6 +97,8 @@ public final class WebViewer extends AndroidViewComponent {
   // allows passing strings to javascript
   WebViewInterface wvInterface;
 
+  private ComponentContainer webContainer;
+
   /**
    * Creates a new WebViewer component.
    *
@@ -97,21 +107,27 @@ public final class WebViewer extends AndroidViewComponent {
   public WebViewer(ComponentContainer container) {
     super(container);
 
+    webContainer = container;
     webview = new WebView(container.$context());
     resetWebViewClient();       // Set up the web view client
-    webview.getSettings().setJavaScriptEnabled(true);
-    webview.setFocusable(true);
+    WebSettings webSettings = webview.getSettings();
+    webSettings.setJavaScriptEnabled(true);
+    webSettings.setDomStorageEnabled(true);
+    webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+    // webview.setFocusable(true);
     // adds a way to send strings to the javascript
     wvInterface = new WebViewInterface(webview.getContext());
     webview.addJavascriptInterface(wvInterface, "AppInventor");
     // enable pinch zooming and zoom controls
-    webview.getSettings().setBuiltInZoomControls(true);
+    // webSettings.setBuiltInZoomControls(true);
+    // webSettings.setDisplayZoomControls(false);
 
-    if (SdkLevel.getLevel() >= SdkLevel.LEVEL_ECLAIR)
-      EclairUtil.setupWebViewGeoLoc(this, webview, container.$context());
+    // if (SdkLevel.getLevel() >= SdkLevel.LEVEL_ECLAIR)
+    //   EclairUtil.setupWebViewGeoLoc(this, webview, container.$context());
 
     container.$add(this);
 
+    /*
     webview.setOnTouchListener(new View.OnTouchListener() {
       @Override
       public boolean onTouch(View v, MotionEvent event) {
@@ -126,11 +142,12 @@ public final class WebViewer extends AndroidViewComponent {
         return false;
       }
     });
+    */
 
     // set the initial default properties.  Height and Width
     // will be fill-parent, which will be the default for the web viewer.
 
-    HomeUrl("");
+    //HomeUrl("");
     Width(LENGTH_FILL_PARENT);
     Height(LENGTH_FILL_PARENT);
   }
@@ -153,6 +170,24 @@ public final class WebViewer extends AndroidViewComponent {
   @SimpleProperty(category = PropertyCategory.BEHAVIOR)
   public void WebViewString(String newString) {
     wvInterface.setWebViewString(newString);
+  }
+
+  /**
+   * Gets the private web view string
+   *
+   * @return string
+   */
+  @SimpleProperty(description = "", category = PropertyCategory.BEHAVIOR)
+  public String PrivateWebViewString() {
+    return wvInterface.getPrivateWebViewString();
+  }
+
+  /**
+   * Sets the private web view string
+   */
+  @SimpleProperty(category = PropertyCategory.BEHAVIOR)
+  public void PrivateWebViewString(String newString) {
+    wvInterface.setPrivateWebViewString(newString);
   }
 
   @Override
@@ -219,6 +254,22 @@ public final class WebViewer extends AndroidViewComponent {
     // clear the history, since changing Home is a kind of reset
     webview.clearHistory();
     webview.loadUrl(homeUrl);
+  }
+
+  @SimpleProperty(description = "", category = PropertyCategory.BEHAVIOR)
+  public String VRJSON() {
+    return vrJSON;
+  }
+
+  @DesignerProperty(editorType = PropertyTypeConstants.PROPERTY_TYPE_STRING,
+      defaultValue = "")
+  @SimpleProperty()
+  public void VRJSON(String json) {
+    Log.v("WEBWEB", "VRJSON called");
+    vrJSON = json;
+    PrivateWebViewString(json);
+    // initialJS = "javascript:start(\"" + json + "\");";
+    // webview.loadUrl("javascript:alert('hi!')");
   }
 
   /**
@@ -421,12 +472,90 @@ public final class WebViewer extends AndroidViewComponent {
   }
 
   private void resetWebViewClient() {
-    if (SdkLevel.getLevel() >= SdkLevel.LEVEL_FROYO) {
-      webview.setWebViewClient(FroyoUtil.getWebViewClient(ignoreSslErrors, followLinks, container.$form(), this));
-    } else {
-      webview.setWebViewClient(new WebViewerClient());
+    // if (SdkLevel.getLevel() >= SdkLevel.LEVEL_FROYO) {
+    //   webview.setWebViewClient(FroyoUtil.getWebViewClient(ignoreSslErrors, followLinks, container.$form(), this));
+    // } else {
+    //   webview.setWebViewClient(new WebViewerClient());
+    // }
+    Log.v("WEBWEB", "level is " + SdkLevel.getLevel());
+    webview.setWebChromeClient(new MyWebChromeClient());
+    webview.setWebViewClient(new MyWebViewClient());
+  }
+
+  private class MyWebViewClient extends WebViewClient {
+
+    public MyWebViewClient() {
+      super();
+      Log.v("WEBWEB", "in webview constructor");
+    }
+
+    @Override
+    public boolean shouldOverrideUrlLoading(WebView view, String url) {
+      return !followLinks;
+    }
+
+    @Override
+    public void onPageFinished(WebView view, String url) {
+      Log.v("WEBWEB", "onPageFinished called");
+      Log.v("WEBWEB", "url is " + url);
+      Log.v("WEBWEB", "PrivateWebViewString is " + PrivateWebViewString());
     }
   }
+
+  private class MyWebChromeClient extends WebChromeClient {
+
+    private View myCustomView;
+    private int myOriginalSystemUiVisibility;
+    private int myOriginalOrientation;
+    private WebChromeClient.CustomViewCallback myCustomViewCallback;
+
+    public MyWebChromeClient() {
+      super();
+      Log.v("WEBWEB", "in webchrome constructor");
+    }
+
+    @Override
+    public void onShowCustomView(View view, int requestedOrientation, WebChromeClient.CustomViewCallback callback) {
+      this.onShowCustomView(view, callback);
+    }
+
+    @Override
+    public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+      Log.v("WEBWEB", "onShowCustomView called");
+      if (myCustomView != null) {
+        onHideCustomView();
+        return;
+      }
+
+      myCustomView = view;
+      myOriginalSystemUiVisibility = webContainer.$form().getWindow().getDecorView().getSystemUiVisibility();
+      myOriginalOrientation = webContainer.$form().getRequestedOrientation();
+      myCustomViewCallback = callback;
+      FrameLayout decor = (FrameLayout) webContainer.$form().getWindow().getDecorView();
+      decor.addView(myCustomView, new FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT));
+      webContainer.$form().getWindow().getDecorView().setSystemUiVisibility(
+          View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+          View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+          View.SYSTEM_UI_FLAG_FULLSCREEN);
+      webContainer.$form().getWindow().getDecorView().requestFocus();
+      webContainer.$form().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+    }
+
+    @Override
+    public void onHideCustomView() {
+      Log.v("WEBWEB", "onHideCustomView called");
+      FrameLayout decor = (FrameLayout) webContainer.$form().getWindow().getDecorView();
+      decor.removeView(myCustomView);
+      myCustomView = null;
+      webContainer.$form().getWindow().getDecorView().setSystemUiVisibility(myOriginalSystemUiVisibility);
+      webContainer.$form().setRequestedOrientation(myOriginalOrientation);
+      myCustomViewCallback.onCustomViewHidden();
+      myCustomViewCallback = null;
+    }
+  }
+
 
   /**
    * Clear the webview cache, both ram and disk. This is useful
@@ -447,11 +576,13 @@ public final class WebViewer extends AndroidViewComponent {
   public class WebViewInterface {
     Context mContext;
     String webViewString;
+    String privateWebViewString;
 
     /** Instantiate the interface and set the context */
     WebViewInterface(Context c) {
       mContext = c;
       webViewString = " ";
+      privateWebViewString = "";
     }
 
     /**
@@ -469,6 +600,23 @@ public final class WebViewer extends AndroidViewComponent {
      */
     public void setWebViewString(String newString) {
       webViewString = newString;
+    }
+
+    /**
+     * Gets the private web view string
+     *
+     * @return string
+     */
+    @JavascriptInterface
+    public String getPrivateWebViewString() {
+      return privateWebViewString;
+    }
+
+    /**
+     * Sets the private web view string
+     */
+    public void setPrivateWebViewString(String newString) {
+      privateWebViewString = newString;
     }
 
   }

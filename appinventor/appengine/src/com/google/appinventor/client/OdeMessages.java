@@ -2792,6 +2792,14 @@ public interface OdeMessages extends Messages {
   @Description("")
   String HomeUrlProperties();
 
+  @DefaultMessage("VRJSON")
+  @Description("")
+  String VRJSONProperties();
+
+  @DefaultMessage("PrivateWebViewString")
+  @Description("")
+  String PrivateWebViewStringProperties();
+
   @DefaultMessage("Icon")
   @Description("")
   String IconProperties();

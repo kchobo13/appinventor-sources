@@ -349,6 +349,7 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
     sb.append("\"Properties\":");
     encodeComponentProperties(root, sb, forYail);
     sb.append("}");
+    OdeLog.log("encodeFormAsJsonString: " + sb.toString());
     return sb.toString();
   }
 

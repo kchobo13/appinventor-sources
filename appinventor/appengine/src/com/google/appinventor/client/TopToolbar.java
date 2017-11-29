@@ -10,6 +10,7 @@ import com.google.appinventor.client.boxes.ProjectListBox;
 import com.google.appinventor.client.boxes.ViewerBox;
 import com.google.appinventor.client.editor.blocks.BlocklyPanel;
 import com.google.appinventor.client.editor.youngandroid.YaBlocksEditor;
+import com.google.appinventor.client.editor.vr.VRBlocksEditor;
 import com.google.appinventor.client.explorer.commands.BuildCommand;
 import com.google.appinventor.client.explorer.commands.ChainableCommand;
 import com.google.appinventor.client.explorer.commands.CopyYoungAndroidProjectCommand;
@@ -817,7 +818,12 @@ public class TopToolbar extends Composite {
         return;
       }
       DesignToolbar.Screen screen = currentProject.screens.get(currentProject.currentScreen);
-      screen.blocksEditor.updateCompanion();
+      if (screen != null) {
+        screen.blocksEditor.updateCompanion();
+      } else {
+        DesignToolbar.VRScreen vrScreen = currentProject.vrScreens.get(currentProject.currentScreen);
+        vrScreen.blocksEditor.updateCompanion();
+      }
     }
   }
 
@@ -902,7 +908,12 @@ public class TopToolbar extends Composite {
       return;
     }
     DesignToolbar.Screen screen = currentProject.screens.get(currentProject.currentScreen);
-    screen.blocksEditor.startRepl(!start, forEmulator, forUsb);
+    if (screen != null) {
+      screen.blocksEditor.startRepl(!start, forEmulator, forUsb);
+    } else {
+      DesignToolbar.VRScreen vrScreen = currentProject.vrScreens.get(currentProject.currentScreen);
+      vrScreen.blocksEditor.startRepl(!start, forEmulator, forUsb);
+    }
     if (start) {
       if (forEmulator) {        // We are starting the emulator...
         updateConnectToDropDownButton(true, false, false);
@@ -924,7 +935,12 @@ public class TopToolbar extends Composite {
       return;
     }
     DesignToolbar.Screen screen = currentProject.screens.get(currentProject.currentScreen);
-    ((YaBlocksEditor)screen.blocksEditor).hardReset();
+    if (screen != null) {
+      ((YaBlocksEditor)screen.blocksEditor).hardReset();
+    } else {
+      DesignToolbar.VRScreen vrScreen = currentProject.vrScreens.get(currentProject.currentScreen);
+      ((VRBlocksEditor)vrScreen.blocksEditor).hardReset();
+    }
     updateConnectToDropDownButton(false, false, false);
   }
 

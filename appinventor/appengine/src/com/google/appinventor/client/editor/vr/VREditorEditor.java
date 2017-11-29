@@ -16,7 +16,7 @@ import com.google.appinventor.client.editor.vr.palette.VRPalettePanel;
 //import com.google.appinventor.client.editor.vr.js.JSPanel;
 import com.google.appinventor.client.editor.simple.SimpleNonVisibleComponentsPanel;
 import com.google.appinventor.client.editor.simple.components.MockComponent;
-import com.google.appinventor.client.editor.simple.components.MockForm;
+import com.google.appinventor.client.editor.simple.components.MockVREditor;
 // import com.google.appinventor.client.editor.simple.components.MockMicrocontroller;
 import com.google.appinventor.client.editor.simple.SimpleComponentDatabase;
 import com.google.appinventor.client.editor.simple.palette.DropTargetProvider;
@@ -38,14 +38,14 @@ import java.util.List;
 /**
  * Design editor for VR.
  */
-public class VREditorEditor extends DesignerEditor<VREditorNode, MockForm, VRPalettePanel, SimpleComponentDatabase> {
+public class VREditorEditor extends DesignerEditor<VREditorNode, MockVREditor, VRPalettePanel, VREditorDatabase> {
 
   private String preUpgradeJson = null;
   private String content = null;
 
   public VREditorEditor(ProjectEditor projectEditor, VREditorNode sourceNode) {
-    super(projectEditor, sourceNode, SimpleComponentDatabase.getInstance(sourceNode.getProjectId()),
-        new VRVisibleComponentsPanel(new SimpleNonVisibleComponentsPanel<MockForm>()));
+    super(projectEditor, sourceNode, VREditorDatabase.getInstance(sourceNode.getProjectId()),
+        new VRVisibleComponentsPanel(new SimpleNonVisibleComponentsPanel<MockVREditor>()));
 
     palettePanel = new VRPalettePanel(this);
     palettePanel.loadComponents(new DropTargetProvider() {
@@ -84,8 +84,8 @@ public class VREditorEditor extends DesignerEditor<VREditorNode, MockForm, VRPal
   }
 
   @Override
-  public MockForm newRootObject() {
-    return new MockForm(this);
+  public MockVREditor newRootObject() {
+    return new MockVREditor(this);
   }
 
   @Override
@@ -98,15 +98,26 @@ public class VREditorEditor extends DesignerEditor<VREditorNode, MockForm, VRPal
 
   @Override
   protected void onFileLoaded(String content) {
-    OdeLog.log("onFileLoaded: start");
-    OdeLog.log("onFileLoaded: content is " + content);
-    this.content = content;
-    loadScene(content);
+    try {
+      OdeLog.log("onFileLoaded: start");
+      OdeLog.log("onFileLoaded: content is " + content);
+      String mockString = "{\"Properties\":{\"$Name\":\"VREditor\",\"$Type\":\"VREditor\",\"$Version\":\"1\"}}\n";
+      JSONObject properties = new ClientJsonParser().parse(mockString).asObject();
+      root = (MockVREditor) createMockComponent(properties.getProperties().get("Properties").asObject(),
+          null, MockVREditor.TYPE);
+      root.select();
+      this.content = content;
+      loadScene(content);
+    } catch(JSONException e) {
+      throw new IllegalStateException("Invalid JSON for VREditor", e);
+    } finally {
+      super.onFileLoaded(content);
+    }
     /*
     try {
       JSONObject properties = new ClientJsonParser().parse(content).asObject();
-      root = (MockForm) createMockComponent(properties.getProperties().get("Properties").asObject(),
-          null, MockForm.TYPE);
+      root = (MockVREditor) createMockComponent(properties.getProperties().get("Properties").asObject(),
+          null, MockVREditor.TYPE);
 
       nonVisibleComponentsPanel.setRoot(root);
       visibleComponentsPanel.setRoot(root);
@@ -148,9 +159,22 @@ public class VREditorEditor extends DesignerEditor<VREditorNode, MockForm, VRPal
     */
   }
 
+  protected String encodeWebViewerAsJsonString() {
+    return "{\"authURL\":[\"localhost\"],\"YaVersion\":\"159\",\"Source\":\"Form\",\"Properties\":{\"$Name\":\"VRScreen1\",\"$Type\":\"Form\",\"$Version\":\"1\",\"Uuid\":\"0\",\"$Components\":[{\"$Name\":\"WebViewer1\",\"$Type\":\"WebViewer\",\"$Version\":\"6\",\"HomeUrl\":\"https://kevin-vr.github.io/vr/\",\"VRJSON\":\"" + encodeVREditorAsURIJsonString() + "\", \"Uuid\":\"1757245564\"}]}}";
+  }
+
+  protected String getAppName() {
+    return root.getProperties().encodeAsPairs(true);
+  }
+
   protected native String encodeVREditorAsJsonString() /*-{
     var vr_editor_iframe = $wnd.document.getElementById("vr-editor-iframe");
     return vr_editor_iframe.contentWindow.generateSceneJSONString();
+  }-*/;
+
+  protected native String encodeVREditorAsURIJsonString() /*-{
+    var vr_editor_iframe = $wnd.document.getElementById("vr-editor-iframe");
+    return encodeURIComponent(vr_editor_iframe.contentWindow.generateSceneJSONString());
   }-*/;
 
   public void loadScene() {

@@ -462,6 +462,8 @@ public final class Compiler {
           out.write("  <uses-feature android:name=\"android.hardware.wifi\" />\n"); // We actually require wifi
       }
 
+      minSDK = "22";
+
       // Firebase requires at least API 10 (Gingerbread MR1)
       if (simpleCompTypes.contains("com.google.appinventor.components.runtime.FirebaseDB") && !isForCompanion) {
         minSDK = LEVEL_GINGERBREAD_MR1;

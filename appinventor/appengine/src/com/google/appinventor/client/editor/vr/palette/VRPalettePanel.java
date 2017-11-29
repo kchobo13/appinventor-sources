@@ -3,8 +3,8 @@
 
 package com.google.appinventor.client.editor.vr.palette;
 
-import com.google.appinventor.client.editor.simple.SimpleComponentDatabase;
 import com.google.appinventor.client.editor.vr.VREditorEditor;
+import com.google.appinventor.client.editor.vr.VREditorDatabase;
 import com.google.appinventor.client.editor.simple.palette.SimplePalettePanel;
 import com.google.appinventor.client.editor.simple.palette.AbstractPalettePanel;
 import com.google.appinventor.components.common.ComponentCategory;
@@ -12,7 +12,7 @@ import com.google.appinventor.components.common.ComponentCategory;
 /**
  * Blank panel.
  */
-public class VRPalettePanel extends AbstractPalettePanel<SimpleComponentDatabase, VREditorEditor> {
+public class VRPalettePanel extends AbstractPalettePanel<VREditorDatabase, VREditorEditor> {
 
   public VRPalettePanel(VREditorEditor editor) {
     super(editor, new VRComponentFactory(editor));
