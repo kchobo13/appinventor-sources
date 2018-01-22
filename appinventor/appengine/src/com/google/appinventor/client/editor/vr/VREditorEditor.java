@@ -159,8 +159,25 @@ public class VREditorEditor extends DesignerEditor<VREditorNode, MockVREditor, V
     */
   }
 
-  protected String encodeWebViewerAsJsonString() {
-    return "{\"authURL\":[\"localhost\"],\"YaVersion\":\"159\",\"Source\":\"Form\",\"Properties\":{\"$Name\":\"VRScreen1\",\"$Type\":\"Form\",\"$Version\":\"1\",\"Uuid\":\"0\",\"$Components\":[{\"$Name\":\"WebViewer1\",\"$Type\":\"WebViewer\",\"$Version\":\"6\",\"HomeUrl\":\"https://kevin-vr.github.io/vr/\",\"VRJSON\":\"" + encodeVREditorAsURIJsonString() + "\", \"Uuid\":\"1757245564\"}]}}";
+  @Override
+  protected void unloadDesigner() {
+    OdeLog.log("VREditorEditor: unloadDesigner start");
+    ViewerBox viewerBox = ViewerBox.getViewerBox();
+    viewerBox.setVisible(true);
+
+    JSBox jsBox = JSBox.getJSBox();
+    jsBox.setVisible(false);
+
+    super.unloadDesigner();
+  }
+
+  protected String encodeWebViewerAsJsonString(String blocksCode) {
+    //return "{\"authURL\":[\"localhost\"],\"YaVersion\":\"159\",\"Source\":\"Form\",\"Properties\":{\"$Name\":\"VRScreen1\",\"$Type\":\"Form\",\"$Version\":\"1\",\"Uuid\":\"0\",\"$Components\":[{\"$Name\":\"WebViewer1\",\"$Type\":\"WebViewer\",\"$Version\":\"6\",\"Height\":\"-2\",\"Width\":\"-2\",\"HomeUrl\":\"https://kevin-vr.github.io/vr/\",\"VRJSON\":\"" + encodeVREditorAsURIJsonString() + "\", \"Uuid\":\"1757245564\"}]}}";
+    OdeLog.log("VREditorEditor: encodeWebViewerAsJsonString");
+    String jsonString = "{\"authURL\":[\"localhost\"],\"YaVersion\":\"159\",\"Source\":\"Form\",\"Properties\":{\"$Name\":\"VRScreen1\",\"$Type\":\"Form\",\"$Version\":\"1\",\"Uuid\":\"0\",\"$Components\":[{\"$Name\":\"WebViewer1\",\"$Type\":\"WebViewer\",\"$Version\":\"6\",\"HomeUrl\":\"https://kevin-vr.github.io/vr/\",\"VRJSON\":\"" + encodeVREditorAsURIJsonString() + "\",\"VRJS\":\"" + blocksCode + "\", \"Uuid\":\"1757245564\"}]}}";
+    OdeLog.log("jsonString: " + jsonString);
+    return jsonString;
+    //return "{\"authURL\":[\"localhost\"],\"YaVersion\":\"159\",\"Source\":\"Form\",\"Properties\":{\"$Name\":\"VRScreen1\",\"$Type\":\"Form\",\"$Version\":\"1\",\"Uuid\":\"0\",\"$Components\":[{\"$Name\":\"WebViewer1\",\"$Type\":\"WebViewer\",\"$Version\":\"6\",\"Height\":\"-2\",\"Width\":\"-2\",\"HomeUrl\":\"https://webvr.info/samples/03-vr-presentation.html?polyfill=1\",\"VRJSON\":\"" + encodeVREditorAsURIJsonString() + "\", \"Uuid\":\"1757245564\"}]}}";
   }
 
   protected String getAppName() {

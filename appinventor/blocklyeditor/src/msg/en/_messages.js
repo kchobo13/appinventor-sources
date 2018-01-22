@@ -130,6 +130,197 @@ Blockly.Msg.en.switch_language_to_english = {
     Blockly.Msg.LANG_COLOUR_MAKE_COLOUR_HELPURL = 'http://appinventor.mit.edu/explore/ai2/support/blocks/colors#make';
     Blockly.Msg.LANG_COLOUR_MAKE_COLOUR_TOOLTIP = "A color with the given red, green, blue, and optionally alpha components";
 
+//VR Blocks
+    Blockly.Msg.LANG_VR_PTC1_HELPURL = '';
+    Blockly.Msg.LANG_VR_PTC1_TITLE = 'ptc1';
+    Blockly.Msg.LANG_VR_PTC1_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_PTC2_HELPURL = '';
+    Blockly.Msg.LANG_VR_PTC2_TITLE = 'ptc2';
+    Blockly.Msg.LANG_VR_PTC2_ARG1 = 'string';
+    Blockly.Msg.LANG_VR_PTC2_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_PTC3_HELPURL = '';
+    Blockly.Msg.LANG_VR_PTC3_TITLE = 'ptc3';
+    Blockly.Msg.LANG_VR_PTC3_ARG1 = 'string';
+    Blockly.Msg.LANG_VR_PTC3_ARG2 = 'number';
+    Blockly.Msg.LANG_VR_PTC3_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_PTC4_HELPURL = '';
+    Blockly.Msg.LANG_VR_PTC4_TITLE = 'ptc4';
+    Blockly.Msg.LANG_VR_PTC4_ARG1 = 'string';
+    Blockly.Msg.LANG_VR_PTC4_ARG2 = 'boolean';
+    Blockly.Msg.LANG_VR_PTC4_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_RETURN1_HELPURL = '';
+    Blockly.Msg.LANG_VR_RETURN1_TITLE = 'return1';
+    Blockly.Msg.LANG_VR_RETURN1_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_RETURN2_HELPURL = '';
+    Blockly.Msg.LANG_VR_RETURN2_TITLE = 'return2';
+    Blockly.Msg.LANG_VR_RETURN2_ARG1 = 'string';
+    Blockly.Msg.LANG_VR_RETURN2_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_RETURN3_HELPURL = '';
+    Blockly.Msg.LANG_VR_RETURN3_TITLE = 'return3';
+    Blockly.Msg.LANG_VR_RETURN3_ARG1 = 'number';
+    Blockly.Msg.LANG_VR_RETURN3_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_RETURN4_HELPURL = '';
+    Blockly.Msg.LANG_VR_RETURN4_TITLE = 'return4';
+    Blockly.Msg.LANG_VR_RETURN4_ARG1 = 'boolean';
+    Blockly.Msg.LANG_VR_RETURN4_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SLEEP_HELPURL = '';
+    Blockly.Msg.LANG_VR_SLEEP_TITLE = 'sleep';
+    Blockly.Msg.LANG_VR_SLEEP_ARG1 = 'time';
+    Blockly.Msg.LANG_VR_SLEEP_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_ADD_OBJECT_HELPURL = '';
+    Blockly.Msg.LANG_VR_ADD_OBJECT_TITLE = 'add object';
+    Blockly.Msg.LANG_VR_ADD_OBJECT_ARG1 = 'object';
+    Blockly.Msg.LANG_VR_ADD_OBJECT_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_REMOVE_OBJECT_HELPURL = '';
+    Blockly.Msg.LANG_VR_REMOVE_OBJECT_TITLE = 'remove object';
+    Blockly.Msg.LANG_VR_REMOVE_OBJECT_ARG1 = 'object';
+    Blockly.Msg.LANG_VR_REMOVE_OBJECT_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_TITLE = 'set object property';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_BOX_HELPURL = '';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_BOX_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CONE_HELPURL = '';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CONE_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CYLINDER_HELPURL = '';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CYLINDER_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_DODECAHEDRON_HELPURL = '';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_DODECAHEDRON_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ICOSAHEDRON_HELPURL = '';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ICOSAHEDRON_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_OCTAHEDRON_HELPURL = '';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_OCTAHEDRON_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SPHERE_HELPURL = '';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SPHERE_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_TETRAHEDRON_HELPURL = '';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_TETRAHEDRON_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_TITLE = 'get object property';
+
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_BOX_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_BOX_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_CONE_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_CONE_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_CYLINDER_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_CYLINDER_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_DODECAHEDRON_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_DODECAHEDRON_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_ICOSAHEDRON_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_ICOSAHEDRON_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_OCTAHEDRON_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_OCTAHEDRON_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_SPHERE_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_SPHERE_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_TETRAHEDRON_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_TETRAHEDRON_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_POSITIONX = 'positionx';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_POSITIONY = 'positiony';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_POSITIONZ = 'positionz';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ROTATIONX = 'rotationx';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ROTATIONY = 'rotationy';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ROTATIONZ = 'rotationz';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SCALEX = 'scalex';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SCALEY = 'scaley';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SCALEZ = 'scalez';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_COLOR = 'color';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_TEXTUREURL = 'textureurl';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_MASS = 'mass';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_LINEARVELOCITYX = 'linearvelocityx';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_LINEARVELOCITYY = 'linearvelocityy';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_LINEARVELOCITYZ = 'linearvelocityz';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ANGULARVELOCITYX = 'angularvelocityx';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ANGULARVELOCITYY = 'angularvelocityy';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ANGULARVELOCITYZ = 'angularvelocityz';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_BOXWIDTH = 'boxwidth';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_BOXHEIGHT = 'boxheight';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_BOXDEPTH = 'boxdepth';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CONERADIUS = 'coneradius';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CONEHEIGHT = 'coneheight';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CONERADIALSEGMENTS = 'coneradialsegments';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CYLINDERRADIUSTOP = 'cylinderradiustop';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CYLINDERRADIUSBOTTOM = 'cylinderradiusbottom';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CYLINDERHEIGHT = 'cylinderheight';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CYLINDERRADIALSEGMENTS = 'cylinderradialsegments';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_DODECAHEDRONRADIUS = 'dodecahedronradius';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ICOSAHEDRONRADIUS = 'icosahedronradius';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_OCTAHEDRONRADIUS = 'octahedronradius';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SPHERERADIUS = 'sphereradius';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SPHEREWIDTHSEGMENTS = 'spherewidthsegments';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SPHEREHEIGHTSEGMENTS = 'sphereheightsegments';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_TETRAHEDRONRADIUS = 'tetrahedronradius';
+
+    Blockly.Msg.LANG_VR_ON_START_HELPURL = '';
+    Blockly.Msg.LANG_VR_ON_START_TITLE = 'on start';
+    Blockly.Msg.LANG_VR_ON_START_DO = 'do';
+    Blockly.Msg.LANG_VR_ON_START_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_OBJECT_TITLE = 'object';
+
+    Blockly.Msg.LANG_VR_OBJECT_BOX_HELPURL = '';
+    Blockly.Msg.LANG_VR_OBJECT_BOX = 'box';
+    Blockly.Msg.LANG_VR_OBJECT_BOX_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_OBJECT_CONE_HELPURL = '';
+    Blockly.Msg.LANG_VR_OBJECT_CONE = 'cone';
+    Blockly.Msg.LANG_VR_OBJECT_CONE_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_OBJECT_CYLINDER_HELPURL = '';
+    Blockly.Msg.LANG_VR_OBJECT_CYLINDER = 'cylinder';
+    Blockly.Msg.LANG_VR_OBJECT_CYLINDER_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_OBJECT_DODECAHEDRON_HELPURL = '';
+    Blockly.Msg.LANG_VR_OBJECT_DODECAHEDRON = 'dodecahedron';
+    Blockly.Msg.LANG_VR_OBJECT_DODECAHEDRON_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_OBJECT_ICOSAHEDRON_HELPURL = '';
+    Blockly.Msg.LANG_VR_OBJECT_ICOSAHEDRON = 'icosahedron';
+    Blockly.Msg.LANG_VR_OBJECT_ICOSAHEDRON_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_OBJECT_OCTAHEDRON_HELPURL = '';
+    Blockly.Msg.LANG_VR_OBJECT_OCTAHEDRON = 'octahedron';
+    Blockly.Msg.LANG_VR_OBJECT_OCTAHEDRON_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_OBJECT_SPHERE_HELPURL = '';
+    Blockly.Msg.LANG_VR_OBJECT_SPHERE = 'sphere';
+    Blockly.Msg.LANG_VR_OBJECT_SPHERE_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_OBJECT_TETRAHEDRON_HELPURL = '';
+    Blockly.Msg.LANG_VR_OBJECT_TETRAHEDRON = 'tetrahedron';
+    Blockly.Msg.LANG_VR_OBJECT_TETRAHEDRON_TOOLTIP = 'tooltip';
+
 // Control Blocks
     Blockly.Msg.LANG_CATEGORY_CONTROLS = 'Control';
     Blockly.Msg.LANG_CONTROLS_IF_HELPURL = 'http://appinventor.mit.edu/explore/ai2/support/blocks/control#if';

@@ -470,9 +470,10 @@ Blockly.WorkspaceSvg.prototype.activate = function() {
   Blockly.mainWorkspace = this;
 };
 
+/*
 Blockly.WorkspaceSvg.prototype.buildComponentMap = function(warnings, errors, forRepl, compileUnattachedBlocks) {
   var map = {components: {}, globals: []};
-  var blocks = this.getTopBlocks(/* ordered */ true);
+  var blocks = this.getTopBlocks(true);
   for (var i = 0, block; block = blocks[i]; ++i) {
     if (block.type == 'procedures_defnoreturn' || block.type == 'procedures_defreturn' || block.type == 'global_declaration') {
       map.globals.push(block);
@@ -486,6 +487,7 @@ Blockly.WorkspaceSvg.prototype.buildComponentMap = function(warnings, errors, fo
   }
   return map;
 };
+*/
 
 Blockly.WorkspaceSvg.prototype.resize = (function(resize) {
   return function() {
@@ -831,7 +833,7 @@ Blockly.WorkspaceSvg.prototype.buildComponentMap = function(warnings, errors, fo
     if (!block.category) {
       continue;
     }
-    if (block.type == 'procedures_defnoreturn' || block.type == 'procedures_defreturn' || block.type == 'global_declaration') {
+    if (block.type == 'procedures_defnoreturn' || block.type == 'procedures_defreturn' || block.type == 'global_declaration' || block.type == 'vr_global_declaration' || block.category == 'VR_Events') {
       map.globals.push(block);
       // TODO: eventually deal with variable declarations, once we have them
     } else if (block.category == 'Component') {

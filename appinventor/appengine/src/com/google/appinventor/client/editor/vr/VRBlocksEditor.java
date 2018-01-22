@@ -20,21 +20,27 @@ import com.google.gwt.core.client.JavaScriptObject;
  */
 public final class VRBlocksEditor extends BlocksEditor<VRBlocksNode, VREditorEditor> {
 
-  /*
-  private static final BlocksLanguage VR =
-      new BlocksLanguage("VR");
+  private static final BlocksLanguage JAVASCRIPT =
+      new BlocksLanguage("JavaScript",
+          new BlocksCategory("VR_Commands", IMAGES.control()),
+          new BlocksCategory("VR_Controls", IMAGES.control()),
+          new BlocksCategory("VR_Events", IMAGES.procedures()),
+          new BlocksCategory("VR_Logic", IMAGES.logic()),
+          new BlocksCategory("VR_Math", IMAGES.math()),
+          new BlocksCategory("VR_Objects", IMAGES.control()),
+          new BlocksCategory("VR_Text", IMAGES.text()),
+          new BlocksCategory("VR_Variables", IMAGES.variables()));
+          //new BlocksCategory("Control", IMAGES.control()),
+          //new BlocksCategory("Logic", IMAGES.logic()),
+          //new BlocksCategory("Math", IMAGES.math()),
+          //new BlocksCategory("Text", IMAGES.text()),
+          //new BlocksCategory("Lists", IMAGES.lists()),
+          //new BlocksCategory("Colors", IMAGES.colors()),
+          //new BlocksCategory("Variables", IMAGES.variables()),
+          //new BlocksCategory("Procedures", IMAGES.procedures()));
 
   public VRBlocksEditor(YaProjectEditor projectEditor, VRBlocksNode blocksNode) {
-    super(projectEditor, blocksNode, VR, BlocksCodeGenerationTarget.VRVM,
-        SimpleComponentDatabase.getInstance(blocksNode.getProjectId()));
-  }
-  */
-
-  private static final BlocksLanguage YAIL =
-      new BlocksLanguage("Yail");
-
-  public VRBlocksEditor(YaProjectEditor projectEditor, VRBlocksNode blocksNode) {
-    super(projectEditor, blocksNode, YAIL, BlocksCodeGenerationTarget.YAIL,
+    super(projectEditor, blocksNode, JAVASCRIPT, BlocksCodeGenerationTarget.JAVASCRIPT,
         VREditorDatabase.getInstance(blocksNode.getProjectId()));
   }
 
@@ -53,7 +59,7 @@ public final class VRBlocksEditor extends BlocksEditor<VRBlocksNode, VREditorEdi
   public synchronized void sendComponentData() {
     OdeLog.log("VRBlocksEditor: sendComponentData");
     try {
-      blocksArea.sendComponentData(designer.encodeWebViewerAsJsonString(),
+      blocksArea.sendComponentData(designer.encodeWebViewerAsJsonString(blocksArea.getBlocksCode()),
           packageNameFromPath(getFileId()));
     } catch (BlocksCodeGenerationException e) {
       e.printStackTrace();
@@ -77,7 +83,7 @@ public final class VRBlocksEditor extends BlocksEditor<VRBlocksNode, VREditorEdi
     //    blocksArea.getCode(designer.encodeWebViewerAsJsonString(),
     //        packageNameFromPath(getFileId())));
     return new FileDescriptorWithContent(getProjectId(), yailFileName(),
-        blocksArea.getCode(designer.encodeWebViewerAsJsonString(),
+        blocksArea.getCode(designer.encodeWebViewerAsJsonString(blocksArea.getBlocksCode()),
             packageNameFromPath(getFileId())));
   }
 
@@ -100,8 +106,8 @@ public final class VRBlocksEditor extends BlocksEditor<VRBlocksNode, VREditorEdi
   private String yailFileName() {
     String fileId = getFileId();
     OdeLog.log("fileId is " + fileId);
-    OdeLog.log("from " + YoungAndroidSourceAnalyzer.VRVM_BLOCKS_EXTENSION + " to " + YoungAndroidSourceAnalyzer.YAIL_FILE_EXTENSION);
-    return fileId.replace(YoungAndroidSourceAnalyzer.VRVM_BLOCKS_EXTENSION,
+    OdeLog.log("from " + YoungAndroidSourceAnalyzer.JAVASCRIPT_BLOCKS_EXTENSION + " to " + YoungAndroidSourceAnalyzer.YAIL_FILE_EXTENSION);
+    return fileId.replace(YoungAndroidSourceAnalyzer.JAVASCRIPT_BLOCKS_EXTENSION,
         YoungAndroidSourceAnalyzer.YAIL_FILE_EXTENSION);
   }
 

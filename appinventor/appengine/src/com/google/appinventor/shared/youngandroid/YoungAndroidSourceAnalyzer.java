@@ -54,7 +54,7 @@ public class YoungAndroidSourceAnalyzer {
   /**
    * The filename extension for the file that contains data
    */
-  public static final String VRVM_BLOCKS_EXTENSION = ".xml";
+  public static final String JAVASCRIPT_BLOCKS_EXTENSION = ".xml";
 
   private static final String FORM_PROPERTIES_PREFIX = "#|\n";
   private static final String FORM_PROPERTIES_SUFFIX = "\n|#";

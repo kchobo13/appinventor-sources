@@ -12,8 +12,8 @@ AI.Blockly.Target['Yail'] = {
   typeMappingFunction: Blockly.Blocks.Utilities.YailTypeToBlocklyType
 };
 
-//AI.Blockly.Target['VR'] = {
-//  blocks: Blockly.Blocks.VR,
-//  generateCode: Blockly.VR.getVRCode,
-//  typeMappingFunction: Blockly.Blocks.Utilities.VRTypeToBlocklyType
-//};
+AI.Blockly.Target['JavaScript'] = {
+  blocks: Blockly.Blocks.VR,
+  generateCode: Blockly.Yail.getFormYail,
+  typeMappingFunction: Blockly.Blocks.Utilities.YailTypeToBlocklyType
+};

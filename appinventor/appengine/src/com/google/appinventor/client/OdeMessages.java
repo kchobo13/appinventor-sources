@@ -2795,6 +2795,10 @@ public interface OdeMessages extends Messages {
   @DefaultMessage("VRJSON")
   @Description("")
   String VRJSONProperties();
+  
+  @DefaultMessage("VRJS")
+  @Description("")
+  String VRJSProperties();
 
   @DefaultMessage("PrivateWebViewString")
   @Description("")
@@ -3816,6 +3820,10 @@ public interface OdeMessages extends Messages {
   @DefaultMessage("functionName")
   @Description("")
   String functionNameParams();
+
+  @DefaultMessage("js")
+  @Description("")
+  String jsParams();
 
   @DefaultMessage("errorNumber")
   @Description("")

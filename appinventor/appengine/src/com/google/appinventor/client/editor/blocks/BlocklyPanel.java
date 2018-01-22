@@ -301,6 +301,11 @@ public class BlocklyPanel extends HTMLPanel {
     DesignToolbar.popScreen();
   }
 
+  public native String getBlocksCode() /*-{
+    var workspace = this.@com.google.appinventor.client.editor.blocks.BlocklyPanel::workspace;
+    return Blockly.Yail.getBlocksCode(workspace);
+  }-*/;
+
   public void getBlocksImage(Callback<String, String> callback) {
     doFetchBlocksImage(callback);
   }

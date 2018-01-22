@@ -21,6 +21,6 @@ public final class VRBlocksNode extends VRSourceNode {
 
   public static String getBlocksFileId(String qualifiedSketchName) {
     return VR_SRC_PREFIX + qualifiedSketchName.replace('.', '/')
-        + YoungAndroidSourceAnalyzer.VRVM_BLOCKS_EXTENSION;
+        + YoungAndroidSourceAnalyzer.JAVASCRIPT_BLOCKS_EXTENSION;
   }
 }

@@ -110,8 +110,8 @@ public final class YoungAndroidProjectService extends CommonProjectService {
       YoungAndroidSourceAnalyzer.YAIL_FILE_EXTENSION;
   private static final String VREDITOR_PROPERTIES_EXTENSION =
       YoungAndroidSourceAnalyzer.VREDITOR_PROPERTIES_EXTENSION;
-  private static final String VRVM_BLOCKS_EXTENSION =
-      YoungAndroidSourceAnalyzer.VRVM_BLOCKS_EXTENSION;
+  private static final String JAVASCRIPT_BLOCKS_EXTENSION =
+      YoungAndroidSourceAnalyzer.JAVASCRIPT_BLOCKS_EXTENSION;
 
 
   public static final String PROJECT_PROPERTIES_FILE_NAME = PROJECT_DIRECTORY + "/" +
@@ -487,7 +487,7 @@ public final class YoungAndroidProjectService extends CommonProjectService {
         VRSourceNode sourceNode = null;
         if (fileId.endsWith(VREDITOR_PROPERTIES_EXTENSION)) {
           sourceNode = new VREditorNode(fileId);
-        } else if (fileId.endsWith(VRVM_BLOCKS_EXTENSION)) {
+        } else if (fileId.endsWith(JAVASCRIPT_BLOCKS_EXTENSION)) {
           sourceNode = new VRBlocksNode(fileId);
         }
         if (sourceNode != null) {
@@ -542,7 +542,7 @@ public final class YoungAndroidProjectService extends CommonProjectService {
       } else {
         throw new IllegalStateException("One or more files to be added already exists.");
       }
-    } else if (fileId.endsWith(VRVM_BLOCKS_EXTENSION) ||
+    } else if (fileId.endsWith(JAVASCRIPT_BLOCKS_EXTENSION) ||
         fileId.endsWith(VREDITOR_PROPERTIES_EXTENSION)) {
       String qualifiedVRScreenName = SourceNode.getEntityName(fileId);
       String vrEditorFileName = VREditorNode.getVREditorFileId(qualifiedVRScreenName);

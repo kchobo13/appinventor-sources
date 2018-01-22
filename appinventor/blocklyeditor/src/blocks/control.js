@@ -39,7 +39,7 @@ goog.require('Blockly.Blocks.Utilities');
 
 Blockly.Blocks['controls_if'] = {
   // If/elseif/else condition.
-  category: 'Control',
+  category: 'VR_Controls',
   helpUrl: Blockly.Msg.LANG_CONTROLS_IF_HELPURL,
   init: function () {
     this.setColour(Blockly.CONTROL_CATEGORY_HUE);
@@ -237,7 +237,7 @@ Blockly.Blocks['controls_if_else'] = {
 
 Blockly.Blocks['controls_forRange'] = {
   // For range.
-  category: 'Control',
+  category: 'VR_Controls',
   helpUrl: Blockly.Msg.LANG_CONTROLS_FORRANGE_HELPURL,
   init: function () {
     this.setColour(Blockly.CONTROL_CATEGORY_HUE);
@@ -424,7 +424,7 @@ Blockly.Blocks['controls_forEach'] = {
 
 Blockly.Blocks['controls_while'] = {
   // While condition.
-  category: 'Control',
+  category: 'VR_Controls',
   helpUrl: Blockly.Msg.LANG_CONTROLS_WHILE_HELPURL,
   init: function () {
     this.setColour(Blockly.CONTROL_CATEGORY_HUE);

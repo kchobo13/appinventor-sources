@@ -162,6 +162,12 @@
     "./src/generators/yail/variables.js",
     "./src/generators/yail/procedures.js",
 
+    "./src/generators/javascript.js",
+    "./src/generators/javascript/vr.js",
+
+    //"./src/generators/js.js",
+    //"./src/generators/js/javascript.js",
+
     // Target info
     "./src/target.js",
 

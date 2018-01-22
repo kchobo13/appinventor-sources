@@ -16,7 +16,7 @@ goog.require('Blockly.Blocks.Utilities');
 
 Blockly.Blocks['math_number'] = {
   // Numeric value.
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: Blockly.Msg.LANG_MATH_NUMBER_HELPURL,
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -38,7 +38,7 @@ Blockly.Blocks.math_number.validator = function (text) {
 Blockly.Blocks['math_compare'] = {
   // Basic arithmetic operator.
   // TODO(Andrew): equality block needs to have any on the sockets.
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
     return Blockly.Blocks.math_compare.HELPURLS()[mode];
@@ -147,7 +147,7 @@ Blockly.Blocks.math_compare.HELPURLS = function () {
 
 Blockly.Blocks['math_add'] = {
   // Basic arithmetic operator.
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: Blockly.Msg.LANG_MATH_ARITHMETIC_HELPURL_ADD,
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -209,7 +209,7 @@ Blockly.Blocks['math_mutator_item'] = {
 
 Blockly.Blocks['math_subtract'] = {
   // Basic arithmetic operator.
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: Blockly.Msg.LANG_MATH_ARITHMETIC_HELPURL_MINUS,
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -228,7 +228,7 @@ Blockly.Blocks['math_subtract'] = {
 
 Blockly.Blocks['math_multiply'] = {
   // Basic arithmetic operator.
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: Blockly.Msg.LANG_MATH_ARITHMETIC_HELPURL_MULTIPLY,
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -275,7 +275,7 @@ Blockly.Blocks['math_multiply'] = {
 
 Blockly.Blocks['math_division'] = {
   // Basic arithmetic operator.
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: Blockly.Msg.LANG_MATH_ARITHMETIC_HELPURL_DIVIDE,
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -294,7 +294,7 @@ Blockly.Blocks['math_division'] = {
 
 Blockly.Blocks['math_power'] = {
   // Basic arithmetic operator.
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: Blockly.Msg.LANG_MATH_ARITHMETIC_HELPURL_POWER,
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);

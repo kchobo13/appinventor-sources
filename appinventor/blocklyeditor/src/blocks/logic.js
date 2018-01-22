@@ -16,7 +16,7 @@ goog.require('Blockly.Blocks.Utilities');
 
 Blockly.Blocks['logic_boolean'] = {
   // Boolean data type: true and false.
-  category: 'Logic',
+  category: 'VR_Logic',
   init: function () {
     this.setColour(Blockly.LOGIC_CATEGORY_HUE);
     this.setOutput(true, Blockly.Blocks.Utilities.YailTypeToBlocklyType("boolean", Blockly.Blocks.Utilities.OUTPUT));
@@ -70,7 +70,7 @@ Blockly.Blocks.logic_boolean.HELPURLS = function () {
 
 Blockly.Blocks['logic_false'] = {
   // Boolean data type: true and false.
-  category: 'Logic',
+  category: 'VR_Logic',
   init: function () {
     this.setColour(Blockly.LOGIC_CATEGORY_HUE);
     this.setOutput(true, Blockly.Blocks.Utilities.YailTypeToBlocklyType("boolean", Blockly.Blocks.Utilities.OUTPUT));
@@ -91,7 +91,7 @@ Blockly.Blocks['logic_false'] = {
 
 Blockly.Blocks['logic_negate'] = {
   // Negation.
-  category: 'Logic',
+  category: 'VR_Logic',
   helpUrl: Blockly.Msg.LANG_LOGIC_NEGATE_HELPURL,
   init: function () {
     this.setColour(Blockly.LOGIC_CATEGORY_HUE);
@@ -106,7 +106,7 @@ Blockly.Blocks['logic_negate'] = {
 
 Blockly.Blocks['logic_compare'] = {
   // Comparison operator.
-  category: 'Logic',
+  category: 'VR_Logic',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
     return Blockly.Blocks.logic_compare.HELPURLS()[mode];
@@ -152,7 +152,7 @@ Blockly.Blocks.logic_compare.OPERATORS = function () {
 
 Blockly.Blocks['logic_operation'] = {
   // Logical operations: 'and', 'or'.
-  category: 'Logic',
+  category: 'VR_Logic',
   init: function () {
     this.setColour(Blockly.LOGIC_CATEGORY_HUE);
     this.setOutput(true, Blockly.Blocks.Utilities.YailTypeToBlocklyType("boolean", Blockly.Blocks.Utilities.OUTPUT));
@@ -210,7 +210,7 @@ Blockly.Blocks.logic_operation.TOOLTIPS = function () {
 
 Blockly.Blocks['logic_or'] = {
   // Logical operations: 'and', 'or'.
-  category: 'Logic',
+  category: 'VR_Logic',
   init: function () {
     this.setColour(Blockly.LOGIC_CATEGORY_HUE);
     this.setOutput(true, Blockly.Blocks.Utilities.YailTypeToBlocklyType("boolean", Blockly.Blocks.Utilities.OUTPUT));

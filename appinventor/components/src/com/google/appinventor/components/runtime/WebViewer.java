@@ -82,6 +82,7 @@ public final class WebViewer extends AndroidViewComponent {
   private String homeUrl;
 
   private String vrJSON;
+  private String vrJS;
 
   // whether or not to follow links when they are tapped
   private boolean followLinks = true;
@@ -270,6 +271,22 @@ public final class WebViewer extends AndroidViewComponent {
     PrivateWebViewString(json);
     // initialJS = "javascript:start(\"" + json + "\");";
     // webview.loadUrl("javascript:alert('hi!')");
+  }
+
+  @SimpleProperty(description = "", category = PropertyCategory.BEHAVIOR)
+  public String VRJS() {
+    return vrJS;
+  }
+
+  @DesignerProperty(editorType = PropertyTypeConstants.PROPERTY_TYPE_STRING,
+      defaultValue = "")
+  @SimpleProperty()
+  public void VRJS(String js) {
+    Log.v("WEBWEB", "VRJS called");
+    vrJS = js;
+    String jsUrl = "eval(decodeURIComponent(\"" + js + "\"))";
+    Log.v("WEBWEB", "js: " + jsUrl);
+    webview.evaluateJavascript(jsUrl, null);
   }
 
   /**
@@ -537,8 +554,11 @@ public final class WebViewer extends AndroidViewComponent {
             ViewGroup.LayoutParams.MATCH_PARENT));
       webContainer.$form().getWindow().getDecorView().setSystemUiVisibility(
           View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+          View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+          View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
           View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-          View.SYSTEM_UI_FLAG_FULLSCREEN);
+          View.SYSTEM_UI_FLAG_FULLSCREEN |
+          View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
       webContainer.$form().getWindow().getDecorView().requestFocus();
       webContainer.$form().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
     }
@@ -568,6 +588,25 @@ public final class WebViewer extends AndroidViewComponent {
   public void ClearCaches() {
     webview.clearCache(true);
   }
+
+  /*
+  @SimpleFunction(description = "Run JavaScript.")
+  public void RunJavaScript(String js) {
+    String inputString = "";
+    for (int i = 0; i < inputs.length; i++) {
+      if (i != 0) {
+        inputString += ", ";
+        if (flags.substring(i, i + 1) == "1") {
+          inputString += "\"" + inputs[i] + "\"";
+        } else {
+          inputString += inputs[i];
+        }
+      }
+    }
+    Log.v("WEBWEB", "javascript is " + js);
+    webview.loadUrl("javascript:" + js);
+  }
+  */
 
   /**
    * Allows the setting of properties to be monitored from the javascript

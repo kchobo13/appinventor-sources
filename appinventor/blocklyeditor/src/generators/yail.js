@@ -133,11 +133,15 @@ Blockly.Yail.getFormYail = function(formJson, packageName, forRepl, workspace) {
     if (componentMap.components.hasOwnProperty(comp))
       componentNames.push(comp);
 
-  var globalBlocks = componentMap.globals;
-  for (var i = 0, block; block = globalBlocks[i]; i++) {
-    code.push(Blockly.Yail.blockToCode(block));
+  if (packageName.startsWith("vr.")) {
+    jsonObject.Properties.$Components[0]["VRJS"] = Blockly.Yail.getBlocksCode(workspace);
+  } else {
+    var globalBlocks = componentMap.globals;
+    for (var i = 0, block; block = globalBlocks[i]; i++) {
+      code.push(Blockly.Yail.blockToCode(block));
+    }
   }
-  
+
   if (formProperties) {
     var sourceType = jsonObject.Source;
     if (sourceType == "Form") {
@@ -146,7 +150,7 @@ Blockly.Yail.getFormYail = function(formJson, packageName, forRepl, workspace) {
     } else {
       throw "Source type " + sourceType + " is invalid.";
     }
-  
+
     // Fetch all of the components in the form, this may result in duplicates
     componentNames = Blockly.Yail.getDeepNames(formProperties, componentNames);
     // Remove the duplicates
@@ -170,6 +174,16 @@ Blockly.Yail.getFormYail = function(formJson, packageName, forRepl, workspace) {
   
   return code.join('\n');  // Blank line between each section.
 };
+
+Blockly.Yail.getBlocksCode = function(workspace) {
+  var componentMap = workspace.buildComponentMap([], [], false, false);
+  var jsCode = [];
+  var globalBlocks = componentMap.globals;
+  for (var i = 0, block; block = globalBlocks[i]; i++) {
+    jsCode.push(Blockly.JavaScript.blockToCode(block));
+  }
+  return encodeURIComponent("var procedures={onstart:null};(function(p){" + jsCode.join("") + "})(procedures);");
+}
 
 Blockly.Yail.getDeepNames = function(componentJson, componentNames) {
   if (componentJson.$Components) {
