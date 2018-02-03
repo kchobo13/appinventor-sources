@@ -182,7 +182,7 @@ Blockly.Yail.getBlocksCode = function(workspace) {
   for (var i = 0, block; block = globalBlocks[i]; i++) {
     jsCode.push(Blockly.JavaScript.blockToCode(block));
   }
-  return encodeURIComponent("var procedures={onstart:null};(function(p){" + jsCode.join("") + "})(procedures);");
+  return encodeURIComponent("var procedures={};(function(p){" + jsCode.join("") + "})(procedures);");
 }
 
 Blockly.Yail.getDeepNames = function(componentJson, componentNames) {

@@ -171,22 +171,29 @@ Blockly.Msg.en.switch_language_to_english = {
     Blockly.Msg.LANG_VR_RETURN4_ARG1 = 'boolean';
     Blockly.Msg.LANG_VR_RETURN4_TOOLTIP = 'tooltip';
 
+    Blockly.Msg.LANG_VR_NULL_HELPURL = '';
+    Blockly.Msg.LANG_VR_NULL_TITLE = 'null';
+    Blockly.Msg.LANG_VR_NULL_TOOLTIP = 'tooltip';
+
     Blockly.Msg.LANG_VR_SLEEP_HELPURL = '';
     Blockly.Msg.LANG_VR_SLEEP_TITLE = 'sleep';
     Blockly.Msg.LANG_VR_SLEEP_ARG1 = 'time';
     Blockly.Msg.LANG_VR_SLEEP_TOOLTIP = 'tooltip';
 
-    Blockly.Msg.LANG_VR_ADD_OBJECT_HELPURL = '';
-    Blockly.Msg.LANG_VR_ADD_OBJECT_TITLE = 'add object';
-    Blockly.Msg.LANG_VR_ADD_OBJECT_ARG1 = 'object';
-    Blockly.Msg.LANG_VR_ADD_OBJECT_TOOLTIP = 'tooltip';
+    Blockly.Msg.LANG_VR_ADD_OBJECT_TO_SCENE_HELPURL = '';
+    Blockly.Msg.LANG_VR_ADD_OBJECT_TO_SCENE_TITLE = 'add object to scene';
+    Blockly.Msg.LANG_VR_ADD_OBJECT_TO_SCENE_ARG1 = 'object';
+    Blockly.Msg.LANG_VR_ADD_OBJECT_TO_SCENE_TOOLTIP = 'tooltip';
 
-    Blockly.Msg.LANG_VR_REMOVE_OBJECT_HELPURL = '';
-    Blockly.Msg.LANG_VR_REMOVE_OBJECT_TITLE = 'remove object';
-    Blockly.Msg.LANG_VR_REMOVE_OBJECT_ARG1 = 'object';
-    Blockly.Msg.LANG_VR_REMOVE_OBJECT_TOOLTIP = 'tooltip';
+    Blockly.Msg.LANG_VR_REMOVE_OBJECT_FROM_SCENE_HELPURL = '';
+    Blockly.Msg.LANG_VR_REMOVE_OBJECT_FROM_SCENE_TITLE = 'remove object from scene';
+    Blockly.Msg.LANG_VR_REMOVE_OBJECT_FROM_SCENE_ARG1 = 'object';
+    Blockly.Msg.LANG_VR_REMOVE_OBJECT_FROM_SCENE_TOOLTIP = 'tooltip';
 
     Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_TITLE = 'set object property';
+
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_OBJECT_HELPURL = '';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_OBJECT_TOOLTIP = 'tooltip';
 
     Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_BOX_HELPURL = '';
     Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_BOX_TOOLTIP = 'tooltip';
@@ -214,6 +221,9 @@ Blockly.Msg.en.switch_language_to_english = {
 
     Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_TITLE = 'get object property';
 
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_OBJECT_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_OBJECT_TOOLTIP = 'tooltip';
+
     Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_BOX_HELPURL = '';
     Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_BOX_TOOLTIP = 'tooltip';
 
@@ -238,88 +248,346 @@ Blockly.Msg.en.switch_language_to_english = {
     Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_TETRAHEDRON_HELPURL = '';
     Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_TETRAHEDRON_TOOLTIP = 'tooltip';
 
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_POSITIONX = 'positionx';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_POSITIONY = 'positiony';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_POSITIONZ = 'positionz';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ROTATIONX = 'rotationx';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ROTATIONY = 'rotationy';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ROTATIONZ = 'rotationz';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SCALEX = 'scalex';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SCALEY = 'scaley';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SCALEZ = 'scalez';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_NAME = 'name';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_POSITIONX = 'position x';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_POSITIONY = 'position y';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_POSITIONZ = 'position z';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ROTATIONX = 'rotation x';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ROTATIONY = 'rotation y';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ROTATIONZ = 'rotation z';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SCALEX = 'scale x';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SCALEY = 'scale y';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SCALEZ = 'scale z';
     Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_COLOR = 'color';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_TEXTUREURL = 'textureurl';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_OPACITY = 'opacity';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_TEXTUREURL = 'texture url';
     Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_MASS = 'mass';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_LINEARVELOCITYX = 'linearvelocityx';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_LINEARVELOCITYY = 'linearvelocityy';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_LINEARVELOCITYZ = 'linearvelocityz';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ANGULARVELOCITYX = 'angularvelocityx';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ANGULARVELOCITYY = 'angularvelocityy';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ANGULARVELOCITYZ = 'angularvelocityz';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_LINEARVELOCITYX = 'linear velocity x';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_LINEARVELOCITYY = 'linear velocity y';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_LINEARVELOCITYZ = 'linear velocity z';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ANGULARVELOCITYX = 'angular velocity x';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ANGULARVELOCITYY = 'angular velocity y';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ANGULARVELOCITYZ = 'angular velocity z';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_PRESSURE = 'pressure';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_FRICTION = 'friction';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_RESTITUTION = 'restitution';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_FLATSHADING = 'flat shading';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_WIREFRAME = 'wireframe';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_COLLISION = 'collision';
 
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_BOXWIDTH = 'boxwidth';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_BOXHEIGHT = 'boxheight';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_BOXDEPTH = 'boxdepth';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_BOXWIDTH = 'box width';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_BOXHEIGHT = 'box height';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_BOXDEPTH = 'box depth';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_BOXWIDTHSEGMENTS = 'box width segments';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_BOXHEIGHTSEGMENTS = 'box height segments';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_BOXDEPTHSEGMENTS = 'box depth segments';
 
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CONERADIUS = 'coneradius';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CONEHEIGHT = 'coneheight';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CONERADIALSEGMENTS = 'coneradialsegments';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CONERADIUS = 'cone radius';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CONEHEIGHT = 'cone height';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CONERADIALSEGMENTS = 'cone radial segments';
 
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CYLINDERRADIUSTOP = 'cylinderradiustop';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CYLINDERRADIUSBOTTOM = 'cylinderradiusbottom';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CYLINDERHEIGHT = 'cylinderheight';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CYLINDERRADIALSEGMENTS = 'cylinderradialsegments';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CYLINDERRADIUSTOP = 'cylinder radius top';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CYLINDERRADIUSBOTTOM = 'cylinder radius bottom';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CYLINDERHEIGHT = 'cylinder height';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_CYLINDERRADIALSEGMENTS = 'cylinder radial segments';
 
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_DODECAHEDRONRADIUS = 'dodecahedronradius';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_DODECAHEDRONRADIUS = 'dodecahedron radius';
 
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ICOSAHEDRONRADIUS = 'icosahedronradius';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_ICOSAHEDRONRADIUS = 'icosahedron radius';
 
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_OCTAHEDRONRADIUS = 'octahedronradius';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_OCTAHEDRONRADIUS = 'octahedron radius';
 
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SPHERERADIUS = 'sphereradius';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SPHEREWIDTHSEGMENTS = 'spherewidthsegments';
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SPHEREHEIGHTSEGMENTS = 'sphereheightsegments';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SPHERERADIUS = 'sphere radius';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SPHEREWIDTHSEGMENTS = 'sphere width segments';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_SPHEREHEIGHTSEGMENTS = 'sphere height segments';
 
-    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_TETRAHEDRONRADIUS = 'tetrahedronradius';
+    Blockly.Msg.LANG_VR_SET_OBJECT_PROPERTY_TETRAHEDRONRADIUS = 'tetrahedron radius';
+
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_TYPE = 'type';
+    Blockly.Msg.LANG_VR_GET_OBJECT_PROPERTY_SOFT = 'soft';
+
+    Blockly.Msg.LANG_VR_ADD_LIGHT_TO_SCENE_HELPURL = '';
+    Blockly.Msg.LANG_VR_ADD_LIGHT_TO_SCENE_TITLE = 'add light to scene';
+    Blockly.Msg.LANG_VR_ADD_LIGHT_TO_SCENE_ARG1 = 'light';
+    Blockly.Msg.LANG_VR_ADD_LIGHT_TO_SCENE_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_REMOVE_LIGHT_FROM_SCENE_HELPURL = '';
+    Blockly.Msg.LANG_VR_REMOVE_LIGHT_FROM_SCENE_TITLE = 'remove light from scene';
+    Blockly.Msg.LANG_VR_REMOVE_LIGHT_FROM_SCENE_ARG1 = 'light';
+    Blockly.Msg.LANG_VR_REMOVE_LIGHT_FROM_SCENE_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_TITLE = 'set light property';
+
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_AMBIENT_HELPURL = '';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_AMBIENT_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_DIRECTIONAL_HELPURL = '';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_DIRECTIONAL_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_HEMISPHERE_HELPURL = '';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_HEMISPHERE_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_POINT_HELPURL = '';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_POINT_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_SPOT_HELPURL = '';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_SPOT_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_LIGHT_PROPERTY_TITLE = 'get light property';
+
+    Blockly.Msg.LANG_VR_GET_LIGHT_PROPERTY_AMBIENT_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_LIGHT_PROPERTY_AMBIENT_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_LIGHT_PROPERTY_DIRECTIONAL_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_LIGHT_PROPERTY_DIRECTIONAL_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_LIGHT_PROPERTY_HEMISPHERE_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_LIGHT_PROPERTY_HEMISPHERE_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_LIGHT_PROPERTY_POINT_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_LIGHT_PROPERTY_POINT_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_LIGHT_PROPERTY_SPOT_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_LIGHT_PROPERTY_SPOT_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_NAME = 'name';
+
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_AMBIENTCOLOR = 'color';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_AMBIENTINTENSITY = 'intensity';
+
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_DIRECTIONALPOSITIONX = 'position x';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_DIRECTIONALPOSITIONY = 'position y';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_DIRECTIONALPOSITIONZ = 'position z';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_DIRECTIONALCOLOR = 'color';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_DIRECTIONALINTENSITY = 'intensity';
+
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_HEMISPHERESKYCOLOR = 'sky color';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_HEMISPHEREGROUNDCOLOR = 'ground color';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_HEMISPHEREINTENSITY = 'intensity';
+
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_POINTPOSITIONX = 'position x';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_POINTPOSITIONY = 'position y';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_POINTPOSITIONZ = 'position z';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_POINTCOLOR = 'color';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_POINTINTENSITY = 'intensity';
+
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_SPOTPOSITIONX = 'position x';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_SPOTPOSITIONY = 'position y';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_SPOTPOSITIONZ = 'position z';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_SPOTCOLOR = 'color';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_SPOTINTENSITY = 'intensity';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_SPOTDISTANCE = 'distance';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_SPOTANGLE = 'angle';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_SPOTPENUMBRA = 'penumbra';
+    Blockly.Msg.LANG_VR_SET_LIGHT_PROPERTY_SPOTDECAY = 'decay';
+
+    Blockly.Msg.LANG_VR_GET_LIGHT_PROPERTY_TYPE = 'type';
+
+    Blockly.Msg.LANG_VR_SET_CAMERA_PROPERTY_TITLE = 'set camera property';
+
+    Blockly.Msg.LANG_VR_SET_CAMERA_PROPERTY_HELPURL = '';
+    Blockly.Msg.LANG_VR_SET_CAMERA_PROPERTY_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_CAMERA_PROPERTY_TITLE = 'get camera property';
+
+    Blockly.Msg.LANG_VR_GET_CAMERA_PROPERTY_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_CAMERA_PROPERTY_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SET_CAMERA_PROPERTY_POSITIONX = 'position x';
+    Blockly.Msg.LANG_VR_SET_CAMERA_PROPERTY_POSITIONY = 'position y';
+    Blockly.Msg.LANG_VR_SET_CAMERA_PROPERTY_POSITIONZ = 'position z';
+    Blockly.Msg.LANG_VR_SET_CAMERA_PROPERTY_TARGETX = 'target x';
+    Blockly.Msg.LANG_VR_SET_CAMERA_PROPERTY_TARGETY = 'target y';
+    Blockly.Msg.LANG_VR_SET_CAMERA_PROPERTY_TARGETZ = 'target z';
+    Blockly.Msg.LANG_VR_SET_CAMERA_PROPERTY_FOV = 'fov';
+    Blockly.Msg.LANG_VR_SET_CAMERA_PROPERTY_INTERACTIVITY = 'interactivity';
+
+    Blockly.Msg.LANG_VR_GET_ALL_OBJECTS_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_ALL_OBJECTS_TITLE = 'get all objects';
+    Blockly.Msg.LANG_VR_GET_ALL_OBJECTS_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_OBJECTS_BY_NAME_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_OBJECTS_BY_NAME_TITLE = 'get objects by name';
+    Blockly.Msg.LANG_VR_GET_OBJECTS_BY_NAME_ARG1 = 'name';
+    Blockly.Msg.LANG_VR_GET_OBJECTS_BY_NAME_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_ALL_LIGHTS_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_ALL_LIGHTS_TITLE = 'get all lights';
+    Blockly.Msg.LANG_VR_GET_ALL_LIGHTS_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_LIGHTS_BY_NAME_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_LIGHTS_BY_NAME_TITLE = 'get lights by name';
+    Blockly.Msg.LANG_VR_GET_LIGHTS_BY_NAME_ARG1 = 'name';
+    Blockly.Msg.LANG_VR_GET_LIGHTS_BY_NAME_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_IS_OBJECT_IN_SCENE_HELPURL = '';
+    Blockly.Msg.LANG_VR_IS_OBJECT_IN_SCENE_TITLE = 'is object in scene';
+    Blockly.Msg.LANG_VR_IS_OBJECT_IN_SCENE_ARG1 = 'object';
+    Blockly.Msg.LANG_VR_IS_OBJECT_IN_SCENE_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_IS_LIGHT_IN_SCENE_HELPURL = '';
+    Blockly.Msg.LANG_VR_IS_LIGHT_IN_SCENE_TITLE = 'is light in scene';
+    Blockly.Msg.LANG_VR_IS_LIGHT_IN_SCENE_ARG1 = 'light';
+    Blockly.Msg.LANG_VR_IS_LIGHT_IN_SCENE_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SET_WORLD_PROPERTY_TITLE = 'set world property';
+
+    Blockly.Msg.LANG_VR_SET_WORLD_PROPERTY_HELPURL = '';
+    Blockly.Msg.LANG_VR_SET_WORLD_PROPERTY_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_WORLD_PROPERTY_TITLE = 'get world property';
+
+    Blockly.Msg.LANG_VR_GET_WORLD_PROPERTY_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_WORLD_PROPERTY_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_SET_WORLD_PROPERTY_BACKGROUNDCOLOR = 'background color';
+    Blockly.Msg.LANG_VR_SET_WORLD_PROPERTY_GRAVITYX = 'gravity x';
+    Blockly.Msg.LANG_VR_SET_WORLD_PROPERTY_GRAVITYY = 'gravity y';
+    Blockly.Msg.LANG_VR_SET_WORLD_PROPERTY_GRAVITYZ = 'gravity z';
+    Blockly.Msg.LANG_VR_SET_WORLD_PROPERTY_SHADOWS = 'shadows';
+
+    Blockly.Msg.LANG_VR_GET_TOUCH_TITLE = 'get touch';
+
+    Blockly.Msg.LANG_VR_GET_TOUCH_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_TOUCH_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_TOUCH_TOUCHSCREENX = 'touchscreen x';
+    Blockly.Msg.LANG_VR_GET_TOUCH_TOUCHSCREENY = 'touchscreen y';
+    Blockly.Msg.LANG_VR_GET_TOUCH_TOUCHX = 'touch x';
+    Blockly.Msg.LANG_VR_GET_TOUCH_TOUCHY = 'touch y';
+    Blockly.Msg.LANG_VR_GET_TOUCH_TOUCHZ = 'touch z';
+    Blockly.Msg.LANG_VR_GET_TOUCH_TARGETX = 'target x';
+    Blockly.Msg.LANG_VR_GET_TOUCH_TARGETY = 'target y';
+    Blockly.Msg.LANG_VR_GET_TOUCH_TARGETZ = 'target z';
+    Blockly.Msg.LANG_VR_GET_TOUCH_OBJECT = 'object';
+    Blockly.Msg.LANG_VR_GET_TOUCH_TOUCHID = 'touch id';
+
+    Blockly.Msg.LANG_VR_GET_WINDOW_SIZE_TITLE = 'get window';
+
+    Blockly.Msg.LANG_VR_GET_WINDOW_SIZE_HELPURL = '';
+    Blockly.Msg.LANG_VR_GET_WINDOW_SIZE_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_GET_WINDOW_SIZE_WIDTH = 'width';
+    Blockly.Msg.LANG_VR_GET_WINDOW_SIZE_HEIGHT = 'height';
 
     Blockly.Msg.LANG_VR_ON_START_HELPURL = '';
     Blockly.Msg.LANG_VR_ON_START_TITLE = 'on start';
     Blockly.Msg.LANG_VR_ON_START_DO = 'do';
     Blockly.Msg.LANG_VR_ON_START_TOOLTIP = 'tooltip';
 
+    Blockly.Msg.LANG_VR_ON_RENDER_HELPURL = '';
+    Blockly.Msg.LANG_VR_ON_RENDER_TITLE = 'on render';
+    Blockly.Msg.LANG_VR_ON_RENDER_DO = 'do';
+    Blockly.Msg.LANG_VR_ON_RENDER_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_ON_TOUCH_START_HELPURL = '';
+    Blockly.Msg.LANG_VR_ON_TOUCH_START_TITLE = 'on touch start';
+    Blockly.Msg.LANG_VR_ON_TOUCH_START_DO = 'do';
+    Blockly.Msg.LANG_VR_ON_TOUCH_START_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_ON_TOUCH_MOVE_HELPURL = '';
+    Blockly.Msg.LANG_VR_ON_TOUCH_MOVE_TITLE = 'on touch move';
+    Blockly.Msg.LANG_VR_ON_TOUCH_MOVE_DO = 'do';
+    Blockly.Msg.LANG_VR_ON_TOUCH_MOVE_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_ON_TOUCH_END_HELPURL = '';
+    Blockly.Msg.LANG_VR_ON_TOUCH_END_TITLE = 'on touch end';
+    Blockly.Msg.LANG_VR_ON_TOUCH_END_DO = 'do';
+    Blockly.Msg.LANG_VR_ON_TOUCH_END_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_LIGHT_TITLE = 'light';
+
+    Blockly.Msg.LANG_VR_LIGHT_LIGHT = 'light';
+
+    Blockly.Msg.LANG_VR_LIGHT_AMBIENT_HELPURL = '';
+    Blockly.Msg.LANG_VR_LIGHT_AMBIENT = 'ambient light';
+    Blockly.Msg.LANG_VR_LIGHT_AMBIENT_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_LIGHT_DIRECTIONAL_HELPURL = '';
+    Blockly.Msg.LANG_VR_LIGHT_DIRECTIONAL = 'directional light';
+    Blockly.Msg.LANG_VR_LIGHT_DIRECTIONAL_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_LIGHT_HEMISPHERE_HELPURL = '';
+    Blockly.Msg.LANG_VR_LIGHT_HEMISPHERE = 'hemisphere light';
+    Blockly.Msg.LANG_VR_LIGHT_HEMISPHERE_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_LIGHT_POINT_HELPURL = '';
+    Blockly.Msg.LANG_VR_LIGHT_POINT = 'point light';
+    Blockly.Msg.LANG_VR_LIGHT_POINT_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_LIGHT_SPOT_HELPURL = '';
+    Blockly.Msg.LANG_VR_LIGHT_SPOT = 'spot light';
+    Blockly.Msg.LANG_VR_LIGHT_SPOT_TOOLTIP = 'tooltip';
+
     Blockly.Msg.LANG_VR_OBJECT_TITLE = 'object';
 
+    Blockly.Msg.LANG_VR_OBJECT_OBJECT = 'object';
+    Blockly.Msg.LANG_VR_OBJECT_RIGID_OBJECT = 'rigid object';
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_OBJECT = 'soft object';
+
     Blockly.Msg.LANG_VR_OBJECT_BOX_HELPURL = '';
-    Blockly.Msg.LANG_VR_OBJECT_BOX = 'box';
+    Blockly.Msg.LANG_VR_OBJECT_BOX = 'rigid box';
     Blockly.Msg.LANG_VR_OBJECT_BOX_TOOLTIP = 'tooltip';
 
     Blockly.Msg.LANG_VR_OBJECT_CONE_HELPURL = '';
-    Blockly.Msg.LANG_VR_OBJECT_CONE = 'cone';
+    Blockly.Msg.LANG_VR_OBJECT_CONE = 'rigid cone';
     Blockly.Msg.LANG_VR_OBJECT_CONE_TOOLTIP = 'tooltip';
 
     Blockly.Msg.LANG_VR_OBJECT_CYLINDER_HELPURL = '';
-    Blockly.Msg.LANG_VR_OBJECT_CYLINDER = 'cylinder';
+    Blockly.Msg.LANG_VR_OBJECT_CYLINDER = 'rigid cylinder';
     Blockly.Msg.LANG_VR_OBJECT_CYLINDER_TOOLTIP = 'tooltip';
 
     Blockly.Msg.LANG_VR_OBJECT_DODECAHEDRON_HELPURL = '';
-    Blockly.Msg.LANG_VR_OBJECT_DODECAHEDRON = 'dodecahedron';
+    Blockly.Msg.LANG_VR_OBJECT_DODECAHEDRON = 'rigid dodecahedron';
     Blockly.Msg.LANG_VR_OBJECT_DODECAHEDRON_TOOLTIP = 'tooltip';
 
     Blockly.Msg.LANG_VR_OBJECT_ICOSAHEDRON_HELPURL = '';
-    Blockly.Msg.LANG_VR_OBJECT_ICOSAHEDRON = 'icosahedron';
+    Blockly.Msg.LANG_VR_OBJECT_ICOSAHEDRON = 'rigid icosahedron';
     Blockly.Msg.LANG_VR_OBJECT_ICOSAHEDRON_TOOLTIP = 'tooltip';
 
     Blockly.Msg.LANG_VR_OBJECT_OCTAHEDRON_HELPURL = '';
-    Blockly.Msg.LANG_VR_OBJECT_OCTAHEDRON = 'octahedron';
+    Blockly.Msg.LANG_VR_OBJECT_OCTAHEDRON = 'rigid octahedron';
     Blockly.Msg.LANG_VR_OBJECT_OCTAHEDRON_TOOLTIP = 'tooltip';
 
     Blockly.Msg.LANG_VR_OBJECT_SPHERE_HELPURL = '';
-    Blockly.Msg.LANG_VR_OBJECT_SPHERE = 'sphere';
+    Blockly.Msg.LANG_VR_OBJECT_SPHERE = 'rigid sphere';
     Blockly.Msg.LANG_VR_OBJECT_SPHERE_TOOLTIP = 'tooltip';
 
     Blockly.Msg.LANG_VR_OBJECT_TETRAHEDRON_HELPURL = '';
-    Blockly.Msg.LANG_VR_OBJECT_TETRAHEDRON = 'tetrahedron';
+    Blockly.Msg.LANG_VR_OBJECT_TETRAHEDRON = 'rigid tetrahedron';
     Blockly.Msg.LANG_VR_OBJECT_TETRAHEDRON_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_BOX_HELPURL = '';
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_BOX = 'soft box';
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_BOX_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_CONE_HELPURL = '';
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_CONE = 'soft cone';
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_CONE_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_CYLINDER_HELPURL = '';
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_CYLINDER = 'soft cylinder';
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_CYLINDER_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_DODECAHEDRON_HELPURL = '';
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_DODECAHEDRON = 'soft dodecahedron';
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_DODECAHEDRON_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_ICOSAHEDRON_HELPURL = '';
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_ICOSAHEDRON = 'soft icosahedron';
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_ICOSAHEDRON_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_OCTAHEDRON_HELPURL = '';
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_OCTAHEDRON = 'soft octahedron';
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_OCTAHEDRON_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_SPHERE_HELPURL = '';
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_SPHERE = 'soft sphere';
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_SPHERE_TOOLTIP = 'tooltip';
+
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_TETRAHEDRON_HELPURL = '';
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_TETRAHEDRON = 'soft tetrahedron';
+    Blockly.Msg.LANG_VR_OBJECT_SOFT_TETRAHEDRON_TOOLTIP = 'tooltip';
 
 // Control Blocks
     Blockly.Msg.LANG_CATEGORY_CONTROLS = 'Control';

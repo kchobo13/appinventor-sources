@@ -314,7 +314,7 @@ Blockly.Blocks['math_power'] = {
 
 Blockly.Blocks['math_random_int'] = {
   // Random integer between [X] and [Y].
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: Blockly.Msg.LANG_MATH_RANDOM_INT_HELPURL,
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -340,7 +340,7 @@ Blockly.Blocks['math_random_int'] = {
 
 Blockly.Blocks['math_random_float'] = {
   // Random fraction between 0 and 1.
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: Blockly.Msg.LANG_MATH_RANDOM_FLOAT_HELPURL,
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -373,7 +373,7 @@ Blockly.Blocks['math_random_set_seed'] = {
 Blockly.Blocks['math_on_list'] = {
   // Evaluate a list of numbers to return sum, average, min, max, etc.
   // Some functions also work on text (min, max, mode, median).
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: '',
   init: function () {
     // Assign 'this' to a variable for use in the closures below.
@@ -455,7 +455,7 @@ Blockly.Blocks.math_on_list.TOOLTIPS = function () {
 
 Blockly.Blocks['math_single'] = {
   // Advanced math operators with single operand.
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
     return Blockly.Blocks.math_single.HELPURLS()[mode];
@@ -563,7 +563,7 @@ Blockly.Blocks.math_single.HELPURLS = function () {
 
 Blockly.Blocks['math_abs'] = {
   // Advanced math operators with single operand.
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
     return Blockly.Blocks.math_single.HELPURLS[mode];
@@ -586,7 +586,7 @@ Blockly.Blocks['math_abs'] = {
 
 Blockly.Blocks['math_neg'] = {
   // Advanced math operators with single operand.
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
     return Blockly.Blocks.math_single.HELPURLS[mode];
@@ -609,7 +609,7 @@ Blockly.Blocks['math_neg'] = {
 
 Blockly.Blocks['math_round'] = {
   // Advanced math operators with single operand.
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
     return Blockly.Blocks.math_single.HELPURLS[mode];
@@ -632,7 +632,7 @@ Blockly.Blocks['math_round'] = {
 
 Blockly.Blocks['math_ceiling'] = {
   // Advanced math operators with single operand.
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
     return Blockly.Blocks.math_single.HELPURLS[mode];
@@ -655,7 +655,7 @@ Blockly.Blocks['math_ceiling'] = {
 
 Blockly.Blocks['math_floor'] = {
   // Advanced math operators with single operand.
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
     return Blockly.Blocks.math_single.HELPURLS[mode];
@@ -745,7 +745,7 @@ Blockly.Blocks.math_divide.HELPURLS = function () {
 
 Blockly.Blocks['math_trig'] = {
   // Trigonometry operators.
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
     return Blockly.Blocks.math_trig.HELPURLS()[mode];
@@ -835,7 +835,7 @@ Blockly.Blocks.math_trig.HELPURLS = function () {
 
 Blockly.Blocks['math_cos'] = {
   // Trigonometry operators.
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
     return Blockly.Blocks.math_trig.HELPURLS()[mode];
@@ -858,7 +858,7 @@ Blockly.Blocks['math_cos'] = {
 
 Blockly.Blocks['math_tan'] = {
   // Trigonometry operators.
-  category: 'Math',
+  category: 'VR_Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
     return Blockly.Blocks.math_trig.HELPURLS()[mode];

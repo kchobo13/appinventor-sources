@@ -22,9 +22,12 @@ public final class VRBlocksEditor extends BlocksEditor<VRBlocksNode, VREditorEdi
 
   private static final BlocksLanguage JAVASCRIPT =
       new BlocksLanguage("JavaScript",
+          new BlocksCategory("VR_Colors", IMAGES.colors()),
           new BlocksCategory("VR_Commands", IMAGES.control()),
           new BlocksCategory("VR_Controls", IMAGES.control()),
           new BlocksCategory("VR_Events", IMAGES.procedures()),
+          new BlocksCategory("VR_Lights", IMAGES.control()),
+          new BlocksCategory("VR_Lists", IMAGES.lists()),
           new BlocksCategory("VR_Logic", IMAGES.logic()),
           new BlocksCategory("VR_Math", IMAGES.math()),
           new BlocksCategory("VR_Objects", IMAGES.control()),
@@ -77,7 +80,7 @@ public final class VRBlocksEditor extends BlocksEditor<VRBlocksNode, VREditorEdi
     String screenName = getFileId().substring(3, getFileId().length() - 4);
     OdeLog.log("yail filename: " + yailFileName());
     OdeLog.log("designer appname: " + designer.getAppName());
-    String code = "#|\n$Source $Yail\n|#\n\n(define-form appinventor.ai_test.qqq." + screenName + " " + screenName + ")\n(require <com.google.youngandroid.runtime>)\n\n;;; " + screenName + "\n\n(do-after-form-creation (set-and-coerce-property! '" + screenName + " 'AppName \"test\" 'text)\n (set-and-coerce-property! '" + screenName + " 'Title \"" + screenName + "\" 'text)\n)\n\n;;; WebViewer1\n\n(add-component " + screenName + " com.google.appinventor.components.runtime.WebViewer WebViewer1 \n(set-and-coerce-property! 'WebViewer1 'HomeUrl \"google.com\" 'text)\n\n)\n\n(init-runtime)";
+    String code = "#|\n$Source $Yail\n|#\n\n(define-form appinventor.ai_test.qqq." + screenName + " " + screenName + ")\n(require <com.google.youngandroid.runtime>)\n\n;;; " + screenName + "\n\n(do-after-form-creation (set-and-coerce-property! '" + screenName + " 'AppName \"test\" 'text)\n (set-and-coerce-property! '" + screenName + " 'Title \"" + screenName + "\" 'text)\n)\n\n;;; VRWebViewer\n\n(add-component " + screenName + " com.google.appinventor.components.runtime.VRWebViewer VRWebViewer \n(set-and-coerce-property! 'VRWebViewer 'HomeUrl \"google.com\" 'text)\n\n)\n\n(init-runtime)";
     OdeLog.log("code: " + code);
     //return new FileDescriptorWithContent(getProjectId(), yailFileName(), code);
     //    blocksArea.getCode(designer.encodeWebViewerAsJsonString(),

@@ -33,6 +33,7 @@ import com.google.appinventor.client.editor.simple.components.MockTextBox;
 import com.google.appinventor.client.editor.simple.components.MockTimePicker;
 import com.google.appinventor.client.editor.simple.components.MockVerticalArrangement;
 import com.google.appinventor.client.editor.simple.components.MockVideoPlayer;
+import com.google.appinventor.client.editor.simple.components.MockVRWebViewer;
 import com.google.appinventor.client.editor.simple.components.MockWebViewer;
 import com.google.appinventor.shared.simple.ComponentDatabaseInterface;
 import com.google.common.collect.Maps;
@@ -123,6 +124,8 @@ public class BaseComponentFactory implements ComponentFactory {
       return new MockImagePicker(editor);
     } else if (name.equals(MockVideoPlayer.TYPE)) {
       return new MockVideoPlayer(editor);
+    } else if (name.equals(MockVRWebViewer.TYPE)) {
+      return new MockVRWebViewer(editor);
     } else if (name.equals(MockWebViewer.TYPE)) {
       return new MockWebViewer(editor);
     } else if (name.equals(MockSpinner.TYPE)) {

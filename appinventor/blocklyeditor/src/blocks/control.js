@@ -515,7 +515,7 @@ Blockly.Blocks['controls_eval_but_ignore'] = {
 
 Blockly.Blocks['controls_openAnotherScreen'] = {
   // Open another screen
-  category: 'Control',
+  category: 'VR_Controls',
   helpUrl: Blockly.Msg.LANG_CONTROLS_OPEN_ANOTHER_SCREEN_HELPURL,
   init: function () {
     this.setColour(Blockly.CONTROL_CATEGORY_HUE);
@@ -532,7 +532,7 @@ Blockly.Blocks['controls_openAnotherScreen'] = {
 
 Blockly.Blocks['controls_openAnotherScreenWithStartValue'] = {
   // Open another screen with start value
-  category: 'Control',
+  category: 'VR_Controls',
   helpUrl: Blockly.Msg.LANG_CONTROLS_OPEN_ANOTHER_SCREEN_WITH_START_VALUE_HELPURL,
   init: function () {
     this.setColour(Blockly.CONTROL_CATEGORY_HUE);

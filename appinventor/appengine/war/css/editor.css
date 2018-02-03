@@ -226,7 +226,6 @@ div > canvas {
   outline: none;
   padding: 0.25rem;
   border: 1px solid #32383f;
-  text-transform: uppercase;
   letter-spacing: 1px;
   transition: background-color 0.2s;
 }
@@ -357,6 +356,23 @@ div > canvas {
   color: #32383f;
 }
 
+.dropdown-text {
+  width: 100%;
+  -webkit-appearance: none;
+  background-color: #32383f;
+  border: none;
+  border-radius: 0;
+  color: #fff;
+  font-size: 1rem;
+  height: 1.5rem;
+  letter-spacing: 1px;
+  outline: none;
+}
+
+.dropdown-text:hover {
+  background-color: #464c52;
+}
+
 #lights-tab-body {
   display: none;
 }
@@ -387,6 +403,21 @@ hr {
 }
 
 #parameter-wrapper-4 {
+  width: 100%;
+  display: none;
+}
+
+#parameter-wrapper-5 {
+  width: 100%;
+  display: none;
+}
+
+#parameter-wrapper-6 {
+  width: 100%;
+  display: none;
+}
+
+#parameter-wrapper-7 {
   width: 100%;
   display: none;
 }

@@ -24,7 +24,10 @@ import com.google.appinventor.client.properties.json.ClientJsonParser;
 import com.google.appinventor.client.widgets.dnd.DropTarget;
 import com.google.appinventor.client.widgets.properties.EditableProperties;
 import com.google.appinventor.shared.properties.json.JSONObject;
+import com.google.appinventor.shared.rpc.project.FolderNode;
+import com.google.appinventor.shared.rpc.project.ProjectNode;
 import com.google.appinventor.shared.rpc.project.vr.VREditorNode;
+import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidProjectNode;
 import com.google.appinventor.client.output.OdeLog;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONException;
@@ -42,6 +45,7 @@ public class VREditorEditor extends DesignerEditor<VREditorNode, MockVREditor, V
 
   private String preUpgradeJson = null;
   private String content = null;
+  private String projectIdString;
 
   public VREditorEditor(ProjectEditor projectEditor, VREditorNode sourceNode) {
     super(projectEditor, sourceNode, VREditorDatabase.getInstance(sourceNode.getProjectId()),
@@ -60,6 +64,7 @@ public class VREditorEditor extends DesignerEditor<VREditorNode, MockVREditor, V
     palettePanel.setSize("100%", "100%");
     componentDatabaseChangeListeners.add(palettePanel);
     exportMethodToJavaScript();
+    projectIdString = String.valueOf(sourceNode.getProjectId());
   }
 
   @Override
@@ -174,7 +179,8 @@ public class VREditorEditor extends DesignerEditor<VREditorNode, MockVREditor, V
   protected String encodeWebViewerAsJsonString(String blocksCode) {
     //return "{\"authURL\":[\"localhost\"],\"YaVersion\":\"159\",\"Source\":\"Form\",\"Properties\":{\"$Name\":\"VRScreen1\",\"$Type\":\"Form\",\"$Version\":\"1\",\"Uuid\":\"0\",\"$Components\":[{\"$Name\":\"WebViewer1\",\"$Type\":\"WebViewer\",\"$Version\":\"6\",\"Height\":\"-2\",\"Width\":\"-2\",\"HomeUrl\":\"https://kevin-vr.github.io/vr/\",\"VRJSON\":\"" + encodeVREditorAsURIJsonString() + "\", \"Uuid\":\"1757245564\"}]}}";
     OdeLog.log("VREditorEditor: encodeWebViewerAsJsonString");
-    String jsonString = "{\"authURL\":[\"localhost\"],\"YaVersion\":\"159\",\"Source\":\"Form\",\"Properties\":{\"$Name\":\"VRScreen1\",\"$Type\":\"Form\",\"$Version\":\"1\",\"Uuid\":\"0\",\"$Components\":[{\"$Name\":\"WebViewer1\",\"$Type\":\"WebViewer\",\"$Version\":\"6\",\"HomeUrl\":\"https://kevin-vr.github.io/vr/\",\"VRJSON\":\"" + encodeVREditorAsURIJsonString() + "\",\"VRJS\":\"" + blocksCode + "\", \"Uuid\":\"1757245564\"}]}}";
+    //String jsonString = "{\"authURL\":[\"localhost\"],\"YaVersion\":\"159\",\"Source\":\"Form\",\"Properties\":{\"$Name\":\"VRScreen1\",\"$Type\":\"Form\",\"$Version\":\"1\",\"Uuid\":\"0\",\"$Components\":[{\"$Name\":\"VRWebViewer\",\"$Type\":\"VRWebViewer\",\"$Version\":\"6\",\"HomeUrl\":\"https://kevin-vr.github.io/vr/\",\"VRJSON\":\"" + encodeVREditorAsURIJsonString() + "\",\"VRJS\":\"" + blocksCode + "\", \"Uuid\":\"1757245564\"}]}}";
+    String jsonString = "{\"authURL\":[\"localhost\"],\"YaVersion\":\"159\",\"Source\":\"Form\",\"Properties\":{\"$Name\":\"VRScreen1\",\"$Type\":\"Form\",\"$Version\":\"1\",\"Uuid\":\"0\",\"$Components\":[{\"$Name\":\"VRWebViewer\",\"$Type\":\"VRWebViewer\",\"$Version\":\"6\",\"HomeUrl\":\"http://localhost:8015/vr\",\"VRJSON\":\"" + encodeVREditorAsURIJsonString() + "\",\"VRJS\":\"" + blocksCode + "\", \"Uuid\":\"1757245564\"}]}}";
     OdeLog.log("jsonString: " + jsonString);
     return jsonString;
     //return "{\"authURL\":[\"localhost\"],\"YaVersion\":\"159\",\"Source\":\"Form\",\"Properties\":{\"$Name\":\"VRScreen1\",\"$Type\":\"Form\",\"$Version\":\"1\",\"Uuid\":\"0\",\"$Components\":[{\"$Name\":\"WebViewer1\",\"$Type\":\"WebViewer\",\"$Version\":\"6\",\"Height\":\"-2\",\"Width\":\"-2\",\"HomeUrl\":\"https://webvr.info/samples/03-vr-presentation.html?polyfill=1\",\"VRJSON\":\"" + encodeVREditorAsURIJsonString() + "\", \"Uuid\":\"1757245564\"}]}}";
@@ -219,7 +225,24 @@ public class VREditorEditor extends DesignerEditor<VREditorNode, MockVREditor, V
   private native void exportMethodToJavaScript() /*-{
     $wnd.loadScene = $entry(this.@com.google.appinventor.client.editor.vr.VREditorEditor::loadScene()).bind(this);
     $wnd.saveScene = $entry(this.@com.google.appinventor.client.editor.vr.VREditorEditor::saveScene()).bind(this);
+    $wnd.getProjectAssets = $entry(this.@com.google.appinventor.client.editor.vr.VREditorEditor::getProjectAssets()).bind(this);
+    $wnd.getProjectIdString = $entry(this.@com.google.appinventor.client.editor.vr.VREditorEditor::getProjectIdString()).bind(this);
   }-*/;
+
+  private String getProjectAssets() {
+    String assetString = "";
+    final YoungAndroidProjectNode projectRootNode = (YoungAndroidProjectNode) Ode.getInstance().getCurrentYoungAndroidProjectRootNode();
+    FolderNode assetsFolder = projectRootNode.getAssetsFolder();
+    for (ProjectNode node : assetsFolder.getChildren()) {
+      OdeLog.log(node.getName() + " " + node.getFileId());
+      assetString = assetString + "," + node.getName();
+    } 
+    return assetString.substring(1);
+  }
+
+  private String getProjectIdString() {
+    return projectIdString;
+  }
 
   /*`
   private com.google.gwt.json.client.JSONObject encodeComponentProperties(MockComponent component) {
