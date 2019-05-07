@@ -22,7 +22,7 @@ function initEditor() {
   var mouseInitialization = false;
   var onDownPosition = new THREE.Vector2();
   var onUpPosition = new THREE.Vector2();
-  var INTERSECTED, CLICKED;
+  var INTERSECTED, CLICKED, CURRENTDRAG;
 
   var cameraCube, sceneCube, equirectMaterial;
 
@@ -181,7 +181,7 @@ function initEditor() {
 
     transformControls.addEventListener("change", function() {
       updateInputs();
-      if (CLICKED && !isObject(CLICKED) && (CLICKED.light.isDirectionalLight || CLICKED.light.isHemisphereLight || CLICKED.light.isSpotLight)) {
+      if (CLICKED && !isObject(CLICKED) && (CLICKED.light && (CLICKED.light.isDirectionalLight || CLICKED.light.isHemisphereLight || CLICKED.light.isSpotLight))) {
         CLICKED.update();
       }
     });
@@ -243,7 +243,7 @@ function initEditor() {
       raycaster.setFromCamera(mouse, camera);
       var intersects = raycaster.intersectObjects(objects.concat(lights));
       if (intersects.length > 0) {
-        if (isObject(intersects[0].object)) {
+        if (isObject(intersects[0].object) || isGroup(intersects[0].object)) {
           focusObject(intersects[0].object);
         } else {
           focusLight(intersects[0].object);
@@ -255,9 +255,11 @@ function initEditor() {
         transformControls.detach();
         parameterWrapper2.innerHTML = "";
         parameterWrapper4.innerHTML = "";
-        if (isObject(CLICKED)) {
-          selectedObjectDiv.classList.remove("list-active");
-          selectedObjectDiv.classList.add("list-inactive");
+        if (isObject(CLICKED) || isGroup(CLICKED)) {
+          selectedObjectDiv.forEach(function(c) {
+            c.classList.remove("list-active");
+            c.classList.add("list-inactive");
+          });
           selectedObjectDiv = null;
         } else {
           selectedLightDiv.classList.remove("list-active");
@@ -275,16 +277,18 @@ function initEditor() {
     var objectDiv = objectList.children[objects.indexOf(object)];
     objectDiv.classList.remove("list-inactive");
     objectDiv.classList.add("list-active");
-    if (selectedObjectDiv && selectedObjectDiv != objectDiv) {
-      selectedObjectDiv.classList.remove("list-active");
-      selectedObjectDiv.classList.add("list-inactive");
+    if (selectedObjectDiv && selectedObjectDiv != [objectDiv]) {
+      selectedObjectDiv.forEach(function(c) {
+        c.classList.remove("list-active");
+        c.classList.add("list-inactive");
+      });
     }
     if (selectedLightDiv) {
       selectedLightDiv.classList.remove("list-active");
       selectedLightDiv.classList.add("list-inactive");
       selectedLightDiv = null;
     }
-    selectedObjectDiv = objectDiv;
+    selectedObjectDiv = [objectDiv];
     if (!trsEnabled) {
       enableTRS();
     }
@@ -305,8 +309,10 @@ function initEditor() {
       selectedLightDiv.classList.add("list-inactive");
     }
     if (selectedObjectDiv) {
-      selectedObjectDiv.classList.remove("list-active");
-      selectedObjectDiv.classList.add("list-inactive");
+      selectedObjectDiv.forEach(function(c) {
+        c.classList.remove("list-active");
+        c.classList.add("list-inactive");
+      });
       selectedObjectDiv = null;
     }
     selectedLightDiv = lightDiv;
@@ -406,9 +412,18 @@ function initEditor() {
     return (typeof t.material !== "undefined" && t.material.isMeshPhongMaterial);
   }
 
+  function isGroup(t) {
+
+    if (t.type) {
+      return t.type == "Group";
+    } else {
+      return false;
+    }
+  }
+
   function updateInputs() {
     if (CLICKED) {
-      if (isObject(CLICKED)) {
+      if (isObject(CLICKED) || isGroup(CLICKED)) {
         objectPositionXInput.value = CLICKED.position.x.toFixed(3);
         objectPositionYInput.value = CLICKED.position.y.toFixed(3);
         objectPositionZInput.value = CLICKED.position.z.toFixed(3);
@@ -418,7 +433,9 @@ function initEditor() {
         scaleXInput.value = CLICKED.scale.x.toFixed(3);
         scaleYInput.value = CLICKED.scale.y.toFixed(3);
         scaleZInput.value = CLICKED.scale.z.toFixed(3);
-        objectColorInput.value = "#" + CLICKED.material.color.getHexString();
+        if (isObject(CLICKED)) {
+          objectColorInput.value = "#" + CLICKED.material.color.getHexString();
+        }
         textureInput.value = CLICKED.textureURL;
         massInput.value = CLICKED.mass.toFixed(3);
         linearVelocityXInput.value = CLICKED.linearVelocityX.toFixed(3);
@@ -427,7 +444,7 @@ function initEditor() {
         angularVelocityXInput.value = CLICKED.angularVelocityX.toFixed(3);
         angularVelocityYInput.value = CLICKED.angularVelocityY.toFixed(3);
         angularVelocityZInput.value = CLICKED.angularVelocityZ.toFixed(3);
-      } else if (!CLICKED.light.isAmbientLight) {
+      } else if (CLICKED.light && !CLICKED.light.isAmbientLight) {
         lightPositionXInput.value = CLICKED.light.position.x.toFixed(3);
         lightPositionYInput.value = CLICKED.light.position.y.toFixed(3);
         lightPositionZInput.value = CLICKED.light.position.z.toFixed(3);
@@ -436,7 +453,7 @@ function initEditor() {
   }
 
   function updateVisibility() {
-    if (CLICKED && isObject(CLICKED)) {
+    if (CLICKED && (isObject(CLICKED)||isGroup(CLICKED))) {
       parameterWrapper1.style.display = "block";
       parameterWrapper3.style.display = "block";
     } else {
@@ -551,6 +568,20 @@ function initEditor() {
           clone.angularVelocityY = CLICKED.angularVelocityY;
           clone.angularVelocityZ = CLICKED.angularVelocityZ;
           addObjectToScene(clone, true);
+        } else if (isGroup(CLICKED)) {
+          var clone = CLICKED.clone();
+          clone.geometry = cloneGeometry;
+          clone.material = cloneMaterial;
+          clone.position.addScalar(2);
+          clone.textureURL = CLICKED.textureURL;
+          clone.mass = CLICKED.mass;
+          clone.linearVelocityX = CLICKED.linearVelocityX;
+          clone.linearVelocityY = CLICKED.linearVelocityY;
+          clone.linearVelocityZ = CLICKED.linearVelocityZ;
+          clone.angularVelocityX = CLICKED.angularVelocityX;
+          clone.angularVelocityY = CLICKED.angularVelocityY;
+          clone.angularVelocityZ = CLICKED.angularVelocityZ;
+          addObjectToScene(clone, true);
         } else {
           if (CLICKED.light.isAmbientLight) {
             var ambientLight = new THREE.AmbientLight(CLICKED.light.color, CLICKED.light.intensity);
@@ -608,11 +639,20 @@ function initEditor() {
     deleteButton.addEventListener("click", function() {
       if (CLICKED) {
         transformControls.detach();
-        if (isObject(CLICKED)) {
+        if (isObject(CLICKED) && CLICKED.children.length == 0) {
           var index = objects.indexOf(CLICKED);
           objects.splice(index, 1);
           selectedObjectDiv = null;
           objectList.removeChild(objectList.children[index]);
+          CLICKED.parent.remove(CLICKED);
+        } else if (isGroup(CLICKED)|| isObject(CLICKED) && CLICKED.children.length > 0) {
+          var index = objects.indexOf(CLICKED);
+          objects.splice(index, CLICKED.children.length +1);
+          selectedObjectDiv = null;
+          for (var i = CLICKED.children.length; i >= 0; i--) {
+            console.log(objectList.children[index+i]);
+            objectList.removeChild(objectList.children[index+i]);
+          }
         } else {
           var index = lights.indexOf(CLICKED);
           lights.splice(index, 1);
@@ -620,6 +660,7 @@ function initEditor() {
           lightList.removeChild(lightList.children[index]);
           scene.remove(CLICKED.light);
         }
+
         scene.remove(CLICKED);
         CLICKED = null;
         updateVisibility();
@@ -804,6 +845,17 @@ function initEditor() {
     lightList.innerHTML = "";
   }
 
+  function syncObjectList() {
+    var newObjects = []
+    for (var i = 0; i < objects.length; i ++) {
+      var objectName = objectList.children[i].textContent;
+      newObjects.push(objects.filter( o => {
+        return o.name === objectName;
+      })[0]);
+    };
+    objects = newObjects;
+  }
+
   function generateSceneJSONString() {
     var sceneJSON = [];
     var worldJSON = {};
@@ -947,6 +999,7 @@ function initEditor() {
     var octahedronButton = document.getElementById("octahedron");
     var sphereButton = document.getElementById("sphere");
     var tetrahedronButton = document.getElementById("tetrahedron");
+    var groupButton = document.getElementById("group");
     var ambientButton = document.getElementById("ambient");
     var directionalButton = document.getElementById("directional");
     var hemisphereButton = document.getElementById("hemisphere");
@@ -1018,6 +1071,12 @@ function initEditor() {
       tetrahedron.name = "Tetrahedron";
       setOtherParameters(tetrahedron);
       addObjectToScene(tetrahedron, true);
+    });
+    groupButton.addEventListener("click", function() {
+      var group = new THREE.Group();
+      group.name = "Group";
+      setOtherParameters(group);
+      addObjectToScene(group, true);
     });
     ambientButton.addEventListener("click", function() {
       var ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -1145,25 +1204,104 @@ function initEditor() {
     object.angularVelocityZ = 0;
   }
 
+  function findObjectIdByName(objectName) {
+    return objects.filter(function(o) {
+      return o.name == objectName;
+    })[0];
+  };
+
+  function removeParent(parent, child) {
+    child.parent = parent.parent;
+  }
+
   function addToObjectList(object) {
     var objectDiv = document.createElement("div");
     objectDiv.classList.add("list-item");
     objectDiv.classList.add("list-inactive");
+    objectDiv.setAttribute("draggable", true);
+
+    objectDiv.addEventListener( 'drag', function(e) {
+      CURRENTDRAG = this;
+    }, false );
+    objectDiv.addEventListener( 'dragstart', function(e) {
+      console.log("drag started");
+    }, false ); // Firefox needs this
+
+    objectDiv.addEventListener( 'dragover', function(e) {
+      e.preventDefault();
+      if (this === CURRENTDRAG) return;
+
+      var area = e.offsetY / this.clientHeight;
+
+      if ( area < 0.2 ) {
+        this.className = 'list-item list-inactive dragTop';
+      } else if ( area > 0.8 ) {
+        this.className = 'list-item list-inactive dragBottom';
+      } else {
+        this.className = 'list-item list-inactive drag';
+      }
+      e.dataTransfer.dropEffect = 'copy';
+    }, false );
+
+    objectDiv.addEventListener( 'dragleave', function (e) {
+      if (this === CURRENTDRAG ) return;
+      this.className = 'list-item list-inactive';
+    }, false );
+
+    objectDiv.addEventListener( 'drop', function (e) {
+      if (this === CURRENTDRAG) return;
+      this.className = "list-item list-inactive";
+      var area = e.offsetY / this.clientHeight;
+      var currentDragObject = findObjectIdByName(CURRENTDRAG.textContent);
+      var parentObject = findObjectIdByName(this.textContent);
+      var paddingValue = parseInt(this.style.paddingLeft);
+      if (area < 0.2) {
+        if (paddingValue) {
+          CURRENTDRAG.style.paddingLeft = paddingValue + "px";
+        } else {
+          CURRENTDRAG.style.paddingLeft = "";
+        }
+        this.before(CURRENTDRAG);
+        removeParent(parentObject, currentDragObject);
+      } else if (area > 0.8) {
+        if (paddingValue) {
+          CURRENTDRAG.style.paddingLeft = paddingValue + "px";
+        } else {
+          CURRENTDRAG.style.paddingLeft = "";
+        }
+        this.after(CURRENTDRAG);
+        removeParent(parentObject, currentDragObject);
+      } else {
+        if (paddingValue) {
+          paddingValue += 10;
+          CURRENTDRAG.style.paddingLeft = paddingValue + "px";
+        } else {
+          CURRENTDRAG.style.paddingLeft = "10px";
+        }
+
+        this.after(CURRENTDRAG);
+        parentObject.add(currentDragObject);
+      }
+      syncObjectList();
+    }, false );
+
     objectDiv.innerHTML = object.name;
     objectList.appendChild(objectDiv);
-    objectDiv.addEventListener("click", function() {
+    objectDiv.addEventListener("click", function(e) {
       objectDiv.classList.remove("list-inactive");
       objectDiv.classList.add("list-active");
-      if (selectedObjectDiv && selectedObjectDiv != objectDiv) {
-        selectedObjectDiv.classList.remove("list-active");
-        selectedObjectDiv.classList.add("list-inactive");
+      if (selectedObjectDiv && selectedObjectDiv != [objectDiv]) {
+        selectedObjectDiv.forEach(function(c) {
+          c.classList.remove("list-active");
+          c.classList.add("list-inactive");
+        });
       }
       if (selectedLightDiv) {
         selectedLightDiv.classList.remove("list-active");
         selectedLightDiv.classList.add("list-inactive");
         selectedLightDiv = null;
       }
-      selectedObjectDiv = objectDiv;
+      selectedObjectDiv = [objectDiv];
       if (!trsEnabled) {
         enableTRS();
       }
@@ -1204,8 +1342,10 @@ function initEditor() {
         selectedLightDiv.classList.add("list-inactive");
       }
       if (selectedObjectDiv) {
-        selectedObjectDiv.classList.remove("list-active");
-        selectedObjectDiv.classList.add("list-inactive");
+        selectedObjectDiv.forEach(function(c) {
+          c.classList.remove("list-active");
+          c.classList.add("list-inactive");
+        });
         selectedObjectDiv = null;
       }
       selectedLightDiv = lightDiv;
@@ -1476,96 +1616,98 @@ function initEditor() {
   }
 
   function addObjectSpecificParameters() {
-    switch (CLICKED.geometry.type) {
-      case "BoxBufferGeometry":
-        parameterWrapper2.innerHTML = "<div class=\"parameter-label\">Width</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"box-width\" type=\"number\" step=\"0.001\"></div></div>" +
-        "<div class=\"parameter-label\">Height</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"box-height\" type=\"number\" step=\"0.001\"></div></div>" +
-        "<div class=\"parameter-label\">Depth</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"box-depth\" type=\"number\" step=\"0.001\"></div></div>";
-        var boxWidthInput = document.getElementById("box-width");
-        var boxHeightInput = document.getElementById("box-height");
-        var boxDepthInput = document.getElementById("box-depth");
-        boxWidthInput.value = CLICKED.geometry.parameters.width.toFixed(3);
-        boxHeightInput.value = CLICKED.geometry.parameters.height.toFixed(3);
-        boxDepthInput.value = CLICKED.geometry.parameters.depth.toFixed(3);
-        addParameterListeners(boxWidthInput, "boxwidth");
-        addParameterListeners(boxHeightInput, "boxheight");
-        addParameterListeners(boxDepthInput, "boxdepth");
-        break;
-      case "ConeBufferGeometry":
-        parameterWrapper2.innerHTML = "<div class=\"parameter-label\">Radius</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"cone-radius\" type=\"number\" step=\"0.001\"></div></div>" +
-        "<div class=\"parameter-label\">Height</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"cone-height\" type=\"number\" step=\"0.001\"></div></div>" +
-        "<div class=\"parameter-label\">Radial Segments</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"cone-radial-segments\" type=\"number\"></div></div>";
-        var coneRadiusInput = document.getElementById("cone-radius");
-        var coneHeightInput = document.getElementById("cone-height");
-        var coneRadialSegmentsInput = document.getElementById("cone-radial-segments");
-        coneRadiusInput.value = CLICKED.geometry.parameters.radius.toFixed(3);
-        coneHeightInput.value = CLICKED.geometry.parameters.height.toFixed(3);
-        coneRadialSegmentsInput.value = CLICKED.geometry.parameters.radialSegments.toFixed();
-        addParameterListeners(coneRadiusInput, "coneradius");
-        addParameterListeners(coneHeightInput, "coneheight");
-        addParameterListeners(coneRadialSegmentsInput, "coneradialsegments");
-        break;
-      case "CylinderBufferGeometry":
-        parameterWrapper2.innerHTML = "<div class=\"parameter-label\">Top Radius</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"cylinder-radius-top\" type=\"number\" step=\"0.001\"></div></div>" +
-        "<div class=\"parameter-label\">Bottom Radius</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"cylinder-radius-bottom\" type=\"number\" step=\"0.001\"></div></div>" +
-        "<div class=\"parameter-label\">Height</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"cylinder-height\" type=\"number\" step=\"0.001\"></div></div>" +
-        "<div class=\"parameter-label\">Radial Segments</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"cylinder-radial-segments\" type=\"number\"></div></div>";
-        var cylinderRadiusTopInput = document.getElementById("cylinder-radius-top");
-        var cylinderRadiusBottomInput = document.getElementById("cylinder-radius-bottom");
-        var cylinderHeightInput = document.getElementById("cylinder-height");
-        var cylinderRadialSegmentsInput = document.getElementById("cylinder-radial-segments");
-        cylinderRadiusTopInput.value = CLICKED.geometry.parameters.radiusTop.toFixed(3);
-        cylinderRadiusBottomInput.value = CLICKED.geometry.parameters.radiusBottom.toFixed(3);
-        cylinderHeightInput.value = CLICKED.geometry.parameters.height.toFixed(3);
-        cylinderRadialSegmentsInput.value = CLICKED.geometry.parameters.radialSegments.toFixed();
-        addParameterListeners(cylinderRadiusTopInput, "cylinderradiustop");
-        addParameterListeners(cylinderRadiusBottomInput, "cylinderradiusbottom");
-        addParameterListeners(cylinderHeightInput, "cylinderheight");
-        addParameterListeners(cylinderRadialSegmentsInput, "cylinderradialsegments");
-        break;
-      case "DodecahedronBufferGeometry":
-        parameterWrapper2.innerHTML = "<div class=\"parameter-label\">Radius</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"dodecahedron-radius\" type=\"number\" step=\"0.001\"></div></div>";
-        var dodecahedronRadiusInput = document.getElementById("dodecahedron-radius");
-        dodecahedronRadiusInput.value = CLICKED.geometry.parameters.radius.toFixed(3);
-        addParameterListeners(dodecahedronRadiusInput, "dodecahedronradius");
-        break;
-      case "IcosahedronBufferGeometry":
-        parameterWrapper2.innerHTML = "<div class=\"parameter-label\">Radius</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"icosahedron-radius\" type=\"number\" step=\"0.001\"></div></div>";
-        var icosahedronRadiusInput = document.getElementById("icosahedron-radius");
-        icosahedronRadiusInput.value = CLICKED.geometry.parameters.radius.toFixed(3);
-        addParameterListeners(icosahedronRadiusInput, "icosahedronradius");
-        break;
-      case "OctahedronBufferGeometry":
-        parameterWrapper2.innerHTML = "<div class=\"parameter-label\">Radius</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"octahedron-radius\" type=\"number\" step=\"0.001\"></div></div>";
-        var octahedronRadiusInput = document.getElementById("octahedron-radius");
-        octahedronRadiusInput.value = CLICKED.geometry.parameters.radius.toFixed(3);
-        addParameterListeners(octahedronRadiusInput, "octahedronradius");
-        break;
-      case "SphereBufferGeometry":
-        parameterWrapper2.innerHTML = "<div class=\"parameter-label\">Radius</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"sphere-radius\" type=\"number\" step=\"0.001\"></div></div>" +
-        "<div class=\"parameter-label\">Width Segments</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"sphere-width-segments\" type=\"number\"></div></div>" +
-        "<div class=\"parameter-label\">Height Segments</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"sphere-height-segments\" type=\"number\"></div></div>";
-        var sphereRadiusInput = document.getElementById("sphere-radius");
-        var sphereWidthSegmentsInput = document.getElementById("sphere-width-segments");
-        var sphereHeightSegmentsInput = document.getElementById("sphere-height-segments");
-        sphereRadiusInput.value = CLICKED.geometry.parameters.radius.toFixed(3);
-        sphereWidthSegmentsInput.value = CLICKED.geometry.parameters.widthSegments.toFixed();
-        sphereHeightSegmentsInput.value = CLICKED.geometry.parameters.heightSegments.toFixed();
-        addParameterListeners(sphereRadiusInput, "sphereradius");
-        addParameterListeners(sphereWidthSegmentsInput, "spherewidthsegments");
-        addParameterListeners(sphereHeightSegmentsInput, "sphereheightsegments");
-        break;
-      case "TetrahedronBufferGeometry":
-        parameterWrapper2.innerHTML = "<div class=\"parameter-label\">Radius</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"tetrahedron-radius\" type=\"number\" step=\"0.001\"></div></div>";
-        var tetrahedronRadiusInput = document.getElementById("tetrahedron-radius");
-        tetrahedronRadiusInput.value = CLICKED.geometry.parameters.radius.toFixed(3);
-        addParameterListeners(tetrahedronRadiusInput, "tetrahedronradius");
-        break;
-      default:
-        console.log("parameter 2 none");
-        parameterWrapper2.style.display = "none";
-        parameterWrapper2.innerHTML = "";
-        return;
+    if (CLICKED.type == "Mesh") {
+      switch (CLICKED.geometry.type) {
+        case "BoxBufferGeometry":
+          parameterWrapper2.innerHTML = "<div class=\"parameter-label\">Width</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"box-width\" type=\"number\" step=\"0.001\"></div></div>" +
+          "<div class=\"parameter-label\">Height</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"box-height\" type=\"number\" step=\"0.001\"></div></div>" +
+          "<div class=\"parameter-label\">Depth</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"box-depth\" type=\"number\" step=\"0.001\"></div></div>";
+          var boxWidthInput = document.getElementById("box-width");
+          var boxHeightInput = document.getElementById("box-height");
+          var boxDepthInput = document.getElementById("box-depth");
+          boxWidthInput.value = CLICKED.geometry.parameters.width.toFixed(3);
+          boxHeightInput.value = CLICKED.geometry.parameters.height.toFixed(3);
+          boxDepthInput.value = CLICKED.geometry.parameters.depth.toFixed(3);
+          addParameterListeners(boxWidthInput, "boxwidth");
+          addParameterListeners(boxHeightInput, "boxheight");
+          addParameterListeners(boxDepthInput, "boxdepth");
+          break;
+        case "ConeBufferGeometry":
+          parameterWrapper2.innerHTML = "<div class=\"parameter-label\">Radius</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"cone-radius\" type=\"number\" step=\"0.001\"></div></div>" +
+          "<div class=\"parameter-label\">Height</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"cone-height\" type=\"number\" step=\"0.001\"></div></div>" +
+          "<div class=\"parameter-label\">Radial Segments</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"cone-radial-segments\" type=\"number\"></div></div>";
+          var coneRadiusInput = document.getElementById("cone-radius");
+          var coneHeightInput = document.getElementById("cone-height");
+          var coneRadialSegmentsInput = document.getElementById("cone-radial-segments");
+          coneRadiusInput.value = CLICKED.geometry.parameters.radius.toFixed(3);
+          coneHeightInput.value = CLICKED.geometry.parameters.height.toFixed(3);
+          coneRadialSegmentsInput.value = CLICKED.geometry.parameters.radialSegments.toFixed();
+          addParameterListeners(coneRadiusInput, "coneradius");
+          addParameterListeners(coneHeightInput, "coneheight");
+          addParameterListeners(coneRadialSegmentsInput, "coneradialsegments");
+          break;
+        case "CylinderBufferGeometry":
+          parameterWrapper2.innerHTML = "<div class=\"parameter-label\">Top Radius</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"cylinder-radius-top\" type=\"number\" step=\"0.001\"></div></div>" +
+          "<div class=\"parameter-label\">Bottom Radius</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"cylinder-radius-bottom\" type=\"number\" step=\"0.001\"></div></div>" +
+          "<div class=\"parameter-label\">Height</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"cylinder-height\" type=\"number\" step=\"0.001\"></div></div>" +
+          "<div class=\"parameter-label\">Radial Segments</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"cylinder-radial-segments\" type=\"number\"></div></div>";
+          var cylinderRadiusTopInput = document.getElementById("cylinder-radius-top");
+          var cylinderRadiusBottomInput = document.getElementById("cylinder-radius-bottom");
+          var cylinderHeightInput = document.getElementById("cylinder-height");
+          var cylinderRadialSegmentsInput = document.getElementById("cylinder-radial-segments");
+          cylinderRadiusTopInput.value = CLICKED.geometry.parameters.radiusTop.toFixed(3);
+          cylinderRadiusBottomInput.value = CLICKED.geometry.parameters.radiusBottom.toFixed(3);
+          cylinderHeightInput.value = CLICKED.geometry.parameters.height.toFixed(3);
+          cylinderRadialSegmentsInput.value = CLICKED.geometry.parameters.radialSegments.toFixed();
+          addParameterListeners(cylinderRadiusTopInput, "cylinderradiustop");
+          addParameterListeners(cylinderRadiusBottomInput, "cylinderradiusbottom");
+          addParameterListeners(cylinderHeightInput, "cylinderheight");
+          addParameterListeners(cylinderRadialSegmentsInput, "cylinderradialsegments");
+          break;
+        case "DodecahedronBufferGeometry":
+          parameterWrapper2.innerHTML = "<div class=\"parameter-label\">Radius</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"dodecahedron-radius\" type=\"number\" step=\"0.001\"></div></div>";
+          var dodecahedronRadiusInput = document.getElementById("dodecahedron-radius");
+          dodecahedronRadiusInput.value = CLICKED.geometry.parameters.radius.toFixed(3);
+          addParameterListeners(dodecahedronRadiusInput, "dodecahedronradius");
+          break;
+        case "IcosahedronBufferGeometry":
+          parameterWrapper2.innerHTML = "<div class=\"parameter-label\">Radius</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"icosahedron-radius\" type=\"number\" step=\"0.001\"></div></div>";
+          var icosahedronRadiusInput = document.getElementById("icosahedron-radius");
+          icosahedronRadiusInput.value = CLICKED.geometry.parameters.radius.toFixed(3);
+          addParameterListeners(icosahedronRadiusInput, "icosahedronradius");
+          break;
+        case "OctahedronBufferGeometry":
+          parameterWrapper2.innerHTML = "<div class=\"parameter-label\">Radius</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"octahedron-radius\" type=\"number\" step=\"0.001\"></div></div>";
+          var octahedronRadiusInput = document.getElementById("octahedron-radius");
+          octahedronRadiusInput.value = CLICKED.geometry.parameters.radius.toFixed(3);
+          addParameterListeners(octahedronRadiusInput, "octahedronradius");
+          break;
+        case "SphereBufferGeometry":
+          parameterWrapper2.innerHTML = "<div class=\"parameter-label\">Radius</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"sphere-radius\" type=\"number\" step=\"0.001\"></div></div>" +
+          "<div class=\"parameter-label\">Width Segments</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"sphere-width-segments\" type=\"number\"></div></div>" +
+          "<div class=\"parameter-label\">Height Segments</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"sphere-height-segments\" type=\"number\"></div></div>";
+          var sphereRadiusInput = document.getElementById("sphere-radius");
+          var sphereWidthSegmentsInput = document.getElementById("sphere-width-segments");
+          var sphereHeightSegmentsInput = document.getElementById("sphere-height-segments");
+          sphereRadiusInput.value = CLICKED.geometry.parameters.radius.toFixed(3);
+          sphereWidthSegmentsInput.value = CLICKED.geometry.parameters.widthSegments.toFixed();
+          sphereHeightSegmentsInput.value = CLICKED.geometry.parameters.heightSegments.toFixed();
+          addParameterListeners(sphereRadiusInput, "sphereradius");
+          addParameterListeners(sphereWidthSegmentsInput, "spherewidthsegments");
+          addParameterListeners(sphereHeightSegmentsInput, "sphereheightsegments");
+          break;
+        case "TetrahedronBufferGeometry":
+          parameterWrapper2.innerHTML = "<div class=\"parameter-label\">Radius</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"tetrahedron-radius\" type=\"number\" step=\"0.001\"></div></div>";
+          var tetrahedronRadiusInput = document.getElementById("tetrahedron-radius");
+          tetrahedronRadiusInput.value = CLICKED.geometry.parameters.radius.toFixed(3);
+          addParameterListeners(tetrahedronRadiusInput, "tetrahedronradius");
+          break;
+        default:
+          console.log("parameter 2 none");
+          parameterWrapper2.style.display = "none";
+          parameterWrapper2.innerHTML = "";
+          return;
+      }
     }
     parameterWrapper2.style.display = "block";
     parameterWrapper4.innerHTML = "";

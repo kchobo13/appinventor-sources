@@ -421,3 +421,11 @@ hr {
   width: 100%;
   display: none;
 }
+
+.dragTop {
+  border-top: 1px dashed #999;
+}
+
+.dragBottom {
+  border-bottom: 1px dashed #999;
+}
