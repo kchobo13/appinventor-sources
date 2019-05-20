@@ -30,7 +30,12 @@ import com.google.appinventor.shared.rpc.project.ProjectNode;
 import com.google.appinventor.shared.rpc.project.ProjectRootNode;
 import com.google.appinventor.shared.rpc.project.ProjectSourceZip;
 import com.google.appinventor.shared.rpc.project.RawFile;
+import com.google.appinventor.shared.rpc.project.SourceNode;
 import com.google.appinventor.shared.rpc.project.TextFile;
+import com.google.appinventor.shared.rpc.project.vr.VRBlocksNode;
+import com.google.appinventor.shared.rpc.project.vr.VREditorNode;
+import com.google.appinventor.shared.rpc.project.vr.VRSourceFolderNode;
+import com.google.appinventor.shared.rpc.project.vr.VRSourceNode;
 import com.google.appinventor.shared.rpc.project.youngandroid.NewYoungAndroidProjectParameters;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidAssetNode;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidAssetsFolder;
@@ -89,6 +94,7 @@ public final class YoungAndroidProjectService extends CommonProjectService {
 
   // Project folder prefixes
   public static final String SRC_FOLDER = YoungAndroidSourceAnalyzer.SRC_FOLDER;
+  public static final String VR_SRC_FOLDER = YoungAndroidSourceAnalyzer.VR_SRC_FOLDER;
   protected static final String ASSETS_FOLDER = "assets";
   private static final String EXTERNAL_COMPS_FOLDER = "assets/external_comps";
   static final String PROJECT_DIRECTORY = "youngandroidproject";
@@ -102,6 +108,11 @@ public final class YoungAndroidProjectService extends CommonProjectService {
       YoungAndroidSourceAnalyzer.BLOCKLY_SOURCE_EXTENSION;
   private static final String YAIL_FILE_EXTENSION =
       YoungAndroidSourceAnalyzer.YAIL_FILE_EXTENSION;
+  private static final String VREDITOR_PROPERTIES_EXTENSION =
+      YoungAndroidSourceAnalyzer.VREDITOR_PROPERTIES_EXTENSION;
+  private static final String JAVASCRIPT_BLOCKS_EXTENSION =
+      YoungAndroidSourceAnalyzer.JAVASCRIPT_BLOCKS_EXTENSION;
+
 
   public static final String PROJECT_PROPERTIES_FILE_NAME = PROJECT_DIRECTORY + "/" +
       "project.properties";
@@ -129,13 +140,14 @@ public final class YoungAndroidProjectService extends CommonProjectService {
    * Returns project settings that can be used when creating a new project.
    */
   public static String getProjectSettings(String icon, String vCode, String vName,
-    String useslocation, String aName, String sizing) {
+    String useslocation, String aName, String sizing, String showListsAsJson) {
     icon = Strings.nullToEmpty(icon);
     vCode = Strings.nullToEmpty(vCode);
     vName = Strings.nullToEmpty(vName);
     useslocation = Strings.nullToEmpty(useslocation);
     sizing = Strings.nullToEmpty(sizing);
     aName = Strings.nullToEmpty(aName);
+    showListsAsJson = Strings.nullToEmpty(showListsAsJson);
     return "{\"" + SettingsConstants.PROJECT_YOUNG_ANDROID_SETTINGS + "\":{" +
         "\"" + SettingsConstants.YOUNG_ANDROID_SETTINGS_ICON + "\":\"" + icon +
         "\",\"" + SettingsConstants.YOUNG_ANDROID_SETTINGS_VERSION_CODE + "\":\"" + vCode +
@@ -143,6 +155,7 @@ public final class YoungAndroidProjectService extends CommonProjectService {
         "\",\"" + SettingsConstants.YOUNG_ANDROID_SETTINGS_USES_LOCATION + "\":\"" + useslocation +
         "\",\"" + SettingsConstants.YOUNG_ANDROID_SETTINGS_APP_NAME + "\":\"" + aName +
         "\",\"" + SettingsConstants.YOUNG_ANDROID_SETTINGS_SIZING + "\":\"" + sizing +
+        "\",\"" + SettingsConstants.YOUNG_ANDROID_SETTINGS_SHOW_LISTS_AS_JSON + "\":\"" + showListsAsJson +
         "\"}}";
   }
 
@@ -157,7 +170,7 @@ public final class YoungAndroidProjectService extends CommonProjectService {
    * @param vname the version name
    */
   public static String getProjectPropertiesFileContents(String projectName, String qualifiedName,
-    String icon, String vcode, String vname, String useslocation, String aname, String sizing) {
+    String icon, String vcode, String vname, String useslocation, String aname, String sizing, String showListsAsJson) {
     String contents = "main=" + qualifiedName + "\n" +
         "name=" + projectName + '\n' +
         "assets=../" + ASSETS_FOLDER + "\n" +
@@ -180,6 +193,9 @@ public final class YoungAndroidProjectService extends CommonProjectService {
     }
     if (sizing != null && !sizing.isEmpty()) {
       contents += "sizing=" + sizing + "\n";
+    }
+    if (showListsAsJson != null && !showListsAsJson.isEmpty()) {
+      contents += "showlistsasjson=" + showListsAsJson + "\n";
     }
     return contents;
   }
@@ -215,6 +231,14 @@ public final class YoungAndroidProjectService extends CommonProjectService {
     return "";
   }
 
+  private static String getInitialVREditorProperties(String qualifiedName) {
+    return "[]";
+  }
+
+  private static String getInitialVRBlocksFileContents(String qualifiedName) {
+    return "";
+  }
+
   private static String packageNameToPath(String packageName) {
     return SRC_FOLDER + '/' + packageName.replace('.', '/');
   }
@@ -247,6 +271,9 @@ public final class YoungAndroidProjectService extends CommonProjectService {
     String newSizing = Strings.nullToEmpty(settings.getSetting(
           SettingsConstants.PROJECT_YOUNG_ANDROID_SETTINGS,
           SettingsConstants.YOUNG_ANDROID_SETTINGS_SIZING));
+    String newShowListsAsJson = Strings.nullToEmpty(settings.getSetting(
+        SettingsConstants.PROJECT_YOUNG_ANDROID_SETTINGS,
+        SettingsConstants.YOUNG_ANDROID_SETTINGS_SHOW_LISTS_AS_JSON));
     String newAName = Strings.nullToEmpty(settings.getSetting(
           SettingsConstants.PROJECT_YOUNG_ANDROID_SETTINGS,
           SettingsConstants.YOUNG_ANDROID_SETTINGS_APP_NAME));
@@ -268,15 +295,17 @@ public final class YoungAndroidProjectService extends CommonProjectService {
     String oldUsesLocation = Strings.nullToEmpty(properties.getProperty("useslocation"));
     String oldSizing = Strings.nullToEmpty(properties.getProperty("sizing"));
     String oldAName = Strings.nullToEmpty(properties.getProperty("aname"));
+    String oldShowListsAsJson = Strings.nullToEmpty(properties.getProperty("showlistsasjson"));
 
     if (!newIcon.equals(oldIcon) || !newVCode.equals(oldVCode) || !newVName.equals(oldVName)
       || !newUsesLocation.equals(oldUsesLocation) ||
-         !newAName.equals(oldAName) || !newSizing.equals(oldSizing)) {
+         !newAName.equals(oldAName) || !newSizing.equals(oldSizing) ||
+         !newShowListsAsJson.equals(oldShowListsAsJson)) {
       // Recreate the project.properties and upload it to storageIo.
       String projectName = properties.getProperty("name");
       String qualifiedName = properties.getProperty("main");
       String newContent = getProjectPropertiesFileContents(projectName, qualifiedName, newIcon,
-        newVCode, newVName, newUsesLocation, newAName, newSizing);
+        newVCode, newVName, newUsesLocation, newAName, newSizing, newShowListsAsJson);
       storageIo.uploadFileForce(projectId, PROJECT_PROPERTIES_FILE_NAME, userId,
           newContent, StorageUtil.DEFAULT_CHARSET);
     }
@@ -295,7 +324,7 @@ public final class YoungAndroidProjectService extends CommonProjectService {
 
     String propertiesFileName = PROJECT_PROPERTIES_FILE_NAME;
     String propertiesFileContents = getProjectPropertiesFileContents(projectName,
-      qualifiedFormName, null, null, null, null, null, null);
+      qualifiedFormName, null, null, null, null, null, null, null);
 
     String formFileName = YoungAndroidFormNode.getFormFileId(qualifiedFormName);
     String formFileContents = getInitialFormPropertiesFileContents(qualifiedFormName);
@@ -315,7 +344,7 @@ public final class YoungAndroidProjectService extends CommonProjectService {
     project.addTextFile(new TextFile(yailFileName, yailFileContents));
 
     // Create new project
-    return storageIo.createProject(userId, project, getProjectSettings("", "1", "1.0", "false", projectName, "Fixed"));
+    return storageIo.createProject(userId, project, getProjectSettings("", "1", "1.0", "false", projectName, "Fixed", "false"));
   }
 
   @Override
@@ -342,6 +371,9 @@ public final class YoungAndroidProjectService extends CommonProjectService {
     String sizing = oldSettings.getSetting(
         SettingsConstants.PROJECT_YOUNG_ANDROID_SETTINGS,
         SettingsConstants.YOUNG_ANDROID_SETTINGS_SIZING);
+    String showListsAsJson = oldSettings.getSetting(
+        SettingsConstants.PROJECT_YOUNG_ANDROID_SETTINGS,
+        SettingsConstants.YOUNG_ANDROID_SETTINGS_SHOW_LISTS_AS_JSON);
 
     Project newProject = new Project(newName);
     newProject.setProjectType(YoungAndroidProjectNode.YOUNG_ANDROID_PROJECT_TYPE);
@@ -360,7 +392,8 @@ public final class YoungAndroidProjectService extends CommonProjectService {
         // name and qualified name.
         String qualifiedFormName = StringUtils.getQualifiedFormName(
             storageIo.getUser(userId).getUserEmail(), newName);
-        newContents = getProjectPropertiesFileContents(newName, qualifiedFormName, icon, vcode, vname, useslocation, aname, sizing);
+        newContents = getProjectPropertiesFileContents(newName, qualifiedFormName, icon, vcode,
+                                                       vname, useslocation, aname, sizing, showListsAsJson);
       } else {
         // This is some file other than the project properties file.
         // oldSourceFileName may contain the old project name as a path segment, surrounded by /.
@@ -384,7 +417,7 @@ public final class YoungAndroidProjectService extends CommonProjectService {
 
     // Create the new project and return the new project's id.
     return storageIo.createProject(userId, newProject, getProjectSettings(icon, vcode, vname,
-        useslocation, aname, sizing));
+        useslocation, aname, sizing, showListsAsJson));
   }
 
   @Override
@@ -397,10 +430,12 @@ public final class YoungAndroidProjectService extends CommonProjectService {
     ProjectNode assetsNode = new YoungAndroidAssetsFolder(ASSETS_FOLDER);
     ProjectNode sourcesNode = new YoungAndroidSourceFolderNode(SRC_FOLDER);
     ProjectNode compsNode = new YoungAndroidComponentsFolder(EXTERNAL_COMPS_FOLDER);
+    ProjectNode vrScreensNode = new VRSourceFolderNode(VR_SRC_FOLDER);
 
     rootNode.addChild(assetsNode);
     rootNode.addChild(sourcesNode);
     rootNode.addChild(compsNode);
+    rootNode.addChild(vrScreensNode);
 
     // Sources contains nested folders that are interpreted as packages
     Map<String, ProjectNode> packagesMap = Maps.newHashMap();
@@ -411,8 +446,7 @@ public final class YoungAndroidProjectService extends CommonProjectService {
       if (fileId.startsWith(ASSETS_FOLDER + '/')) {
         if (fileId.startsWith(EXTERNAL_COMPS_FOLDER + '/')) {
           compsNode.addChild(new YoungAndroidComponentNode(StorageUtil.basename(fileId), fileId));
-        }
-        else {
+        } else {
           assetsNode.addChild(new YoungAndroidAssetNode(StorageUtil.basename(fileId), fileId));
         }
       } else if (fileId.startsWith(SRC_FOLDER + '/')) {
@@ -425,7 +459,7 @@ public final class YoungAndroidProjectService extends CommonProjectService {
         } else if (fileId.endsWith(CODEBLOCKS_SOURCE_EXTENSION)) {
           String blocklyFileName =
               fileId.substring(0, fileId.lastIndexOf(CODEBLOCKS_SOURCE_EXTENSION))
-              + BLOCKLY_SOURCE_EXTENSION;
+                  + BLOCKLY_SOURCE_EXTENSION;
           if (!sourceFiles.contains(blocklyFileName)) {
             // This is an old project that hasn't been converted yet. Convert
             // the blocks file to Blockly format and name. Leave the old
@@ -448,6 +482,16 @@ public final class YoungAndroidProjectService extends CommonProjectService {
             sourcesNode.addChild(packageNode);
           }
           packageNode.addChild(sourceNode);
+        }
+      } else if (fileId.startsWith(VR_SRC_FOLDER + '/')) {
+        VRSourceNode sourceNode = null;
+        if (fileId.endsWith(VREDITOR_PROPERTIES_EXTENSION)) {
+          sourceNode = new VREditorNode(fileId);
+        } else if (fileId.endsWith(JAVASCRIPT_BLOCKS_EXTENSION)) {
+          sourceNode = new VRBlocksNode(fileId);
+        }
+        if (sourceNode != null) {
+          vrScreensNode.addChild(sourceNode);
         }
       }
     }
@@ -498,7 +542,24 @@ public final class YoungAndroidProjectService extends CommonProjectService {
       } else {
         throw new IllegalStateException("One or more files to be added already exists.");
       }
-
+    } else if (fileId.endsWith(JAVASCRIPT_BLOCKS_EXTENSION) ||
+        fileId.endsWith(VREDITOR_PROPERTIES_EXTENSION)) {
+      String qualifiedVRScreenName = SourceNode.getEntityName(fileId);
+      String vrEditorFileName = VREditorNode.getVREditorFileId(qualifiedVRScreenName);
+      String vrBlocksFileName = VRBlocksNode.getBlocksFileId(qualifiedVRScreenName);
+      List<String> sourceFiles = storageIo.getProjectSourceFiles(userId, projectId);
+      if (!sourceFiles.contains(vrEditorFileName) && !sourceFiles.contains(vrBlocksFileName)) {
+        String vrEditorFileContents = getInitialVREditorProperties(qualifiedVRScreenName);
+        storageIo.addSourceFilesToProject(userId, projectId, false, vrEditorFileName);
+        storageIo.uploadFileForce(projectId, vrEditorFileName, userId,
+            vrEditorFileContents, StorageUtil.DEFAULT_CHARSET);
+        String vrBlocksFileContents = getInitialVRBlocksFileContents(qualifiedVRScreenName);
+        storageIo.addSourceFilesToProject(userId, projectId, false, vrBlocksFileName);
+        return storageIo.uploadFileForce(projectId, vrBlocksFileName, userId,
+            vrBlocksFileContents, StorageUtil.DEFAULT_CHARSET);
+      } else {
+        throw new IllegalStateException("One or more files to be added already exists.");
+      }
     } else {
       return super.addFile(userId, projectId, fileId);
     }

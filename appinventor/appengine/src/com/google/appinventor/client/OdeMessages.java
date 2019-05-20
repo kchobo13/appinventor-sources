@@ -1,6 +1,6 @@
 // -*- mode: java; c-basic-offset: 2; -*-
 // Copyright 2009-2011 Google, All Rights reserved
-// Copyright 2011-2012 MIT, All rights reserved
+// Copyright 2011-2017 MIT, All rights reserved
 // Released under the Apache License, Version 2.0
 // http://www.apache.org/licenses/LICENSE-2.0
 
@@ -109,6 +109,14 @@ public interface OdeMessages extends Messages {
   @DefaultMessage("Remove Screen")
   @Description("Label of the button for removing a screen")
   String removeFormButton();
+
+  @DefaultMessage("Add VR Screen ...")
+  @Description("Label of the button for adding a new VR Screen")
+  String addVRScreenButton();
+
+  @DefaultMessage("Remove VR Screen")
+  @Description("Label of the button for removing a sketch")
+  String removeVRScreenButton();
 
   @DefaultMessage("Connect")
   @Description("Label of the button for selecting phone connection")
@@ -1339,6 +1347,18 @@ public interface OdeMessages extends Messages {
   @Description("Error message reported when adding a form failed on the server.")
   String addFormError();
 
+  @DefaultMessage("New VR Screen")
+  @Description("Title of the new VR Screen dialog.")
+  String newVRScreenTitle();
+
+  @DefaultMessage("VR screen name:")
+  @Description("Label in front of name in new VR screen dialog.")
+  String vrScreenNameLabel();
+
+  @DefaultMessage("Server error: could not add VR screen. Please try again later!")
+  @Description("Error message reported when adding a VR screen failed on the server.")
+  String addVRScreenError();
+
   // Used in explorer/commands/BuildCommand.java, and
   // explorer/commands/WaitForBuildResultCommand.java
 
@@ -2187,7 +2207,7 @@ public interface OdeMessages extends Messages {
 
   @DefaultMessage("User Interface")
   @Description("")
-  String UIComponentPallette();
+  String userInterfaceComponentPallette();
 
   @DefaultMessage("Layout")
   @Description("")
@@ -2199,7 +2219,7 @@ public interface OdeMessages extends Messages {
 
   @DefaultMessage("Drawing and Animation")
   @Description("")
-  String drawanimationComponentPallette();
+  String drawingAndAnimationComponentPallette();
 
   @DefaultMessage("Sensors")
   @Description("")
@@ -2213,9 +2233,13 @@ public interface OdeMessages extends Messages {
   @Description("")
   String storageComponentPallette();
 
+  @DefaultMessage("For internal use only")
+  @Description("")
+  String forInternalUseOnlyComponentPallette();
+
   @DefaultMessage("Form")
   @Description("")
-  String FormComponentPallette();
+  String formComponentPallette();
 
   @DefaultMessage("Math")
   @Description("Label on built-in-Math-blocks branch of block selector tree")
@@ -2227,7 +2251,7 @@ public interface OdeMessages extends Messages {
 
   @DefaultMessage("LEGO\u00AE MINDSTORMS\u00AE")
   @Description("")
-  String legoComponentPallette();
+  String legoMindstormsComponentPallette();
 
   @DefaultMessage("External")
   @Description("")
@@ -2289,6 +2313,10 @@ public interface OdeMessages extends Messages {
   @DefaultMessage("PasswordTextBox")
   @Description("")
   String passwordTextBoxComponentPallette();
+
+  @DefaultMessage("Pedometer")
+  @Description("")
+  String pedometerComponentPallette();
 
   @DefaultMessage("Slider")
   @Description("")
@@ -2365,6 +2393,10 @@ public interface OdeMessages extends Messages {
   @Description("")
   String phoneNumberPickerComponentPallette();
 
+  @DefaultMessage("PhoneStatus")
+  @Description("")
+  String phoneStatusComponentPallette();
+
   @DefaultMessage("Sharing")
   @Description("")
   String sharingComponentPallette();
@@ -2393,6 +2425,10 @@ public interface OdeMessages extends Messages {
   @DefaultMessage("LocationSensor")
   @Description("")
   String locationSensorComponentPallette();
+
+  @DefaultMessage("MediaStore")
+  @Description("")
+  String mediaStoreComponentPallette();
 
   @DefaultMessage("NearField")
   @Description("")
@@ -2523,6 +2559,10 @@ public interface OdeMessages extends Messages {
   @Description("")
   String fileComponentPallette();
 
+  @DefaultMessage("FirebaseDB")
+  @Description("")
+  String firebaseDBComponentPallette();
+
   @DefaultMessage("FusiontablesControl")
   @Description("")
   String fusiontablesControlComponentPallette();
@@ -2538,6 +2578,10 @@ public interface OdeMessages extends Messages {
   @DefaultMessage("Voting")
   @Description("")
   String votingComponentPallette();
+
+  @DefaultMessage("VRWebViewer")
+  @Description("")
+  String vRWebViewerComponentPallette();
 
   @DefaultMessage("WebViewer")
   @Description("")
@@ -2751,6 +2795,18 @@ public interface OdeMessages extends Messages {
   @DefaultMessage("HomeUrl")
   @Description("")
   String HomeUrlProperties();
+
+  @DefaultMessage("VRJSON")
+  @Description("")
+  String VRJSONProperties();
+  
+  @DefaultMessage("VRJS")
+  @Description("")
+  String VRJSProperties();
+
+  @DefaultMessage("PrivateWebViewString")
+  @Description("")
+  String PrivateWebViewStringProperties();
 
   @DefaultMessage("Icon")
   @Description("")
@@ -3019,6 +3075,10 @@ public interface OdeMessages extends Messages {
   @DefaultMessage("Sizing")
   @Description("")
   String SizingProperties();
+
+  @DefaultMessage("ShowListsAsJson")
+  @Description("")
+  String ShowListsAsJsonProperties();
 
   @DefaultMessage("Visible")
   @Description("")
@@ -3509,6 +3569,22 @@ public interface OdeMessages extends Messages {
   @Description("")
   String resultParams();
 
+  @DefaultMessage("tableId")
+  @Description("")
+  String tableIdParams();
+
+  @DefaultMessage("columns")
+  @Description("")
+  String columnsParams();
+
+  @DefaultMessage("conditions")
+  @Description("")
+  String conditionsParams();
+
+  @DefaultMessage("values")
+  @Description("")
+  String valuesParams();
+
   @DefaultMessage("other")
   @Description("")
   String otherParams();
@@ -3669,6 +3745,26 @@ public interface OdeMessages extends Messages {
   @Description("")
   String colorParams();
 
+  @DefaultMessage("year")
+  @Description("")
+  String yearParams();
+
+  @DefaultMessage("month")
+  @Description("")
+  String monthParams();
+
+  @DefaultMessage("day")
+  @Description("")
+  String dayParams();
+
+  @DefaultMessage("hour")
+  @Description("")
+  String hourParams();
+
+  @DefaultMessage("minute")
+  @Description("")
+  String minuteParams();
+
   @DefaultMessage("instant")
   @Description("")
   String instantParams();
@@ -3705,6 +3801,10 @@ public interface OdeMessages extends Messages {
   @Description("")
   String durationParams();
 
+  @DefaultMessage("pattern")
+  @Description("")
+  String patternParams();
+
   @DefaultMessage("years")
   @Description("")
   String yearsParams();
@@ -3725,6 +3825,10 @@ public interface OdeMessages extends Messages {
   @Description("")
   String functionNameParams();
 
+  @DefaultMessage("js")
+  @Description("")
+  String jsParams();
+
   @DefaultMessage("errorNumber")
   @Description("")
   String errorNumberParams();
@@ -3732,6 +3836,10 @@ public interface OdeMessages extends Messages {
   @DefaultMessage("message")
   @Description("")
   String messageParams();
+
+  @DefaultMessage("mediafileParams")
+  @Description("")
+  String mediafileParams();
 
   @DefaultMessage("otherScreenName")
   @Description("")
@@ -3808,6 +3916,10 @@ public interface OdeMessages extends Messages {
   @DefaultMessage("provider")
   @Description("")
   String providerParams();
+
+  @DefaultMessage("phoneNumber")
+  @Description("")
+  String phoneNumberParams();
 
   @DefaultMessage("status")
   @Description("")
@@ -3961,9 +4073,17 @@ public interface OdeMessages extends Messages {
   @Description("")
   String tagParams();
 
+  @DefaultMessage("value")
+  @Description("")
+  String valueParams();
+
   @DefaultMessage("valueToStore")
   @Description("")
   String valueToStoreParams();
+
+  @DefaultMessage("valueToAdd")
+  @Description("")
+  String valueToAddParams();
 
   @DefaultMessage("tagFromWebDB")
   @Description("")
@@ -4025,6 +4145,10 @@ public interface OdeMessages extends Messages {
   @Description("")
   String encodingParams();
 
+  @DefaultMessage("xmlText")
+  @Description("")
+  String xmlTextParams();
+
   @DefaultMessage("name")
   @Description("")
   String nameParams();
@@ -4079,7 +4203,7 @@ public interface OdeMessages extends Messages {
 
   @DefaultMessage("ImagePath")
   @Description("")
-  String ImagePathParams();
+  String imagePathParams();
 
   @DefaultMessage("ms")
   @Description("")
@@ -5289,7 +5413,7 @@ public interface OdeMessages extends Messages {
 
   @DefaultMessage("XmlTextDecode")
   @Description("")
-  String XmlTextDecodeMethods();
+  String xmlTextDecodeMethods();
 
   @DefaultMessage("PostFile")
   @Description("")
@@ -5732,6 +5856,10 @@ public interface OdeMessages extends Messages {
   @Description("")
   String LocationSensorHelpStringComponentPallette();
 
+  @DefaultMessage("<p>The MediaStore component communicates with a web service to store media objects. This component has a single method that stores a media object in the services blob store, and returns a pointer to the object via a url.</p>")
+  @Description("")
+  String MediaStoreHelpStringComponentPallette();
+
   @DefaultMessage("<p>Non-visible component to provide NFC capabilities.  For now this component supports the reading and writing of text tags only (if supported by the device)</p><p>In order to read and write text tags, the component must have its <code>ReadMode</code> property set to True or False respectively.</p><p><strong>Note:</strong> This component will only work on Screen1 of any App Inventor app.</p>")
   @Description("")
   String NearFieldHelpStringComponentPallette();
@@ -5879,6 +6007,10 @@ public interface OdeMessages extends Messages {
   @DefaultMessage("Non-visible component that provides functions for HTTP GET, POST, PUT, and DELETE requests.")
   @Description("")
   String WebHelpStringComponentPallette();
+
+  @DefaultMessage("Component for viewing Web pages.  The Home URL can be specified in the Designer or in the Blocks Editor.  The view can be set to follow links when they are tapped, and users can fill in Web forms. Warning: This is not a full browser.  For example, pressing the phone\"s hardware Back key will exit the app, rather than move back in the browser history.<p />You can use the WebViewer.WebViewString property to communicate between your app and Javascript code running in the Webviewer page. In the app, you get and set WebViewString.  In the WebViewer, you include Javascript that references the window.AppInventor object, using the methoods </em getWebViewString()</em> and <em>setWebViewString(text)</em>.  <p />For example, if the WebViewer opens to a page that contains the Javascript command <br /> <em>document.write(\"The answer is\" + window.AppInventor.getWebViewString());</em> <br />and if you set WebView.WebVewString to \"hello\", then the web page will show </br ><em>The answer is hello</em>.  <br />And if the Web page contains Javascript that executes the command <br /><em>window.AppInventor.setWebViewString(\"hello from Javascript\")</em>, <br />then the value of the WebViewString property will be <br /><em>hello from Javascript</em>. ")
+  @Description("")
+  String VRWebViewerHelpStringComponentPallette();
 
   @DefaultMessage("Component for viewing Web pages.  The Home URL can be specified in the Designer or in the Blocks Editor.  The view can be set to follow links when they are tapped, and users can fill in Web forms. Warning: This is not a full browser.  For example, pressing the phone\"s hardware Back key will exit the app, rather than move back in the browser history.<p />You can use the WebViewer.WebViewString property to communicate between your app and Javascript code running in the Webviewer page. In the app, you get and set WebViewString.  In the WebViewer, you include Javascript that references the window.AppInventor object, using the methoods </em getWebViewString()</em> and <em>setWebViewString(text)</em>.  <p />For example, if the WebViewer opens to a page that contains the Javascript command <br /> <em>document.write(\"The answer is\" + window.AppInventor.getWebViewString());</em> <br />and if you set WebView.WebVewString to \"hello\", then the web page will show </br ><em>The answer is hello</em>.  <br />And if the Web page contains Javascript that executes the command <br /><em>window.AppInventor.setWebViewString(\"hello from Javascript\")</em>, <br />then the value of the WebViewString property will be <br /><em>hello from Javascript</em>. ")
   @Description("")

@@ -84,7 +84,7 @@ goog.require('goog.dom');
  */
 Blockly.Blocks['global_declaration'] = {
   // Global var defn
-  category: 'Variables',
+  category: 'VR_Variables',
   helpUrl: Blockly.Msg.LANG_VARIABLES_GLOBAL_DECLARATION_HELPURL,
   init: function() {
     this.setColour(Blockly.VARIABLE_CATEGORY_HUE);
@@ -111,7 +111,7 @@ Blockly.Blocks['global_declaration'] = {
  */
 Blockly.Blocks['lexical_variable_get'] = {
   // Variable getter.
-  category: 'Variables',
+  category: 'VR_Variables',
   helpUrl: Blockly.Msg.LANG_VARIABLES_GET_HELPURL,
   init: function() {
     this.setColour(Blockly.VARIABLE_CATEGORY_HUE);
@@ -171,7 +171,7 @@ Blockly.Blocks['lexical_variable_get'] = {
  */
 Blockly.Blocks['lexical_variable_set'] = {
   // Variable setter.
-  category: 'Variables',
+  category: 'VR_Variables',
   helpUrl: Blockly.Msg.LANG_VARIABLES_SET_HELPURL, // *** [lyn, 11/10/12] Fix this
   init: function() {
     this.setColour(Blockly.VARIABLE_CATEGORY_HUE);
@@ -369,7 +369,7 @@ Blockly.Blocks['local_declaration_statement'] = {
         }
         if (mutatorarg && mutatorargIndex == paramIndex) {
           // See Subtlety #3 in  procedureParameterChangeHandler in language/common/procedures.js
-          Blockly.Field.prototype.setText.call(mutatorarg.getField_("NAME"), newParamName);
+          Blockly.Field.prototype.setText.call(mutatorarg.getField("NAME"), newParamName);
         }
       }
     }
@@ -380,13 +380,13 @@ Blockly.Blocks['local_declaration_statement'] = {
   },
   decompose: function(workspace) {
     // Create "mutator" editor populated with name blocks with local variable names
-    var containerBlock = new Blockly.Block.obtain(workspace, 'local_mutatorcontainer');
+    var containerBlock = workspace.newBlock('local_mutatorcontainer');
     containerBlock.initSvg();
     containerBlock.setDefBlock(this);
     var connection = containerBlock.getInput('STACK').connection;
     for (var i = 0; i < this.localNames_.length; i++) {
       var localName = this.getFieldValue('VAR' + i);
-      var nameBlock = new Blockly.Block.obtain(workspace, 'local_mutatorarg');
+      var nameBlock = workspace.newBlock('local_mutatorarg');
       nameBlock.initSvg();
       nameBlock.setFieldValue(localName, 'NAME');
       // Store the old location.
@@ -428,7 +428,7 @@ Blockly.Blocks['local_declaration_statement'] = {
   dispose: function() {
     // *** [lyn, 11/07/12] Dunno if anything needs to be done here.
     // Call parent's destructor.
-    Blockly.Block.prototype.dispose.apply(this, arguments);
+    Blockly.BlockSvg.prototype.dispose.apply(this, arguments);
     // [lyn, 11/07/12] In above line, don't know where "arguments" param comes from,
     // but if it's remove, there's no clicking sound upon deleting the block!
   },

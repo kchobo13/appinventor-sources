@@ -51,6 +51,10 @@ public class Tracking {
       "RemoveForm-YA";
   public static final String PROJECT_SUBACTION_BUILD_YA = PROJECT_ACTION_PREFIX +
       "Build-Subcommand-YA";
+  public static final String PROJECT_ACTION_ADDVRSCREEN_VR = PROJECT_ACTION_PREFIX +
+      "AddVRScreen-VR";
+  public static final String PROJECT_ACTION_REMOVEVRSCREEN_VR = PROJECT_ACTION_PREFIX +
+      "RemoveVRScreen-VR";
 
   public static final String USER_EVENT = "User";
   public static final String USER_ACTION_PREFIX = "User_";

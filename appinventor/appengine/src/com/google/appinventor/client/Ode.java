@@ -1,13 +1,12 @@
 // -*- mode: java; c-basic-offset: 2; -*-
 // Copyright 2009-2011 Google, All Rights reserved
-// Copyright 2011-2012 MIT, All rights reserved
+// Copyright 2011-2017 MIT, All rights reserved
 // Released under the Apache License, Version 2.0
 // http://www.apache.org/licenses/LICENSE-2.0
 
 package com.google.appinventor.client;
 
 import java.util.Random;
-import static com.google.appinventor.client.Ode.MESSAGES;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -27,9 +26,11 @@ import com.google.appinventor.client.boxes.ProfileBox;
 import com.google.appinventor.client.boxes.PropertiesBox;
 import com.google.appinventor.client.boxes.SourceStructureBox;
 import com.google.appinventor.client.boxes.ViewerBox;
+import com.google.appinventor.client.editor.vr.js.JSBox;
+import com.google.appinventor.client.editor.vr.js.JSPanel;
 import com.google.appinventor.client.editor.EditorManager;
 import com.google.appinventor.client.editor.FileEditor;
-import com.google.appinventor.client.editor.youngandroid.BlocklyPanel;
+import com.google.appinventor.client.editor.blocks.BlocklyPanel;
 import com.google.appinventor.client.explorer.commands.ChainableCommand;
 import com.google.appinventor.client.explorer.commands.CommandRegistry;
 import com.google.appinventor.client.explorer.commands.SaveAllEditorsCommand;
@@ -119,7 +120,6 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PushButton;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.appinventor.shared.rpc.project.GalleryApp;
@@ -810,7 +810,7 @@ public class Ode implements EntryPoint {
                 uri += separator + "locale=" + locale;
                 separator = "&";
               }
-              if (repo != null & !repo.equals("")) {
+              if (repo != null && !repo.equals("")) {
                 uri += separator + "repo=" + repo;
                 separator = "&";
               }
@@ -842,6 +842,20 @@ public class Ode implements EntryPoint {
 
     userInfoService.getSystemConfig(sessionId, callback);
 
+    // We fetch the user's backpack here. This runs asynchronously with the rest
+    // of the system initialization.
+
+    userInfoService.getUserBackpack(new AsyncCallback<String>() {
+        @Override
+        public void onSuccess(String backpack) {
+          BlocklyPanel.setInitialBackpack(backpack);
+        }
+        @Override
+        public void onFailure(Throwable caught) {
+          OdeLog.log("Fetching backpack failed");
+        }
+      });
+
     History.addValueChangeHandler(new ValueChangeHandler<String>() {
       @Override
       public void onValueChange(ValueChangeEvent<String> event) {
@@ -862,8 +876,6 @@ public class Ode implements EntryPoint {
    * Initializes all UI elements.
    */
   private void initializeUi() {
-    BlocklyPanel.initUi();
-
     rpcStatusPopup = new RpcStatusPopup();
 
     // Register services with RPC status popup
@@ -967,7 +979,17 @@ public class Ode implements EntryPoint {
     //workColumns.add(switchToBlocksButton);
     dVertPanel.add(workColumns);
     designTabIndex = deckPanel.getWidgetCount();
+    //deckPanel.add(dVertPanel);
+
+    //VerticalPanel jsVertPanel = new VerticalPanel();
+    //jsVertPanel.setWidth("100%");
+    //jsVertPanel.setHeight("100%");
+    Box jsBox = JSBox.getJSBox();
+    dVertPanel.add(jsBox);
     deckPanel.add(dVertPanel);
+    //workColumns.add(jsBox);
+    //workColumns.setCellWidth(jsBox, "50%");
+    //workColumns.setCellHeight(jsBox, "50%");
 
     // Gallery list tab
     VerticalPanel gVertPanel = new VerticalPanel();
@@ -2004,46 +2026,6 @@ public class Ode implements EntryPoint {
   }
 
   /**
-   * Display a generic warning dialog box.
-   * This method is public because it is intended to be used from other
-   * parts of the client GWT side system.
-   *
-   * Note: We expect our caller to internationalize the messages to be
-   * displayed.
-   *
-   * @param title The title for the dialog box
-   * @param message The message to display
-   * @param buttonString the name of the button, i.e., "OK"
-   */
-
-  public void warningDialog(String title, String messageString, String buttonString) {
-    // Create the UI elements of the DialogBox
-    final DialogBox dialogBox = new DialogBox(false, true); // DialogBox(autohide, modal)
-    dialogBox.setStylePrimaryName("ode-DialogBox");
-    dialogBox.setText(title);
-    dialogBox.setHeight("100px");
-    dialogBox.setWidth("400px");
-    dialogBox.setGlassEnabled(true);
-    dialogBox.setAnimationEnabled(true);
-    dialogBox.center();
-    VerticalPanel DialogBoxContents = new VerticalPanel();
-    HTML message = new HTML("<p>" + messageString + "</p>");
-    message.setStyleName("DialogBox-message");
-    FlowPanel holder = new FlowPanel();
-    Button okButton = new Button(buttonString);
-    okButton.addClickListener(new ClickListener() {
-        public void onClick(Widget sender) {
-          dialogBox.hide();
-        }
-      });
-    holder.add(okButton);
-    DialogBoxContents.add(message);
-    DialogBoxContents.add(holder);
-    dialogBox.setWidget(DialogBoxContents);
-    dialogBox.show();
-  }
-
-  /**
    * Is it OK to connect a device/emulator. Returns true if so false
    * otherwise.
    *
@@ -2322,6 +2304,26 @@ public class Ode implements EntryPoint {
     } else {
       top.location.reload();
     }
+  }-*/;
+
+  private static native boolean finish(String userId) /*-{
+    var delete_cookie = function(name) {
+       document.cookie = name + '=;Path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    };
+    var retval = {
+       "type": "closeApp",
+       "uuid" : userId }
+    if (top.opener) {
+      delete_cookie("AppInventor"); // This ends our authentication
+      top.opener.postMessage(retval, "*");
+      return true;
+    } else {
+      return false;
+    }
+  }-*/;
+
+  public static native void CLog(String message) /*-{
+    console.log(message);
   }-*/;
 
 }

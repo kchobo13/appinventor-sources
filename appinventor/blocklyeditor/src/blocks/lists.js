@@ -16,7 +16,7 @@ goog.require('Blockly.Blocks.Utilities');
 
 Blockly.Blocks['lists_create_with'] = {
   // Create a list with any number of elements of any type.
-  category: 'Lists',
+  category: 'VR_Lists',
   helpUrl: Blockly.Msg.LANG_LISTS_CREATE_WITH_EMPTY_HELPURL,
   init: function() {
     this.setColour(Blockly.LIST_CATEGORY_HUE);
@@ -75,7 +75,7 @@ Blockly.Blocks['lists_create_with_item'] = {
 
 Blockly.Blocks['lists_add_items'] = {
   // Create a list with any number of elements of any type.
-  category: 'Lists',
+  category: 'VR_Lists',
   helpUrl: Blockly.Msg.LANG_LISTS_ADD_ITEMS_HELPURL,
   init: function() {
     this.setColour(Blockly.LIST_CATEGORY_HUE);
@@ -129,7 +129,7 @@ Blockly.Blocks['lists_add_items_item'] = {
 
 Blockly.Blocks['lists_is_in'] = {
   // Is in list?.
-  category : 'Lists',
+  category : 'VR_Lists',
   helpUrl : Blockly.Msg.LANG_LISTS_IS_IN_HELPURL,
   init : function() {
     this.setColour(Blockly.LIST_CATEGORY_HUE);
@@ -149,7 +149,7 @@ Blockly.Blocks['lists_is_in'] = {
 
 Blockly.Blocks['lists_length'] = {
   // Length of list.
-  category : 'Lists',
+  category : 'VR_Lists',
   helpUrl : Blockly.Msg.LANG_LISTS_LENGTH_HELPURL,
   init : function() {
     this.setColour(Blockly.LIST_CATEGORY_HUE);
@@ -217,7 +217,7 @@ Blockly.Blocks['lists_position_in'] = {
 
 Blockly.Blocks['lists_select_item'] = {
   // Select from list an item.
-  category : 'Lists',
+  category : 'VR_Lists',
   helpUrl : Blockly.Msg.LANG_LISTS_SELECT_ITEM_TITLE_HELPURL,
   init : function() {
     this.setColour(Blockly.LIST_CATEGORY_HUE);

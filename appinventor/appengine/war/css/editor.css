@@ -1,0 +1,431 @@
+html {
+  height: 100%;
+}
+
+body {
+  background-color: #32383f;
+  height: 100%;
+}
+
+#container {
+  background-color: #32383f;
+  height: 100%;
+}
+
+#container-row {
+  background-color: #32383f;
+  height: 100%;
+}
+
+#left-panel {
+  background-color: #32383f;
+  padding: 1rem;
+  font-size: 0;
+  overflow: auto;
+}
+
+.wide-button {
+  font-size: 0.75rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  color: #fff;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 1px solid #fff;
+  transition: 0.2s;
+}
+
+.wide-inactive:hover {
+  background-color: #464c52;
+}
+.wide-active {
+  background-color: #fff;
+  color: #32383f;
+}
+
+.wide-button:last-child {
+  margin-bottom: 0;
+}
+
+#labels-background {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  opacity: 0;
+  transition: opacity 0.2s;
+  display: none;
+}
+
+#labels-modal {
+  position: absolute;
+  margin: auto;
+  width: 466px;
+  height: 518px;
+  padding: 2rem;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #32383f;
+  border: 1px solid #fff;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.2s;
+  display: none;
+}
+
+#label-buttons {
+  display: flex;
+  width: 400px;
+  margin-bottom: 1rem;
+}
+
+#add-label {
+  flex: 1;
+  margin-right: 0.5rem;
+}
+
+#delete-label {
+  flex: 1;
+  margin-left: 0.5rem;
+}
+
+#labels-container {
+  background-color: #23272c;
+  width: 400px;
+  height: 400px;
+  position: relative;
+}
+
+.label-box {
+  background-color: #32383f;
+  border: 1px solid #fff;
+  width: 100px;
+  height: 50px;
+  position: absolute;
+  overflow: hidden;
+  cursor: move;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 50px;
+  user-select: none;
+  font-size: 1rem;
+}
+
+#editor-panel {
+  background-color: #32383f;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  font-size: 0;
+  height: 100%;
+}
+
+#editor {
+  height: 100%;
+}
+
+div > canvas {
+  width: 100%;
+  height: 100%;
+}
+
+#controls-left {
+  font-size: 0;
+  padding: 1rem;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+#controls-right {
+  font-size: 0;
+  padding: 1rem;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+.control-button {
+  background-color: #32383f;
+  font-size: 0.75rem;
+  display: inline-block;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: #fff;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 1px solid #fff;
+  transition: 0.2s;
+}
+
+.control-button-left {
+  margin-right: 1rem;
+}
+
+.control-button-left:last-child {
+  margin-right: 0;
+}
+
+#import-json {
+  display: none;
+}
+
+.control-button-right {
+  margin-left: 1rem;
+}
+
+.control-button-right:first-child {
+  margin-left: 0;
+}
+
+.control-inactive:hover {
+  background-color: #464c52;
+}
+
+.control-active {
+  background-color: #fff;
+  color: #32383f;
+}
+
+.control-disabled {
+  border: 1px solid #999;
+  color: #999;
+  cursor: default;
+}
+
+#right-panel {
+  background-color: #32383f;
+  padding: 1rem;
+  font-size: 0;
+  overflow: auto;
+}
+
+#object-list {
+  height: 130px;
+  overflow: auto;
+  margin: 0.5rem;
+}
+
+#light-list {
+  height: 130px;
+  overflow: auto;
+  margin: 0.5rem;
+}
+
+.list-item {
+  font-size: 0.75rem;
+  color: #fff;
+  cursor: pointer;
+  overflow: hidden;
+  outline: none;
+  padding: 0.25rem;
+  border: 1px solid #32383f;
+  letter-spacing: 1px;
+  transition: background-color 0.2s;
+}
+
+.list-item[contenteditable="true"] {
+  background-color: #ffffff !important;
+  color: #32383f;
+}
+
+.list-inactive:hover {
+  background-color: #464c52;
+}
+
+.list-active {
+  border: 1px solid #fff;
+}
+
+#parameter-wrapper-1 {
+  width: 100%;
+  display: none;
+}
+
+.parameter-label-large {
+  font-size: 1.25rem;
+  padding: 0.5rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.parameter-tabs {
+  display: flex;
+}
+
+.parameter-label-tab {
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  flex: 1;
+  padding: 0.5rem;
+  text-transform: uppercase;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.tab-divider {
+  flex: none;
+  width: 1px;
+  background-color: #fff;
+}
+
+.objects-tab-active {
+  color: #fff;
+  border-top: 1px solid #fff;
+  border-left: 1px solid #fff;
+  border-bottom: 1px solid #32383f;
+}
+
+.objects-tab-inactive {
+  color: #999;
+  border-top: 1px solid #32383f;
+  border-left: 1px solid #32383f;
+  border-bottom: 1px solid #fff;
+}
+
+.objects-tab-inactive:hover {
+  background-color: #464c52;
+}
+
+.lights-tab-active {
+  color: #fff;
+  border-top: 1px solid #fff;
+  border-right: 1px solid #fff;
+  border-bottom: 1px solid #32383f;
+}
+
+.lights-tab-inactive {
+  color: #999;
+  border-top: 1px solid #32383f;
+  border-right: 1px solid #32383f;
+  border-bottom: 1px solid #fff;
+}
+
+.lights-tab-inactive:hover {
+  background-color: #464c52;
+}
+
+.parameter-label {
+  font-size: 1rem;
+  padding: 0.5rem 0.5rem 0 0.5rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.parameter-row {
+  padding: 0.5rem;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.parameter-item {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.parameter-box {
+  font-size: 1rem;
+  overflow: hidden;
+  height: 1.5rem;
+}
+
+.input-text {
+  width: 100%;
+  border: 0;
+  background-color: #32383f;
+  color: #fff;
+  font-family: inherit;
+  outline: none;
+}
+
+.input-text:hover {
+  background-color: #464c52;
+}
+
+.input-text:focus {
+  background-color: #ffffff;
+  color: #32383f;
+}
+
+.dropdown-text {
+  width: 100%;
+  -webkit-appearance: none;
+  background-color: #32383f;
+  border: none;
+  border-radius: 0;
+  color: #fff;
+  font-size: 1rem;
+  height: 1.5rem;
+  letter-spacing: 1px;
+  outline: none;
+}
+
+.dropdown-text:hover {
+  background-color: #464c52;
+}
+
+#lights-tab-body {
+  display: none;
+}
+
+hr {
+  height: 1px;
+  border: 0;
+  background: #434b55;
+}
+
+.color {
+  font-family: inherit;
+  font-size: 1rem;
+  background-color: #32383f;
+  color: #fff;
+  outline: none;
+  max-width: 100%;
+}
+
+#parameter-wrapper-2 {
+  width: 100%;
+  display: none;
+}
+
+#parameter-wrapper-3 {
+  width: 100%;
+  display: none;
+}
+
+#parameter-wrapper-4 {
+  width: 100%;
+  display: none;
+}
+
+#parameter-wrapper-5 {
+  width: 100%;
+  display: none;
+}
+
+#parameter-wrapper-6 {
+  width: 100%;
+  display: none;
+}
+
+#parameter-wrapper-7 {
+  width: 100%;
+  display: none;
+}
+
+.dragTop {
+  border-top: 1px dashed #999;
+}
+
+.dragBottom {
+  border-bottom: 1px dashed #999;
+}

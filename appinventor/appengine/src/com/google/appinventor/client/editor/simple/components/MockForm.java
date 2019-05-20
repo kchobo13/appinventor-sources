@@ -1,29 +1,37 @@
 // -*- mode: java; c-basic-offset: 2; -*-
 // Copyright 2009-2011 Google, All Rights reserved
-// Copyright 2011-2012 MIT, All rights reserved
+// Copyright 2011-2017 MIT, All rights reserved
 // Released under the Apache License, Version 2.0
 // http://www.apache.org/licenses/LICENSE-2.0
 
 package com.google.appinventor.client.editor.simple.components;
 
+import com.google.appinventor.client.Ode;
 import static com.google.appinventor.client.Ode.MESSAGES;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import com.google.appinventor.client.editor.designer.DesignerChangeListener;
+import com.google.appinventor.client.editor.designer.DesignerRootComponent;
 import com.google.appinventor.client.editor.simple.SimpleEditor;
 import com.google.appinventor.client.editor.simple.components.utils.PropertiesUtil;
+import com.google.appinventor.client.editor.youngandroid.YaVisibleComponentsPanel;
 import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidLengthPropertyEditor;
 import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidVerticalAlignmentChoicePropertyEditor;
 import com.google.appinventor.client.output.OdeLog;
 import com.google.appinventor.client.properties.BadPropertyEditorException;
 import com.google.appinventor.client.widgets.properties.EditableProperties;
 import com.google.appinventor.shared.settings.SettingsConstants;
+import com.google.gwt.core.client.Duration;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
+
+import com.google.gwt.user.client.Timer;
+
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockPanel;
@@ -39,7 +47,7 @@ import com.google.gwt.user.client.ui.TreeItem;
  * Normal size is a 1:1 with pixels on a device with dpi:160. We use that as the baseline for the
  * browser too. All UI elements should be scaled to DP for buckets other than 'normal'.
  */
-public final class MockForm extends MockContainer {
+public final class MockForm extends MockDesignerRoot implements DesignerRootComponent {
 
   /*
    * Widget for the mock form title bar.
@@ -170,19 +178,17 @@ public final class MockForm extends MockContainer {
   private static final String PROPERTY_NAME_VNAME = "VersionName";
   private static final String PROPERTY_NAME_ANAME = "AppName";
   private static final String PROPERTY_NAME_SIZING = "Sizing"; // Don't show except on screen1
+  // Don't show except on screen1
+  private static final String PROPERTY_NAME_SHOW_LISTS_AS_JSON = "ShowListsAsJson";
 
   // Form UI components
   AbsolutePanel formWidget;
   ScrollPanel scrollPanel;
   private TitleBar titleBar;
-  private MockComponent selectedComponent;
 
   int screenWidth;              // TEMP: Make package visible so we can use it MockHVLayoutBase
   private int screenHeight;
   int usableScreenHeight;       // TEMP: Make package visible so we can use it MockHVLayoutBase
-
-  // Set of listeners for any changes of the form
-  final HashSet<FormChangeListener> formChangeListeners = new HashSet<FormChangeListener>();
 
   // Don't access the verticalScrollbarWidth field directly. Use getVerticalScrollbarWidth().
   private static int verticalScrollbarWidth;
@@ -417,6 +423,11 @@ public final class MockForm extends MockContainer {
       return editor.isScreen1();
     }
 
+    if (propertyName.equals(PROPERTY_NAME_SHOW_LISTS_AS_JSON)) {
+      // The ShowListsAsJson property actually applies to the application and is only visible on Screen1.
+      return editor.isScreen1();
+    }
+
     return super.isPropertyVisible(propertyName);
   }
 
@@ -519,6 +530,17 @@ public final class MockForm extends MockContainer {
     }
   }
 
+  private void setShowListsAsJsonProperty(String asJson) {
+    // This property actually applies to the application and is only visible on
+    // Screen1. When we load a form that is not Screen1, this method will be called with the
+    // default value for CompatibilityProperty (false). We need to ignore that.
+    if (editor.isScreen1()) {
+      editor.getProjectEditor().changeProjectSettingsProperty(
+          SettingsConstants.PROJECT_YOUNG_ANDROID_SETTINGS,
+          SettingsConstants.YOUNG_ANDROID_SETTINGS_SHOW_LISTS_AS_JSON, asJson);
+    }
+  }
+
   private void setANameProperty(String aname) {
     // The AppName property actually applies to the application and is only visible on Screen1.
     // When we load a form that is not Screen1, this method will be called with the default value
@@ -531,8 +553,71 @@ public final class MockForm extends MockContainer {
 
   /**
    * Forces a re-layout of the child components of the container.
+   *
+   * Each components onPropertyChange listener calls us. This is
+   * reasonable during interactive editing because we have to make
+   * sure the screen reflects what the user is doing.  However during
+   * project load we will be called many times, when really we should
+   * only be called after the project's UI is really finished loading.
+   *
+   * We could add a bunch of complicated code to inhibit refreshes
+   * until we know the project's UI is loaded and stable. However that
+   * is a change that will be spread over several modules, making it
+   * hard to understand what is going on.
+   *
+   * Instead, I am opting to keep this change self contained within
+   * this module. The idea is to see how quickly we are being
+   * called. If we receive a call which is close in time (within
+   * seconds) of a previous call, we set a timer to fire in the
+   * reasonable future (say 2 seconds). While this timer is counting
+   * down, we ignore any other calls to refresh. Whatever refreshing
+   * they would do will be handled by the call done when the timer
+   * fires. This approach does not reduce the number of calls to
+   * refresh during project loading to 1. But it significantly reduces
+   * the number of calls and gets us out of the exponential explosion
+   * in time and memory that we see with projects with hundreds of
+   * design elements (yes, people do that, and I have seen at least
+   * one project that was this big and reasonable!).  -Jeff Schiller
+   * (jis@mit.edu).
+   *
    */
+
+  private Duration lastRefresh = new Duration();
+  private boolean refreshPending = false;
   public final void refresh() {
+    Ode.CLog("MockForm: refresh() called.");
+    /* We refresh less then two seconds ago! */
+    if (lastRefresh.elapsedMillis() < 2000) {
+      if (!refreshPending) {
+        Ode.CLog("MockForm: refresh() called < 2 seconds ago, setting up timer.");
+        refreshPending = true;
+        Timer t = new Timer() {
+            @Override
+            public void run() {
+              refreshPending = false;
+              doRefresh();
+            }
+          };
+        t.schedule(2000);        // Two Seconds
+      } else {
+        Ode.CLog("MockForm: refresh() while timer running, IGNORING!");
+      }
+    } else {
+      lastRefresh = new Duration();
+      doRefresh();
+    }
+  }
+
+  /*
+   * Do the actual refresh.
+   *
+   * This method is public because it is called directly from MockComponent for refreshes
+   * which bypass throttling.
+   *
+   */
+
+  public final void doRefresh() {
+    Ode.CLog("MockForm: doRefresh() called");
     Map<MockComponent, LayoutInfo> layoutInfoMap = new HashMap<MockComponent, LayoutInfo>();
 
     collectLayoutInfos(layoutInfoMap, this);
@@ -546,6 +631,7 @@ public final class MockForm extends MockContainer {
       layoutInfo.cleanUp();
     }
     layoutInfoMap.clear();
+    Ode.CLog("MockForm: doRefresh() done.");
   }
 
   /*
@@ -596,108 +682,6 @@ public final class MockForm extends MockContainer {
     layoutInfo.gatherDimensions();
   }
 
-  /**
-   * Adds an {@link FormChangeListener} to the listener set if it isn't already in there.
-   *
-   * @param listener  the {@code FormChangeListener} to be added
-   */
-  public void addFormChangeListener(FormChangeListener listener) {
-    formChangeListeners.add(listener);
-  }
-
-  /**
-   * Removes an {@link FormChangeListener} from the listener list.
-   *
-   * @param listener  the {@code FormChangeListener} to be removed
-   */
-  public void removeFormChangeListener(FormChangeListener listener) {
-    formChangeListeners.remove(listener);
-  }
-
-  /**
-   * Triggers a component property change event to be sent to the listener on the listener list.
-   */
-  protected void fireComponentPropertyChanged(MockComponent component,
-      String propertyName, String propertyValue) {
-    for (FormChangeListener listener : formChangeListeners) {
-      listener.onComponentPropertyChanged(component, propertyName, propertyValue);
-    }
-  }
-
-  /**
-   * Triggers a component removed event to be sent to the listener on the listener list.
-   */
-  protected void fireComponentRemoved(MockComponent component, boolean permanentlyDeleted) {
-    for (FormChangeListener listener : formChangeListeners) {
-      listener.onComponentRemoved(component, permanentlyDeleted);
-    }
-  }
-
-  /**
-   * Triggers a component added event to be sent to the listener on the listener list.
-   */
-  protected void fireComponentAdded(MockComponent component) {
-    for (FormChangeListener listener : formChangeListeners) {
-      listener.onComponentAdded(component);
-    }
-  }
-
-  /**
-   * Triggers a component renamed event to be sent to the listener on the listener list.
-   */
-  protected void fireComponentRenamed(MockComponent component, String oldName) {
-    for (FormChangeListener listener : formChangeListeners) {
-      listener.onComponentRenamed(component, oldName);
-    }
-  }
-
-  /**
-   * Triggers a component selection change event to be sent to the listener on the listener list.
-   */
-  protected void fireComponentSelectionChange(MockComponent component, boolean selected) {
-    for (FormChangeListener listener : formChangeListeners) {
-      listener.onComponentSelectionChange(component, selected);
-    }
-  }
-
-  /**
-   * Changes the component that is currently selected in the form.
-   * <p>
-   * There will always be exactly one component selected in a form
-   * at any given time.
-   */
-  public final void setSelectedComponent(MockComponent newSelectedComponent) {
-    MockComponent oldSelectedComponent = selectedComponent;
-
-    if (newSelectedComponent == null) {
-      throw new IllegalArgumentException("at least one component must always be selected");
-    }
-    if (newSelectedComponent == oldSelectedComponent) {
-      return;
-    }
-
-    selectedComponent = newSelectedComponent;
-
-    if (oldSelectedComponent != null) {     // Can be null initially
-      oldSelectedComponent.onSelectedChange(false);
-    }
-    newSelectedComponent.onSelectedChange(true);
-  }
-
-  public final MockComponent getSelectedComponent() {
-    return selectedComponent;
-  }
-
-  /**
-   * Builds a tree of the component hierarchy of the form for display in the
-   * {@code SourceStructureExplorer}.
-   *
-   * @return  tree showing the component hierarchy of the form
-   */
-  public TreeItem buildComponentsTree() {
-    return buildTree();
-  }
-
   // PropertyChangeListener implementation
 
   @Override
@@ -718,10 +702,10 @@ public final class MockForm extends MockContainer {
       titleBar.changeTitle(newValue);
     } else if (propertyName.equals(PROPERTY_NAME_SIZING)) {
       if (newValue.equals("Fixed")){ // Disable Tablet Preview
-        editor.getVisibleComponentsPanel().enableTabletPreviewCheckBox(false);
+        ((YaVisibleComponentsPanel) editor.getVisibleComponentsPanel()).enableTabletPreviewCheckBox(false);
       }
       else {
-        editor.getVisibleComponentsPanel().enableTabletPreviewCheckBox(true);
+        ((YaVisibleComponentsPanel) editor.getVisibleComponentsPanel()).enableTabletPreviewCheckBox(true);
       }
       setSizingProperty(newValue);
     } else if (propertyName.equals(PROPERTY_NAME_ICON)) {
@@ -732,6 +716,8 @@ public final class MockForm extends MockContainer {
       setVNameProperty(newValue);
     } else if (propertyName.equals(PROPERTY_NAME_ANAME)) {
       setANameProperty(newValue);
+    } else if (propertyName.equals(PROPERTY_NAME_SHOW_LISTS_AS_JSON)) {
+      setShowListsAsJsonProperty(newValue);
     } else if (propertyName.equals(PROPERTY_NAME_HORIZONTAL_ALIGNMENT)) {
       myLayout.setHAlignmentFlags(newValue);
       refreshForm();
@@ -761,15 +747,20 @@ public final class MockForm extends MockContainer {
   @Override
   public EditableProperties getProperties() {
     // Before we return the Properties object, we make sure that the
-    // Sizing property has the value from the project's properties
-    // this is because Sizing is per project, not per Screen(Form)
-    // We only have to do this on screens other then screen1 because
-    // screen1's value is definitive.
-    if(!editor.isScreen1()) {
+    // Sizing and ShowListsAsJson properties have the value from the
+    // project's properties this is because these are per project, not
+    // per Screen(Form) We only have to do this on screens other then
+    // screen1 because screen1's value is definitive.
+    if (!editor.isScreen1()) {
       properties.changePropertyValue(SettingsConstants.YOUNG_ANDROID_SETTINGS_SIZING,
         editor.getProjectEditor().getProjectSettingsProperty(
           SettingsConstants.PROJECT_YOUNG_ANDROID_SETTINGS,
           SettingsConstants.YOUNG_ANDROID_SETTINGS_SIZING));
+      // new code to test
+      properties.changePropertyValue(SettingsConstants.YOUNG_ANDROID_SETTINGS_SHOW_LISTS_AS_JSON,
+          editor.getProjectEditor().getProjectSettingsProperty(
+            SettingsConstants.PROJECT_YOUNG_ANDROID_SETTINGS,
+            SettingsConstants.YOUNG_ANDROID_SETTINGS_SHOW_LISTS_AS_JSON));
     }
     return properties;
   }
