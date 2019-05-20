@@ -22,7 +22,7 @@ function initEditor() {
   var mouseInitialization = false;
   var onDownPosition = new THREE.Vector2();
   var onUpPosition = new THREE.Vector2();
-  var INTERSECTED, CLICKED;
+  var INTERSECTED, CLICKED, CURRENTDRAG;
 
   var cameraCube, sceneCube, equirectMaterial;
 
@@ -202,7 +202,7 @@ function initEditor() {
 
     transformControls.addEventListener("change", function() {
       updateInputs();
-      if (CLICKED && !isObject(CLICKED) && (CLICKED.light.isDirectionalLight || CLICKED.light.isHemisphereLight || CLICKED.light.isSpotLight)) {
+      if (CLICKED && !isObject(CLICKED) && (CLICKED.light && (CLICKED.light.isDirectionalLight || CLICKED.light.isHemisphereLight || CLICKED.light.isSpotLight))) {
         CLICKED.update();
       }
     });
@@ -264,7 +264,7 @@ function initEditor() {
       raycaster.setFromCamera(mouse, camera);
       var intersects = raycaster.intersectObjects(objects.concat(lights));
       if (intersects.length > 0) {
-        if (isObject(intersects[0].object)) {
+        if (isObject(intersects[0].object) || isGroup(intersects[0].object)) {
           focusObject(intersects[0].object);
         } else {
           focusLight(intersects[0].object);
@@ -276,9 +276,11 @@ function initEditor() {
         transformControls.detach();
         parameterWrapper2.innerHTML = "";
         parameterWrapper7.innerHTML = "";
-        if (isObject(CLICKED)) {
-          selectedObjectDiv.classList.remove("list-active");
-          selectedObjectDiv.classList.add("list-inactive");
+        if (isObject(CLICKED) || isGroup(CLICKED)) {
+          selectedObjectDiv.forEach(function(c) {
+            c.classList.remove("list-active");
+            c.classList.add("list-inactive");
+          });
           selectedObjectDiv = null;
         } else {
           selectedLightDiv.classList.remove("list-active");
@@ -296,16 +298,18 @@ function initEditor() {
     var objectDiv = objectList.children[objects.indexOf(object)];
     objectDiv.classList.remove("list-inactive");
     objectDiv.classList.add("list-active");
-    if (selectedObjectDiv && selectedObjectDiv != objectDiv) {
-      selectedObjectDiv.classList.remove("list-active");
-      selectedObjectDiv.classList.add("list-inactive");
+    if (selectedObjectDiv && selectedObjectDiv != [objectDiv]) {
+      selectedObjectDiv.forEach(function(c) {
+        c.classList.remove("list-active");
+        c.classList.add("list-inactive");
+      }); 
     }
     if (selectedLightDiv) {
       selectedLightDiv.classList.remove("list-active");
       selectedLightDiv.classList.add("list-inactive");
       selectedLightDiv = null;
     }
-    selectedObjectDiv = objectDiv;
+    selectedObjectDiv = [objectDiv];
     if (!trsEnabled) {
       enableTRS();
     }
@@ -326,8 +330,10 @@ function initEditor() {
       selectedLightDiv.classList.add("list-inactive");
     }
     if (selectedObjectDiv) {
-      selectedObjectDiv.classList.remove("list-active");
-      selectedObjectDiv.classList.add("list-inactive");
+      selectedObjectDiv.forEach(function(c) {
+        c.classList.remove("list-active");
+        c.classList.add("list-inactive");
+      }); 
       selectedObjectDiv = null;
     }
     selectedLightDiv = lightDiv;
@@ -346,14 +352,25 @@ function initEditor() {
     focusTab("Lights");
   }
 
-  function addObjectToScene(object, focus) {
+  function addObjectToScene(object, focus, recursive=false) {
     if (shadows) {
       object.castShadow = true;
       object.receiveShadow = true;
     }
-    scene.add(object);
+    if (!recursive) {
+      scene.add(object);
+    }
+
     objects.push(object);
     addToObjectList(object);
+    console.log(object);
+    console.log(objects);
+    if (object.children.length != 0) {
+      object.children.forEach(c => {
+        object.add(c);
+        addObjectToScene(c, false, true);
+      });
+    }
     if (focus) {
       focusObject(object);
     }
@@ -427,9 +444,17 @@ function initEditor() {
     return (typeof t.material !== "undefined" && t.material.isMeshPhongMaterial);
   }
 
+  function isGroup(t) {
+    if (t.type) {
+      return t.type == "Group";
+    } else {
+      return false;
+    }
+  }
+
   function updateInputs() {
     if (CLICKED) {
-      if (isObject(CLICKED)) {
+      if (isObject(CLICKED) || isGroup(CLICKED)) {
         objectPositionXInput.value = CLICKED.position.x.toFixed(3);
         objectPositionYInput.value = CLICKED.position.y.toFixed(3);
         objectPositionZInput.value = CLICKED.position.z.toFixed(3);
@@ -439,8 +464,10 @@ function initEditor() {
         scaleXInput.value = CLICKED.scale.x.toFixed(3);
         scaleYInput.value = CLICKED.scale.y.toFixed(3);
         scaleZInput.value = CLICKED.scale.z.toFixed(3);
-        objectColorInput.value = "#" + CLICKED.material.color.getHexString();
-        opacityInput.value = CLICKED.material.opacity.toFixed(3);
+        if (isObject(CLICKED)) {
+          objectColorInput.value = "#" + CLICKED.material.color.getHexString();
+          opacityInput.value = CLICKED.material.opacity.toFixed(3);
+        }
         updateDropdown(objectTextureInput);
         objectTextureInput.value = CLICKED.textureURL;
         massInput.value = CLICKED.mass.toFixed(3);
@@ -455,7 +482,7 @@ function initEditor() {
         restitutionInput.value = CLICKED.restitution.toFixed(3);
         updateCollision(CLICKED.collision);
         updateObjectType(CLICKED.soft);
-      } else if (!CLICKED.light.isAmbientLight) {
+      } else if (CLICKED.light && !CLICKED.light.isAmbientLight) {
         lightPositionXInput.value = CLICKED.light.position.x.toFixed(3);
         lightPositionYInput.value = CLICKED.light.position.y.toFixed(3);
         lightPositionZInput.value = CLICKED.light.position.z.toFixed(3);
@@ -477,7 +504,7 @@ function initEditor() {
   }
 
   function updateVisibility() {
-    if (CLICKED && isObject(CLICKED)) {
+    if (CLICKED && (isObject(CLICKED)||isGroup(CLICKED))) {
       parameterWrapper1.style.display = "block";
       if (CLICKED.soft) {
         parameterWrapper3.style.display = "none";
@@ -608,6 +635,25 @@ function initEditor() {
           clone.collision = CLICKED.collision;
           clone.soft = CLICKED.soft;
           addObjectToScene(clone, true);
+        } else if (isGroup(CLICKED)) {
+          var clone = CLICKED.clone();
+          clone.geometry = cloneGeometry;
+          clone.material = cloneMaterial;
+          clone.position.addScalar(2);
+          clone.textureURL = CLICKED.textureURL;
+          clone.mass = CLICKED.mass;
+          clone.linearVelocityX = CLICKED.linearVelocityX;
+          clone.linearVelocityY = CLICKED.linearVelocityY;
+          clone.linearVelocityZ = CLICKED.linearVelocityZ;
+          clone.angularVelocityX = CLICKED.angularVelocityX;
+          clone.angularVelocityY = CLICKED.angularVelocityY;
+          clone.angularVelocityZ = CLICKED.angularVelocityZ;
+          clone.pressure = CLICKED.pressure;
+          clone.friction = CLICKED.friction;
+          clone.restitution = CLICKED.restitution;
+          clone.collision = CLICKED.collision;
+          clone.soft = CLICKED.soft;
+          addObjectToScene(clone, true);
         } else {
           if (CLICKED.light.isAmbientLight) {
             var ambientLight = new THREE.AmbientLight(CLICKED.light.color, CLICKED.light.intensity);
@@ -665,11 +711,21 @@ function initEditor() {
     deleteButton.addEventListener("click", function() {
       if (CLICKED) {
         transformControls.detach();
-        if (isObject(CLICKED)) {
+        if (isObject(CLICKED) && CLICKED.children.length == 0) {
           var index = objects.indexOf(CLICKED);
           objects.splice(index, 1);
           selectedObjectDiv = null;
           objectList.removeChild(objectList.children[index]);
+          CLICKED.parent.remove(CLICKED);
+        } else if (isGroup(CLICKED)|| isObject(CLICKED) && CLICKED.children.length > 0) {
+          var index = objects.indexOf(CLICKED);
+          var numAncestors = countAncestors(CLICKED, 0);
+          objects.splice(index, numAncestors +1);
+          selectedObjectDiv = null;
+          for (var i = numAncestors; i >= 0; i--) {
+            objectList.removeChild(objectList.children[index+i]);
+          }
+          CLICKED.parent.remove(CLICKED);
         } else {
           var index = lights.indexOf(CLICKED);
           lights.splice(index, 1);
@@ -875,6 +931,17 @@ function initEditor() {
     lightList.innerHTML = "";
   }
 
+  function syncObjectList() {
+    var newObjects = []
+    for (var i = 0; i < objects.length; i++) {
+      var objectName = objectList.children[i].textContent;
+      newObjects.push(objects.filter( o=> {
+        return o.name === objectName;
+      })[0]);
+    };
+    objects = newObjects;
+  }
+
   generateSceneJSONString = function generateSceneJSONString() {
     var sceneJSON = [];
     var worldJSON = {};
@@ -1035,6 +1102,7 @@ function initEditor() {
     var octahedronButton = document.getElementById("octahedron");
     var sphereButton = document.getElementById("sphere");
     var tetrahedronButton = document.getElementById("tetrahedron");
+    var groupButton = document.getElementById("group");
     var ambientButton = document.getElementById("ambient");
     var directionalButton = document.getElementById("directional");
     var hemisphereButton = document.getElementById("hemisphere");
@@ -1043,11 +1111,19 @@ function initEditor() {
     var labelsButton = document.getElementById("labels");
     var addLabelButton = document.getElementById("add-label");
     var deleteLabelButton = document.getElementById("delete-label");
+    var counter;
     boxButton.addEventListener("click", function() {
       var boxGeometry = new THREE.BoxBufferGeometry(4, 4, 4, 1, 1, 1);
       var boxMaterial = new THREE.MeshPhongMaterial({color: 0x551410, flatShading: true, side: THREE.DoubleSide});
       var box = new THREE.Mesh(boxGeometry, boxMaterial);
-      box.name = "Box";
+      counter = objects.filter( o => {
+        return o.name.includes("Box");
+      }).length;
+      if (counter > 0) {
+        box.name = "Box " + counter;
+      } else {
+        box.name = "Box";
+      }
       setOtherParameters(box);
       addObjectToScene(box, true);
     });
@@ -1055,7 +1131,14 @@ function initEditor() {
       var coneGeometry = new THREE.ConeBufferGeometry(2, 4, 16);
       var coneMaterial = new THREE.MeshPhongMaterial({color: 0x553200, flatShading: true, side: THREE.DoubleSide});
       var cone = new THREE.Mesh(coneGeometry, coneMaterial);
-      cone.name = "Cone";
+      counter = objects.filter( o => {
+        return o.name.includes("Cone");
+      }).length;
+      if (counter > 0) {
+        cone.name = "Cone " + counter;
+      } else {
+        cone.name = "Cone";
+      }
       setOtherParameters(cone);
       addObjectToScene(cone, true);
     });
@@ -1063,7 +1146,14 @@ function initEditor() {
       var cylinderGeometry = new THREE.CylinderBufferGeometry(2, 2, 4, 16);
       var cylinderMaterial = new THREE.MeshPhongMaterial({color: 0x554400, flatShading: true, side: THREE.DoubleSide});
       var cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
-      cylinder.name = "Cylinder";
+      counter = objects.filter( o => {
+        return o.name.includes("Cylinder");
+      }).length;
+      if (counter > 0) {
+        cylinder.name = "Cylinder " + counter;
+      } else {
+        cylinder.name = "Cylinder";
+      }
       setOtherParameters(cylinder);
       addObjectToScene(cylinder, true);
     });
@@ -1071,7 +1161,14 @@ function initEditor() {
       var dodecahedronGeometry = new THREE.DodecahedronBufferGeometry(2);
       var dodecahedronMaterial = new THREE.MeshPhongMaterial({color: 0x194821, flatShading: true, side: THREE.DoubleSide});
       var dodecahedron = new THREE.Mesh(dodecahedronGeometry, dodecahedronMaterial);
-      dodecahedron.name = "Dodecahedron";
+      counter = objects.filter( o => {
+        return o.name.includes("Dodecahedron");
+      }).length;
+      if (counter > 0) {
+        dodecahedron.name = "Dodecahedron " + counter;
+      } else {
+        dodecahedron.name = "Dodecahedron";
+      }
       setOtherParameters(dodecahedron);
       addObjectToScene(dodecahedron, true);
     });
@@ -1079,7 +1176,14 @@ function initEditor() {
       var icosahedronGeometry = new THREE.IcosahedronBufferGeometry(2);
       var icosahedronMaterial = new THREE.MeshPhongMaterial({color: 0x1e4353, flatShading: true, side: THREE.DoubleSide});
       var icosahedron = new THREE.Mesh(icosahedronGeometry, icosahedronMaterial);
-      icosahedron.name = "Icosahedron";
+      counter = objects.filter( o => {
+        return o.name.includes("Icosahedron");
+      }).length;
+      if (counter > 0) {
+        icosahedron.name = "Icosahedron " + counter;
+      } else {
+        icosahedron.name = "Icosahedron";
+      }
       setOtherParameters(icosahedron);
       addObjectToScene(icosahedron, true);
     });
@@ -1087,7 +1191,14 @@ function initEditor() {
       var octahedronGeometry = new THREE.OctahedronBufferGeometry(2);
       var octahedronMaterial = new THREE.MeshPhongMaterial({color: 0x002955, flatShading: true, side: THREE.DoubleSide});
       var octahedron = new THREE.Mesh(octahedronGeometry, octahedronMaterial);
-      octahedron.name = "Octahedron";
+      counter = objects.filter( o => {
+        return o.name.includes("Octahedron");
+      }).length;
+      if (counter > 0) {
+        octahedron.name = "Octahedron " + counter;
+      } else {
+        octahedron.name = "Octahedron";
+      }
       setOtherParameters(octahedron);
       addObjectToScene(octahedron, true);
     });
@@ -1095,7 +1206,14 @@ function initEditor() {
       var sphereGeometry = new THREE.SphereBufferGeometry(2, 16, 16);
       var sphereMaterial = new THREE.MeshPhongMaterial({color: 0x1d1d47, flatShading: true, side: THREE.DoubleSide});
       var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-      sphere.name = "Sphere";
+      counter = objects.filter( o => {
+        return o.name.includes("Sphere");
+      }).length;
+      if (counter > 0) {
+        sphere.name = "Sphere " + counter;
+      } else {
+        sphere.name = "Sphere";
+      }
       setOtherParameters(sphere);
       addObjectToScene(sphere, true);
     });
@@ -1103,36 +1221,91 @@ function initEditor() {
       var tetrahedronGeometry = new THREE.TetrahedronBufferGeometry(2);
       var tetrahedronMaterial = new THREE.MeshPhongMaterial({color: 0x550f1c, flatShading: true, side: THREE.DoubleSide});
       var tetrahedron = new THREE.Mesh(tetrahedronGeometry, tetrahedronMaterial);
-      tetrahedron.name = "Tetrahedron";
+      counter = objects.filter( o => {
+        return o.name.includes("Tetrahedron");
+      }).length;
+      if (counter > 0) {
+        tetrahedron.name = "Tetrahedron " + counter;
+      } else {
+        tetrahedron.name = "Tetrahedron";
+      }
       setOtherParameters(tetrahedron);
       addObjectToScene(tetrahedron, true);
     });
+    groupButton.addEventListener("click", function() {
+      var group = new THREE.Group();
+      counter = objects.filter( o => {
+        return o.name.includes("Group");
+      }).length;
+      if (counter > 0) {
+        group.name = "Group " + counter;
+      } else {
+        group.name = "Group";
+      }
+      setOtherParameters(group);
+      addObjectToScene(group, true);
+    });
     ambientButton.addEventListener("click", function() {
       var ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-      ambientLight.name = "Ambient Light";
+      counter = lights.filter( o => {
+        return o.name.includes("Ambient Light");
+      }).length;
+      if (counter > 0) {
+        ambientLight.name = "Ambient Light " + counter;
+      } else {
+        ambientLight.name = "Ambient Light";
+      }
       addLightToScene(ambientLight, true);
     })
     directionalButton.addEventListener("click", function() {
       var directionalLight = new THREE.DirectionalLight(0x00ffff, 1);
       directionalLight.position.set(2, 8, 1);
-      directionalLight.name = "Directional Light";
+      counter = lights.filter( o => {
+        return o.name.includes("Directional Light");
+      }).length;
+      if (counter > 0) {
+        directionalLight.name = "Directional Light " + counter;
+      } else {
+        directionalLight.name = "Directional Light";
+      }
       addLightToScene(directionalLight, true);
     });
     hemisphereButton.addEventListener("click", function() {
       var hemisphereLight = new THREE.HemisphereLight(0xff0000, 0x0000ff, 1);
-      hemisphereLight.name = "Hemisphere Light";
+      counter = lights.filter( o => {
+        return o.name.includes("Hemisphere Light");
+      }).length;
+      if (counter > 0) {
+        hemisphereLight.name = "Hemisphere Light " + counter;
+      } else {
+        hemisphereLight.name = "Hemisphere Light";
+      }
       addLightToScene(hemisphereLight, true);
     })
     pointButton.addEventListener("click", function() {
       var pointLight = new THREE.PointLight(0xff0000, 1);
       pointLight.position.set(10, 10, 0);
-      pointLight.name = "Point Light";
+      counter = lights.filter( o => {
+        return o.name.includes("Point Light");
+      }).length;
+      if (counter > 0) {
+        pointLight.name = "Point Light " + counter;
+      } else {
+        pointLight.name = "Point Light";
+      }
       addLightToScene(pointLight, true);
     });
     spotButton.addEventListener("click", function() {
       var spotLight = new THREE.SpotLight(0x00ff00, 2, 40, Math.PI / 6, 0.2, 1);
       spotLight.position.set(0, 10, 10);
-      spotLight.name = "Spot Light";
+      counter = lights.filter( o => {
+        return o.name.includes("Spot Light");
+      }).length;
+      if (counter > 0) {
+        spotLight.name = "Spot Light " + counter;
+      } else {
+        spotLight.name = "Spot Light";
+      }
       addLightToScene(spotLight, true);
     })
     shadowsButton.addEventListener("click", function() {
@@ -1293,25 +1466,203 @@ function initEditor() {
     object.soft = false;
   }
 
+  function findObjectById(objectId) {
+    return objects.filter(function(o) {
+      return o.uuid == objectId;
+    })[0];
+  };
+
+  function removeParent(parent, child) {
+    child.parent = parent.parent;
+  }
+
+  function parentInObjectList(object) {
+    return (objects.filter(function(o) {
+      return o.uuid == object.parent.uuid;
+    }).length == 1);
+  }
+
+  function countAncestors(object, counter) {
+    if (object.children.length != 0) {
+      counter += object.children.length;
+      object.children.forEach( c => {
+        counter = countAncestors(c, counter);
+      });
+    }
+    return counter;
+  }
+
   function addToObjectList(object) {
     var objectDiv = document.createElement("div");
     objectDiv.classList.add("list-item");
     objectDiv.classList.add("list-inactive");
+    objectDiv.setAttribute("draggable", true);
+    objectDiv.id = object.uuid;
+
+    console.log(object);
+
+    if (parentInObjectList(object)) {
+      console.log()
+      var parentPadding = parseInt(document.getElementById(object.parent.uuid).style.paddingLeft);
+      if (parentPadding) {
+        objectDiv.style.paddingLeft = (parentPadding + 10) + "px";
+      } else {
+        objectDiv.style.paddingLeft = "10px";
+      }
+    }
+
+    objectDiv.addEventListener( 'drag', function(e) {
+      CURRENTDRAG = this;
+    }, false );
+    objectDiv.addEventListener( 'dragstart', function(e) {
+      console.log("drag started");
+    }, false ); // Firefox needs this
+
+    objectDiv.addEventListener( 'dragover', function(e) {
+      e.preventDefault();
+      if (this === CURRENTDRAG) return;
+
+      var area = e.offsetY / this.clientHeight;
+
+      if ( area < 0.25 ) {
+        this.className = 'list-item list-inactive dragTop';
+      } else if ( area > 0.75 ) {
+        this.className = 'list-item list-inactive dragBottom';
+      } else {
+        this.className = 'list-item list-inactive drag';
+      }
+      e.dataTransfer.dropEffect = 'copy';
+    }, false );
+
+    objectDiv.addEventListener( 'dragleave', function (e) {
+      if (this === CURRENTDRAG ) return;
+      this.className = 'list-item list-inactive';
+    }, false );
+
+    objectDiv.addEventListener( 'drop', function (e) {
+      if (this === CURRENTDRAG) return;
+      this.className = "list-item list-inactive";
+      var area = e.offsetY / this.clientHeight;
+      var currentDragObject = findObjectById(CURRENTDRAG.id);
+      var parentObject = findObjectById(this.id);
+      var currentObjectIndex = objects.indexOf(currentDragObject);
+      var parentObjectIndex = objects.indexOf(parentObject);
+      var paddingValue = parseInt(this.style.paddingLeft);
+      var currentPadding, newObjectList;;
+      var objectArray = Array.from(objectList.children)
+      var numAncestors = countAncestors(currentDragObject, 0);
+      var move = objectArray.slice(currentObjectIndex, (currentObjectIndex+numAncestors+1));
+      //When hitting the top portion of the drag drop
+      if (area < 0.25) {
+        if (currentObjectIndex < parentObjectIndex && currentObjectIndex + numAncestors + 1 > parentObjectIndex) {
+          return ;
+        }
+
+        if (paddingValue) {
+          CURRENTDRAG.style.paddingLeft = paddingValue + "px";
+        } else {
+          CURRENTDRAG.style.paddingLeft = "";
+        }
+
+        move.forEach( (d, i) => {
+          if (i != 0) {
+            currentPadding = parseInt(document.getElementById(findObjectById(d.id).parent.uuid).style.paddingLeft)
+            if (currentPadding) {
+              d.style.paddingLeft = (currentPadding + 10) + "px";
+            } else {
+              d.style.paddingLeft = "10px";
+            }
+          }
+        });
+
+        if (currentObjectIndex < parentObjectIndex) {
+          newObjectList = objectArray.slice(0, currentObjectIndex).concat(objectArray.slice(currentObjectIndex+numAncestors+1, parentObjectIndex), move, objectArray.slice(parentObjectIndex));
+        } else {
+          newObjectList = objectArray.slice(0, parentObjectIndex).concat(move, objectArray.slice(parentObjectIndex, currentObjectIndex), objectArray.slice(currentObjectIndex+numAncestors+1));
+        }
+        objectList.empty;
+        newObjectList.forEach( o => {
+          objectList.appendChild(o);
+        });
+        parentObject.parent.add(currentDragObject);
+      //When hitting the Bottom portion
+      } else if (area > 0.75) {
+        if (currentObjectIndex < parentObjectIndex && currentObjectIndex + numAncestors + 1 > parentObjectIndex || countAncestors(parentObject, 0) > 0) {
+          return ;
+        }
+
+        CURRENTDRAG.style.paddingLeft = "";
+
+        move.forEach( (d, i) => {
+          if (i != 0) {
+            currentPadding = parseInt(document.getElementById(findObjectById(d.id).parent.uuid).style.paddingLeft)
+            if (currentPadding) {
+              d.style.paddingLeft = (currentPadding + 10) + "px";
+            } else {
+              d.style.paddingLeft = "10px";
+            }
+          }
+        });
+
+        if (currentObjectIndex < parentObjectIndex) {
+          newObjectList = objectArray.slice(0, currentObjectIndex).concat(objectArray.slice(currentObjectIndex+numAncestors+1, parentObjectIndex+1), move, objectArray.slice(parentObjectIndex+1));
+        } else {
+          newObjectList = objectArray.slice(0, parentObjectIndex+1).concat(move, objectArray.slice(parentObjectIndex+1, currentObjectIndex), objectArray.slice(currentObjectIndex+numAncestors+1));
+        }
+        objectList.empty;
+        newObjectList.forEach( o => {
+          objectList.appendChild(o);
+        });
+        parentObject.parent.add(currentDragObject);
+      } else {
+        if (paddingValue) {
+          paddingValue += 10;
+          CURRENTDRAG.style.paddingLeft = paddingValue + "px";
+        } else {
+          CURRENTDRAG.style.paddingLeft = "10px";
+        }
+
+        move.forEach( (d, i) => {
+          if (i != 0) {
+            currentPadding = parseInt(document.getElementById(findObjectById(d.id).parent.uuid).style.paddingLeft)
+            if (currentPadding) {
+              d.style.paddingLeft = (currentPadding + 10) + "px";
+            } else {
+              d.style.paddingLeft = "10px";
+            }
+          }
+        });
+        if (currentObjectIndex < parentObjectIndex) {
+          newObjectList = objectArray.slice(0, currentObjectIndex).concat(objectArray.slice(currentObjectIndex+numAncestors+1, parentObjectIndex+1), move, objectArray.slice(parentObjectIndex+1));
+        } else {
+          newObjectList = objectArray.slice(0, parentObjectIndex+1).concat(move, objectArray.slice(parentObjectIndex+1, currentObjectIndex), objectArray.slice(currentObjectIndex+numAncestors+1));
+        }
+        objectList.empty;
+        newObjectList.forEach( o => {
+          objectList.appendChild(o);
+        });
+        parentObject.add(currentDragObject);
+      }
+      syncObjectList();
+    }, false );
+
     objectDiv.innerHTML = object.name;
     objectList.appendChild(objectDiv);
-    objectDiv.addEventListener("click", function() {
+    objectDiv.addEventListener("click", function(e) {
       objectDiv.classList.remove("list-inactive");
       objectDiv.classList.add("list-active");
-      if (selectedObjectDiv && selectedObjectDiv != objectDiv) {
-        selectedObjectDiv.classList.remove("list-active");
-        selectedObjectDiv.classList.add("list-inactive");
+      if (selectedObjectDiv && selectedObjectDiv != [objectDiv]) {
+        selectedObjectDiv.forEach(function(c) {
+          c.classList.remove("list-active");
+          c.classList.add("list-inactive");
+        });
       }
       if (selectedLightDiv) {
         selectedLightDiv.classList.remove("list-active");
         selectedLightDiv.classList.add("list-inactive");
         selectedLightDiv = null;
       }
-      selectedObjectDiv = objectDiv;
+      selectedObjectDiv = [objectDiv];
       if (!trsEnabled) {
         enableTRS();
       }
@@ -1352,8 +1703,10 @@ function initEditor() {
         selectedLightDiv.classList.add("list-inactive");
       }
       if (selectedObjectDiv) {
-        selectedObjectDiv.classList.remove("list-active");
-        selectedObjectDiv.classList.add("list-inactive");
+        selectedObjectDiv.forEach(function(c) {
+          c.classList.remove("list-active");
+          c.classList.add("list-inactive");
+        });
         selectedObjectDiv = null;
       }
       selectedLightDiv = lightDiv;
@@ -1714,7 +2067,8 @@ function initEditor() {
   }
 
   function addObjectSpecificParameters() {
-    switch (CLICKED.geometry.type) {
+    if (CLICKED.type == "Mesh") {
+      switch (CLICKED.geometry.type) {
       case "BoxBufferGeometry":
         parameterWrapper2.innerHTML = "<div class=\"parameter-label\">Width</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"box-width\" type=\"number\" step=\"0.001\"></div></div>" +
         "<div class=\"parameter-label\">Height</div><div class=\"row parameter-row\"><div class=\"col-4 parameter-item\"><input class=\"input-text parameter-box\" id=\"box-height\" type=\"number\" step=\"0.001\"></div></div>" +
@@ -1816,6 +2170,7 @@ function initEditor() {
         parameterWrapper2.style.display = "none";
         parameterWrapper2.innerHTML = "";
         return;
+      }
     }
     parameterWrapper2.style.display = "block";
     parameterWrapper7.innerHTML = "";
@@ -1981,4 +2336,12 @@ function initEditor() {
       return texture;
     }
   }
+}
+
+var importScene;
+var clearScene;
+var generateSceneJSONString;
+
+if (typeof window.parent.loadScene === "function") {
+  window.parent.loadScene();
 }
