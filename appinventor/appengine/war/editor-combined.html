@@ -253,6 +253,48 @@
               </div>
               <div class="parameter-row">
                 <select class="dropdown-text" id="object-material">
+                    <option value="LineBasicMaterial">
+                      Line Basic Material
+                    </option>
+                    <option value="LineDashedMaterial">
+                      Line Dashed Material
+                    </option>
+                    <option value="MeshBasicMaterial">
+                      Mesh Basic Material
+                    </option>
+                    <option value="MeshDepthMaterial">
+                      Mesh Depth Material
+                    </option>
+                    <option value="MeshNormalMaterial">
+                      Mesh Normal Material
+                    </option>
+                    <option value="MeshLambertMaterial">
+                      Mesh Lambert Material
+                    </option>
+                    <option value="MeshPhongMaterial">
+                      Mesh Phong Material
+                    </option>
+                    <option value="MeshToonMaterial">
+                      Mesh Toon Material
+                    </option>
+                    <option value="MeshStandardMaterial">
+                      Mesh Standard Material
+                    </option>
+                    <option value="MeshPhysicalMaterial">
+                      Mesh Physical Material
+                    </option>
+                    <option value="RawShaderMaterial">
+                      Raw Shader Material
+                    </option>
+                    <option value="ShaderMaterial">
+                      Shader Material
+                    </option>
+                    <option value="ShadowMaterial">
+                      Shadow Material
+                    </option>
+<!--                     <option value="SpriteMaterial">
+                      Sprite Material
+                    </option> -->
                 </select>
               </div>
               <div class="parameter-label">
@@ -3933,7 +3975,7 @@ function initEditor() {
   }
 
   function isObject(t) {
-    return (typeof t.material !== "undefined" && t.material.isMeshPhongMaterial);
+    return (typeof t.material !== "undefined");
   }
 
   function isGroup(t) {
@@ -3959,6 +4001,7 @@ function initEditor() {
         if (isObject(CLICKED)) {
           objectColorInput.value = "#" + CLICKED.material.color.getHexString();
           opacityInput.value = CLICKED.material.opacity.toFixed(3);
+          objectMaterialInput.value = CLICKED.material.type;
         }
         updateDropdown(objectTextureInput);
         objectTextureInput.value = CLICKED.textureURL;
@@ -4024,11 +4067,11 @@ function initEditor() {
     var intersects = raycaster.intersectObjects(objects.concat(lights));
     if (intersects.length > 0 && mouseInitialization) {
       if (INTERSECTED != intersects[0].object) {
-        if (INTERSECTED && isObject(INTERSECTED)) {
+        if (INTERSECTED && isObject(INTERSECTED) && INTERSECTED.material.emissive) {
           INTERSECTED.material.emissive.setHex(0);
         }
         INTERSECTED = intersects[0].object;
-        if (isObject(INTERSECTED)) {
+        if (isObject(INTERSECTED) && INTERSECTED.material.emissive) {
           INTERSECTED.material.emissive.setHex(0x222222);
         }
       }
@@ -5285,6 +5328,9 @@ function initEditor() {
     objectTextureInput.addEventListener("change", function() {
       updateParameters(objectTextureInput, "objecttexture");
     });
+    objectMaterialInput.addEventListener("change", function () {
+      updateParameters(objectMaterialInput.value, "objectmaterial");
+    });
     addParameterListeners(massInput, "mass");
     addParameterListeners(linearVelocityXInput, "linearvelocityx");
     addParameterListeners(linearVelocityYInput, "linearvelocityy");
@@ -5349,7 +5395,7 @@ function initEditor() {
     }
     if (clickedValue === "boxwidthsegments" || clickedValue === "boxheightsegments" || clickedValue === "boxdepthsegments" || clickedValue === "coneradialsegments" || clickedValue === "cylinderradialsegments" || clickedValue === "spherewidthsegments" || clickedValue === "sphereheightsegments") {
       input.value = Math.abs(input.valueAsNumber.toFixed());
-    } else if (clickedValue === "opacity" || clickedValue === "mass" || clickedValue === "pressure" || clickedValue === "friction" || clickedValue === "restitution" || clickedValue === "intensity" || clickedValue === "distance" || clickedValue === "angle" || clickedValue === "penumbra" || clickedValue === "decay") {
+    } else if (clickedValue === "opacity" || clickedValue === "mass" || clickedValue === "pressure" || clickedValue === "friction" || clickedValue === "restitution" || clickedValue === "intensity" || clickedValue === "distance" || clickedValue === "angle" || clickedValue === "penumbra" || clickedValue === "decay" || clickedValue == "objectmaterial") {
       input.value = Math.abs(input.valueAsNumber).toFixed(3);
     } else if (clickedValue !== "objecttexture" && clickedValue !== "backgroundtexture") {
       input.value = input.valueAsNumber.toFixed(3);
@@ -5409,6 +5455,20 @@ function initEditor() {
           var texture = new THREE.TextureLoader().load(getTextureURL(input.value));
           updateMaterial(new THREE.MeshPhongMaterial({color: CLICKED.material.color.getHex(), map: texture, flatShading: CLICKED.material.flatShading, side: THREE.DoubleSide, wireframe: CLICKED.material.wireframe}), CLICKED.material.opacity);
         }
+        break;
+      case "objectmaterial":
+        var material = new THREE[ input ]();
+        if ( input == "RawShaderMaterial") {
+          material.vertexShader =  ['uniform mat4 projectionMatrix;', 'uniform mat4 modelViewMatrix;\n', 'attribute vec3 position;\n\n',].join( '\n' ) + material.vertexShader;
+        }
+        material.color = CLICKED.material.color;
+        material.flatShading = CLICKED.material.flatshading;
+        material.side = THREE.DoubleSide;
+        material.wireframe = CLICKED.material.wiredframe;
+
+        console.log(material);
+        console.log(CLICKED.material);
+        updateMaterial(material, CLICKED.material.opacity);
         break;
       case "mass":
         CLICKED.mass = input.valueAsNumber;
