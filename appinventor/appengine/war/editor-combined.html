@@ -4076,7 +4076,7 @@ function initEditor() {
         }
       }
     } else {
-      if (INTERSECTED && isObject(INTERSECTED)) {
+      if (INTERSECTED && isObject(INTERSECTED) && INTERSECTED.material.emissive) {
         INTERSECTED.material.emissive.setHex(0);
       }
       INTERSECTED = null;
