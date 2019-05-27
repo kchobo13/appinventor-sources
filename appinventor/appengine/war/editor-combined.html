@@ -4467,9 +4467,9 @@ function initEditor() {
   function syncObjectList() {
     var newObjects = []
     for (var i = 0; i < objects.length; i++) {
-      var objectName = objectList.children[i].textContent;
+      var objectId = objectList.children[i].id;
       newObjects.push(objects.filter( o=> {
-        return o.name === objectName;
+        return o.uuid === objectId;
       })[0]);
     };
     objects = newObjects;
@@ -5030,6 +5030,7 @@ function initEditor() {
     objectDiv.classList.add("list-item");
     objectDiv.classList.add("list-inactive");
     objectDiv.setAttribute("draggable", true);
+    objectDiv.id = object.uuid;
     if (parentInObjectList(object)) {
       var parentPadding = parseInt(document.getElementById(object.parent.uuid).style.paddingLeft);
       if (parentPadding) {
@@ -5044,6 +5045,7 @@ function initEditor() {
     }, false );
     objectDiv.addEventListener( 'dragstart', function(e) {
       console.log("drag started");
+      CURRENTDRAG = this;
     }, false ); // Firefox needs this
 
     objectDiv.addEventListener( 'dragover', function(e) {
