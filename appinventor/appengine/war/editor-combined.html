@@ -4247,9 +4247,13 @@ function initEditor() {
       if (CLICKED) {
         transformControls.detach();
         if (isObject(CLICKED) && CLICKED.children.length == 0) {
+          console.log(CLICKED);
+          console.log(objects);
+          console.log(objectList);
           var index = objects.indexOf(CLICKED);
           objects.splice(index, 1);
           selectedObjectDiv = null;
+          console.log(index);
           objectList.removeChild(objectList.children[index]);
           CLICKED.parent.remove(CLICKED);
         } else if (isGroup(CLICKED)|| isObject(CLICKED) && CLICKED.children.length > 0) {
