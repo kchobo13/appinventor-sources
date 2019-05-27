@@ -3897,8 +3897,6 @@ function initEditor() {
 
     objects.push(object);
     addToObjectList(object);
-    console.log(object);
-    console.log(objects);
     if (object.children.length != 0) {
       object.children.forEach(c => {
         object.add(c);
@@ -4247,13 +4245,9 @@ function initEditor() {
       if (CLICKED) {
         transformControls.detach();
         if (isObject(CLICKED) && CLICKED.children.length == 0) {
-          console.log(CLICKED);
-          console.log(objects);
-          console.log(objectList);
           var index = objects.indexOf(CLICKED);
           objects.splice(index, 1);
           selectedObjectDiv = null;
-          console.log(index);
           objectList.removeChild(objectList.children[index]);
           CLICKED.parent.remove(CLICKED);
         } else if (isGroup(CLICKED)|| isObject(CLICKED) && CLICKED.children.length > 0) {
@@ -5036,12 +5030,7 @@ function initEditor() {
     objectDiv.classList.add("list-item");
     objectDiv.classList.add("list-inactive");
     objectDiv.setAttribute("draggable", true);
-    objectDiv.id = object.uuid;
-
-    console.log(object);
-
     if (parentInObjectList(object)) {
-      console.log()
       var parentPadding = parseInt(document.getElementById(object.parent.uuid).style.paddingLeft);
       if (parentPadding) {
         objectDiv.style.paddingLeft = (parentPadding + 10) + "px";
@@ -5469,9 +5458,6 @@ function initEditor() {
         material.flatShading = CLICKED.material.flatshading;
         material.side = THREE.DoubleSide;
         material.wireframe = CLICKED.material.wiredframe;
-
-        console.log(material);
-        console.log(CLICKED.material);
         updateMaterial(material, CLICKED.material.opacity);
         break;
       case "mass":
