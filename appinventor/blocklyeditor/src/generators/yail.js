@@ -182,6 +182,7 @@ Blockly.Yail.getBlocksCode = function(workspace) {
   for (var i = 0, block; block = globalBlocks[i]; i++) {
     jsCode.push(Blockly.JavaScript.blockToCode(block));
   }
+  console.log(jsCode);
   return encodeURIComponent("var procedures={};(function(p){" + jsCode.join("") + "})(procedures);");
 }
 

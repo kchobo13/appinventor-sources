@@ -291,6 +291,7 @@ Blockly.ReplMgr.buildVR = function(workspace) {
             block.type != "procedures_defreturn")
             continue;
         var tempyail = Blockly.Yail.getBlocksCode(Blockly.mainWorkspace);
+        console.log(tempyail);
         if (phoneState.blockYail[block.id] != tempyail) { // Only send changed yail
             this.putYail(tempyail, block, success, failure);
             phoneState.blockYail[block.id] = tempyail;
@@ -299,6 +300,8 @@ Blockly.ReplMgr.buildVR = function(workspace) {
 
     // need to do this after the blocks have been defined
     if (needinitialize) {
+        console.log(formName);
+        console.log(componentNames);
         this.putYail(Blockly.Yail.getComponentInitializationString(formName, componentNames));
     }
 };
@@ -836,6 +839,7 @@ Blockly.ReplMgr.processRetvals = function(responses) {
                     }
                 } else {
                     if (r.value) {
+                        console.log(r);
                         block.replError = Blockly.Msg.REPL_ERROR_FROM_COMPANION + ": " + r.value;
                     } else {
                         block.replError = "Error from Companion";

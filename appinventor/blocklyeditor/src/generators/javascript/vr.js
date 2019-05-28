@@ -227,10 +227,10 @@ Blockly.JavaScript["controls_if"] = function() {
     if (i !== 0) {
       js += "else ";
     }
-    js += "if(" + (Blockly.JavaScript.valueToCode(this, "IF" + i, Blockly.JavaScript.ORDER_NONE) || "false") + "){" + Blockly.JavaScript.statementToCode2(this, "DO" + i) + "}";
+    js += "if(" + (Blockly.JavaScript.valueToCode(this, "IF" + i, Blockly.JavaScript.ORDER_NONE) || "false") + "){" + Blockly.JavaScript.statementToCode(this, "DO" + i) + "}";
   }
   if (this.elseCount_ == 1) {
-    js += "else{" + Blockly.JavaScript.statementToCode2(this, "ELSE") + "}";
+    js += "else{" + Blockly.JavaScript.statementToCode(this, "ELSE") + "}";
   }
   return js;
 }
@@ -248,11 +248,11 @@ Blockly.JavaScript["controls_forRange"] = function() {
     op = ">=";
     step = "-=";
   }
-  return "for(var " + index + "=" + start + ";" + index + op + end + ";" + index + step + (Blockly.JavaScript.valueToCode(this, "STEP", Blockly.JavaScript.ORDER_NONE) || "0") + "){" + Blockly.JavaScript.statementToCode2(this, "DO", Blockly.JavaScript.ORDER_NONE) + "}";
+  return "for(var " + index + "=" + start + ";" + index + op + end + ";" + index + step + (Blockly.JavaScript.valueToCode(this, "STEP", Blockly.JavaScript.ORDER_NONE) || "0") + "){" + Blockly.JavaScript.statementToCode(this, "DO", Blockly.JavaScript.ORDER_NONE) + "}";
 }
 
 Blockly.JavaScript["controls_while"] = function() {
-  return "while(" + (Blockly.JavaScript.valueToCode(this, "TEST", Blockly.JavaScript.ORDER_NONE) || "false") + "){" + Blockly.JavaScript.statementToCode2(this, "DO") + "}";
+  return "while(" + (Blockly.JavaScript.valueToCode(this, "TEST", Blockly.JavaScript.ORDER_NONE) || "false") + "){" + Blockly.JavaScript.statementToCode(this, "DO") + "}";
 }
 
 Blockly.JavaScript["controls_openAnotherScreen"] = function() {
@@ -264,23 +264,23 @@ Blockly.JavaScript["controls_openAnotherScreenWithStartValue"] = function() {
 }
 
 Blockly.JavaScript["vr_on_start"] = function() {
-  return "p.onstart = async function(){" + Blockly.JavaScript.statementToCode2(this, "do") + "};";
+  return "p.onstart = async function(){" + Blockly.JavaScript.statementToCode(this, "do") + "};";
 }
 
 Blockly.JavaScript["vr_on_render"] = function() {
-  return "p.onrender = async function(){" + Blockly.JavaScript.statementToCode2(this, "do") + "};";
+  return "p.onrender = async function(){" + Blockly.JavaScript.statementToCode(this, "do") + "};";
 }
 
 Blockly.JavaScript["vr_on_touch_start"] = function() {
-  return "p.ontouchstart = async function(_touchscreenx, _touchscreeny, _touch, _targetx, _targety, _targetz, _object, _touchid){" + Blockly.JavaScript.statementToCode2(this, "do") + "};";
+  return "p.ontouchstart = async function(_touchscreenx, _touchscreeny, _touch, _targetx, _targety, _targetz, _object, _touchid){" + Blockly.JavaScript.statementToCode(this, "do") + "};";
 }
 
 Blockly.JavaScript["vr_on_touch_move"] = function() {
-  return "p.ontouchmove = async function(_touchscreenx, _touchscreeny, _touch, _targetx, _targety, _targetz, _object, _touchid){" + Blockly.JavaScript.statementToCode2(this, "do") + "};";
+  return "p.ontouchmove = async function(_touchscreenx, _touchscreeny, _touch, _targetx, _targety, _targetz, _object, _touchid){" + Blockly.JavaScript.statementToCode(this, "do") + "};";
 }
 
 Blockly.JavaScript["vr_on_touch_end"] = function() {
-  return "p.ontouchend = async function(_touchscreenx, _touchscreeny, _touch, _targetx, _targety, _targetz, _object, _touchid){" + Blockly.JavaScript.statementToCode2(this, "do") + "};";
+  return "p.ontouchend = async function(_touchscreenx, _touchscreeny, _touch, _targetx, _targety, _targetz, _object, _touchid){" + Blockly.JavaScript.statementToCode(this, "do") + "};";
 }
 
 Blockly.JavaScript["vr_light"] = function() {
