@@ -1,22 +1,12 @@
 // -*- mode: java; c-basic-offset: 2; -*-
 // Copyright 2009-2011 Google, All Rights reserved
-// Copyright 2011-2012 MIT, All rights reserved
+// Copyright 2011-2019 MIT, All rights reserved
 // Released under the Apache License, Version 2.0
 // http://www.apache.org/licenses/LICENSE-2.0
 
 package com.google.appinventor.components.runtime;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.json.JSONException;
-
+import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -24,13 +14,20 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.VisibleForTesting;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -39,11 +36,12 @@ import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
-import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ScrollView;
+
+import com.google.appinventor.common.version.AppInventorFeatures;
 
 import com.google.appinventor.components.annotations.DesignerComponent;
 import com.google.appinventor.components.annotations.DesignerProperty;
@@ -52,6 +50,7 @@ import com.google.appinventor.components.annotations.SimpleEvent;
 import com.google.appinventor.components.annotations.SimpleFunction;
 import com.google.appinventor.components.annotations.SimpleObject;
 import com.google.appinventor.components.annotations.SimpleProperty;
+import com.google.appinventor.components.annotations.UsesLibraries;
 import com.google.appinventor.components.annotations.UsesPermissions;
 import com.google.appinventor.components.common.ComponentCategory;
 import com.google.appinventor.components.common.ComponentConstants;
@@ -60,18 +59,39 @@ import com.google.appinventor.components.common.YaVersion;
 import com.google.appinventor.components.runtime.collect.Lists;
 import com.google.appinventor.components.runtime.collect.Maps;
 import com.google.appinventor.components.runtime.collect.Sets;
+import com.google.appinventor.components.runtime.errors.PermissionException;
 import com.google.appinventor.components.runtime.multidex.MultiDex;
-import com.google.appinventor.components.runtime.multidex.MultiDexApplication;
 import com.google.appinventor.components.runtime.util.AlignmentUtil;
 import com.google.appinventor.components.runtime.util.AnimationUtil;
 import com.google.appinventor.components.runtime.util.ErrorMessages;
+import com.google.appinventor.components.runtime.util.FileUtil;
 import com.google.appinventor.components.runtime.util.FullScreenVideoUtil;
 import com.google.appinventor.components.runtime.util.JsonUtil;
 import com.google.appinventor.components.runtime.util.MediaUtil;
 import com.google.appinventor.components.runtime.util.OnInitializeListener;
-import com.google.appinventor.components.runtime.util.SdkLevel;
+import com.google.appinventor.components.runtime.util.PaintUtil;
 import com.google.appinventor.components.runtime.util.ScreenDensityUtil;
+import com.google.appinventor.components.runtime.util.SdkLevel;
 import com.google.appinventor.components.runtime.util.ViewUtil;
+import org.json.JSONException;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+
 
 /**
  * Component underlying activities and UI apps, not directly accessible to Simple programmers.
@@ -91,11 +111,15 @@ import com.google.appinventor.components.runtime.util.ViewUtil;
 @DesignerComponent(version = YaVersion.FORM_COMPONENT_VERSION,
     category = ComponentCategory.LAYOUT,
     description = "Top-level component containing all other components in the program",
+    androidMinSdk = 7,
     showOnPalette = false)
 @SimpleObject
+@UsesLibraries(libraries = "appcompat-v7.aar, support-v4.aar, animated-vector-drawable.aar, " +
+    "runtime.aar, support-compat.aar, support-core-ui.aar, support-core-utils.aar, " +
+    "support-fragment.aar, support-vector-drawable.aar")
 @UsesPermissions(permissionNames = "android.permission.INTERNET,android.permission.ACCESS_WIFI_STATE," +
     "android.permission.ACCESS_NETWORK_STATE")
-public class Form extends Activity
+public class Form extends AppInventorCompatActivity
   implements Component, ComponentContainer, HandlesEventDispatching,
   OnGlobalLayoutListener {
 
@@ -106,6 +130,13 @@ public class Form extends Activity
   private static final String ARGUMENT_NAME = "APP_INVENTOR_START";
 
   public static final String APPINVENTOR_URL_SCHEME = "appinventor";
+
+  public static final String ASSETS_PREFIX = "file:///android_asset/";
+
+  private static final boolean DEBUG = false;
+
+  private static final int DEFAULT_PRIMARY_COLOR_DARK = PaintUtil.hexStringToInt(ComponentConstants.DEFAULT_PRIMARY_DARK_COLOR);
+  private static final int DEFAULT_ACCENT_COLOR = PaintUtil.hexStringToInt(ComponentConstants.DEFAULT_ACCENT_COLOR);
 
   // Keep track of the current form object.
   // activeForm always holds the Form that is currently handling event dispatching so runtime.scm
@@ -122,7 +153,7 @@ public class Form extends Activity
   // applicationIsBeingClosed is set to true during closeApplication.
   private static boolean applicationIsBeingClosed;
 
-  private final Handler androidUIHandler = new Handler();
+  protected final Handler androidUIHandler = new Handler();
 
   protected String formName;
 
@@ -139,9 +170,12 @@ public class Form extends Activity
   private String aboutScreen;
   private boolean showStatusBar = true;
   private boolean showTitle = true;
+  protected String title = "";
 
   private String backgroundImagePath = "";
   private Drawable backgroundDrawable;
+  private boolean usesDefaultBackground;
+  private boolean usesDarkTheme;
 
   // Layout
   private LinearLayout viewLayout;
@@ -157,6 +191,11 @@ public class Form extends Activity
   private String openAnimType;
   private String closeAnimType;
 
+  // Syle information
+  private int primaryColor = DEFAULT_PRIMARY_COLOR;
+  private int primaryColorDark = DEFAULT_PRIMARY_COLOR_DARK;
+  private int accentColor = DEFAULT_ACCENT_COLOR;
+
   private FrameLayout frameLayout;
   private boolean scrollable;
 
@@ -165,9 +204,13 @@ public class Form extends Activity
 
   private static boolean showListsAsJson = false;
 
+  private final Set<String> permissions = new HashSet<String>();
+
   // Application lifecycle related fields
   private final HashMap<Integer, ActivityResultListener> activityResultMap = Maps.newHashMap();
+  private final Map<Integer, Set<ActivityResultListener>> activityResultMultiMap = Maps.newHashMap();
   private final Set<OnStopListener> onStopListeners = Sets.newHashSet();
+  private final Set<OnClearListener> onClearListeners = Sets.newHashSet();
   private final Set<OnNewIntentListener> onNewIntentListeners = Sets.newHashSet();
   private final Set<OnResumeListener> onResumeListeners = Sets.newHashSet();
   private final Set<OnPauseListener> onPauseListeners = Sets.newHashSet();
@@ -179,6 +222,11 @@ public class Form extends Activity
   // Listeners for options menu.
   private final Set<OnCreateOptionsMenuListener> onCreateOptionsMenuListeners = Sets.newHashSet();
   private final Set<OnOptionsItemSelectedListener> onOptionsItemSelectedListeners = Sets.newHashSet();
+
+  // Listeners for permission results
+  private final HashMap<Integer, PermissionResultHandler> permissionHandlers = Maps.newHashMap();
+
+  private final Random permissionRandom = new Random(); // Used for generating nonces
 
   // Set to the optional String-valued Extra passed in via an Intent on startup.
   // This is passed directly in the Repl.
@@ -198,10 +246,15 @@ public class Form extends Activity
   private int formWidth;
   private int formHeight;
 
+  private boolean actionBarEnabled = false;
   private boolean keyboardShown = false;
 
   private ProgressDialog progress;
   private static boolean _initialized = false;
+
+  // It should be changed from 100000 to 65535 if the functionality to extend
+  // FragmentActivity is added in future.
+  public static final int MAX_PERMISSION_NONCE = 100000;
 
   public static class PercentStorageRecord {
     public enum Dim {
@@ -217,7 +270,8 @@ public class Form extends Activity
     int length;
     Dim dim;
   }
-  private ArrayList<PercentStorageRecord> dimChanges = new ArrayList();
+  // private ArrayList<PercentStorageRecord> dimChanges = new ArrayList();
+  private LinkedHashMap<Integer, PercentStorageRecord> dimChanges = new LinkedHashMap();
 
   private static class MultiDexInstaller extends AsyncTask<Form, Void, Boolean> {
     Form ourForm;
@@ -301,6 +355,44 @@ public class Form extends Activity
       progress.dismiss();
     }
 
+    populatePermissions();
+
+    // Check to see if we need to ask for WRITE_EXTERNAL_STORAGE
+    // permission.  We look at the application manifest to see if it
+    // is declared there. If it is, then we need to ask the user to
+    // approve it here. Otherwise we don't need to and we can
+    // continue. Because the asking process is asynchronous
+    // we have to have yet another continuation of the onCreate
+    // process (onCreateFinish2). Sigh.
+
+    boolean needSdcardWrite = doesAppDeclarePermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) &&
+        // Only ask permission if we are in the REPL and not using the splash screen
+        isRepl() && !AppInventorFeatures.doCompanionSplashScreen();
+    if (needSdcardWrite) {
+      askPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        new PermissionResultHandler() {
+          @Override
+          public void HandlePermissionResponse(String permission, boolean granted) {
+            if (granted) {
+              onCreateFinish2();
+            } else {
+              Log.i(LOG_TAG, "WRITE_EXTERNAL_STORAGE Permission denied by user");
+              onCreateFinish2();
+              androidUIHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                  PermissionDenied(Form.this, "Initialize", Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                }
+              });
+            }
+          }
+        });
+    } else {
+      onCreateFinish2();
+    }
+  }
+
+  private void onCreateFinish2() {
     defaultPropertyValues();
 
     // Get startup text if any before adding components
@@ -329,19 +421,43 @@ public class Form extends Activity
     Initialize();
   }
 
+  /**
+   * Builds a set of permissions requested by the app from the package manifest.
+   */
+  private void populatePermissions() {
+    try {
+      PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(),
+          PackageManager.GET_PERMISSIONS);
+      Collections.addAll(permissions, packageInfo.requestedPermissions);
+    } catch (Exception e) {
+      Log.e(LOG_TAG, "Exception while attempting to learn permissions.", e);
+    }
+  }
+
   private void defaultPropertyValues() {
+    if (isRepl()) {
+      ActionBar(actionBarEnabled);
+    } else {
+      ActionBar(themeHelper.hasActionBar());
+    }
     Scrollable(false);       // frameLayout is created in Scrollable()
     Sizing("Fixed");         // Note: Only the Screen1 value is used as this is per-project
     BackgroundImage("");
     AboutScreen("");
     BackgroundImage("");
-    BackgroundColor(Component.COLOR_WHITE);
     AlignHorizontal(ComponentConstants.GRAVITY_LEFT);
     AlignVertical(ComponentConstants.GRAVITY_TOP);
     Title("");
     ShowStatusBar(true);
     TitleVisible(true);
     ShowListsAsJson(false);  // Note: Only the Screen1 value is used as this is per-project
+    ActionBar(false);
+    AccentColor(DEFAULT_ACCENT_COLOR);
+    PrimaryColor(DEFAULT_PRIMARY_COLOR);
+    PrimaryColorDark(DEFAULT_PRIMARY_COLOR_DARK);
+    Theme(ComponentConstants.DEFAULT_THEME);
+    ScreenOrientation("unspecified");
+    BackgroundColor(Component.COLOR_DEFAULT);
   }
 
   @Override
@@ -374,8 +490,8 @@ public class Form extends Activity
             final FrameLayout savedLayout = frameLayout;
             androidUIHandler.postDelayed(new Runnable() {
                 public void run() {
-                  if (frameLayout != null) {
-                    frameLayout.invalidate();
+                  if (savedLayout != null) {
+                    savedLayout.invalidate();
                   }
                 }
               }, 100);          // Redraw the whole screen in 1/10 second
@@ -414,12 +530,16 @@ public class Form extends Activity
 
   @Override
   public void onGlobalLayout() {
-    int heightDiff = scaleLayout.getRootView().getHeight() - scaleLayout.getHeight();
-    int contentViewTop = getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();
-    Log.d(LOG_TAG, "onGlobalLayout(): heightdiff = " + heightDiff + " contentViewTop = " +
-      contentViewTop);
+    int totalHeight = scaleLayout.getRootView().getHeight();
+    int scaledHeight = scaleLayout.getHeight();
+    int heightDiff = totalHeight - scaledHeight;
+    // int[] position = new int[2];
+    // scaleLayout.getLocationInWindow(position);
+    // int contentViewTop = position[1];
+    float diffPercent = (float) heightDiff / (float) totalHeight;
+    Log.d(LOG_TAG, "onGlobalLayout(): diffPercent = " + diffPercent);
 
-    if(heightDiff <= contentViewTop){
+    if(diffPercent < 0.25) {    // 0.25 is kind of arbitrary
       Log.d(LOG_TAG, "keyboard hidden!");
       if (keyboardShown) {
         keyboardShown = false;
@@ -429,7 +549,6 @@ public class Form extends Activity
         }
       }
     } else {
-      int keyboardHeight = heightDiff - contentViewTop;
       Log.d(LOG_TAG, "keyboard shown!");
       keyboardShown = true;
       if (scaleLayout != null) { // Effectively put us in responsive mode
@@ -493,6 +612,13 @@ public class Form extends Activity
       if (component != null) {
         component.resultReturned(requestCode, resultCode, data);
       }
+      // Many components are interested in this request (e.g., Texting, PhoneCall)
+      Set<ActivityResultListener> listeners = activityResultMultiMap.get(requestCode);
+      if (listeners != null) {
+        for (ActivityResultListener listener : listeners.toArray(new ActivityResultListener[0])) {
+          listener.resultReturned(requestCode, resultCode, data);
+        }
+      }
     }
   }
 
@@ -519,6 +645,22 @@ public class Form extends Activity
     return requestCode;
   }
 
+  /**
+   * Register a {@code listener} for the given {@code requestCode}. This is used to simulate
+   * broadcast receivers as a workaround for PhoneCall and Texting handlers related to initiating
+   * calls/messages.
+   *
+   * @param listener The object to report activity results to for the given request code
+   */
+  public void registerForActivityResult(ActivityResultListener listener, int requestCode) {
+    Set<ActivityResultListener> listeners = activityResultMultiMap.get(requestCode);
+    if (listeners == null) {
+      listeners = Sets.newHashSet();
+      activityResultMultiMap.put(requestCode, listeners);
+    }
+    listeners.add(listener);
+  }
+
   public void unregisterForActivityResult(ActivityResultListener listener) {
     List<Integer> keysToDelete = Lists.newArrayList();
     for (Map.Entry<Integer, ActivityResultListener> mapEntry : activityResultMap.entrySet()) {
@@ -529,17 +671,27 @@ public class Form extends Activity
     for (Integer key : keysToDelete) {
       activityResultMap.remove(key);
     }
+
+    // Remove any simulated broadcast receivers
+    Iterator<Map.Entry<Integer, Set<ActivityResultListener>>> it =
+        activityResultMultiMap.entrySet().iterator();
+    while (it.hasNext()) {
+      Map.Entry<Integer, Set<ActivityResultListener>> entry = it.next();
+      entry.getValue().remove(listener);
+      if (entry.getValue().size() == 0) {
+        it.remove();
+      }
+    }
   }
 
   void ReplayFormOrientation() {
     // We first make a copy of the existing dimChanges list
     // because while we are replaying it, it is being appended to
     Log.d(LOG_TAG, "ReplayFormOrientation()");
-    ArrayList<PercentStorageRecord> temp = (ArrayList<PercentStorageRecord>) dimChanges.clone();
+    LinkedHashMap<Integer, PercentStorageRecord> temp = (LinkedHashMap<Integer, PercentStorageRecord>) dimChanges.clone();
     dimChanges.clear();         // Empties it out
-    for (int i = 0; i < temp.size(); i++) {
-      // Iterate over the list...
-      PercentStorageRecord r = temp.get(i);
+    // Iterate temp
+    for (PercentStorageRecord r : temp.values()) {
       if (r.dim == PercentStorageRecord.Dim.HEIGHT) {
         r.component.Height(r.length);
       } else {
@@ -548,8 +700,23 @@ public class Form extends Activity
     }
   }
 
+  private Integer generateHashCode(AndroidViewComponent component, PercentStorageRecord.Dim dim) {
+    if (dim == PercentStorageRecord.Dim.HEIGHT) {
+      return component.hashCode() * 2 + 1;
+    } else {
+      return component.hashCode() * 2;
+    }
+  }
+
   public void registerPercentLength(AndroidViewComponent component, int length, PercentStorageRecord.Dim dim) {
-    dimChanges.add(new PercentStorageRecord(component, length, dim));
+    PercentStorageRecord r = new PercentStorageRecord(component, length, dim);
+    Integer key = generateHashCode(component, dim);
+    dimChanges.put(key, r);
+  }
+
+  public void unregisterPercentLength(AndroidViewComponent component, PercentStorageRecord.Dim dim) {
+    // iterate map, remove all entry match this
+    dimChanges.remove(generateHashCode(component, dim));
   }
 
   private static int generateNewRequestCode() {
@@ -627,6 +794,10 @@ public class Form extends Activity
     onStopListeners.add(component);
   }
 
+  public void registerForOnClear(OnClearListener component) {
+    onClearListeners.add(component);
+  }
+
   @Override
   protected void onDestroy() {
     super.onDestroy();
@@ -676,9 +847,9 @@ public class Form extends Activity
    * Compiler-generated method to initialize and add application components to
    * the form.  We just provide an implementation here to artificially make
    * this class concrete so that it is included in the documentation and
-   * Codeblocks language definition file generated by
+   * App Inventor component definition file generated by
    * {@link com.google.appinventor.components.scripts.DocumentationGenerator} and
-   * {@link com.google.appinventor.components.scripts.LangDefXmlGenerator},
+   * {@link com.google.appinventor.components.scripts.ComponentDescriptorGenerator},
    * respectively.  The actual implementation appears in {@code runtime.scm}.
    */
   protected void $define() {    // This must be declared protected because we are called from Screen1 which subclasses
@@ -704,9 +875,9 @@ public class Form extends Activity
   /**
    * A trivial implementation to artificially make this class concrete so
    * that it is included in the documentation and
-   * Codeblocks language definition file generated by
+   * App Inventor component definition file generated by
    * {@link com.google.appinventor.components.scripts.DocumentationGenerator} and
-   * {@link com.google.appinventor.components.scripts.LangDefXmlGenerator},
+   * {@link com.google.appinventor.components.scripts.ComponentDescriptorGenerator},
    * respectively.  The actual implementation appears in {@code runtime.scm}.
    */
   @Override
@@ -715,6 +886,11 @@ public class Form extends Activity
     throw new UnsupportedOperationException();
   }
 
+  @Override
+  public void dispatchGenericEvent(Component component, String eventName,
+      boolean notAlreadyHandled, Object[] args) {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * Initialize event handler.
@@ -800,6 +976,37 @@ public class Form extends Activity
     }
   }
 
+  /**
+   * Schedules a run of the PermissionDenied event handler for after the current stack of blocks finishes executing
+   * on the UI thread.
+   *
+   * @param component The component that needs the denied permission.
+   * @param functionName The function that triggers the denied permission.
+   * @param exception The PermissionDenied exception
+   */
+  public void dispatchPermissionDeniedEvent(final Component component, final String functionName,
+      final PermissionException exception) {
+    exception.printStackTrace();
+    dispatchPermissionDeniedEvent(component, functionName, exception.getPermissionNeeded());
+  }
+
+  /**
+   * Schedules a run of the PermissionDenied event handler for after the current stack of blocks finishes executing
+   * on the UI thread.
+   *
+   * @param component The component that needs the denied permission.
+   * @param functionName The function that triggers the denied permission.
+   * @param permissionName The name of the needed permission.
+   */
+  public void dispatchPermissionDeniedEvent(final Component component, final String functionName,
+      final String permissionName) {
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        PermissionDenied(component, functionName, permissionName);
+      }
+    });
+  }
 
   public void dispatchErrorOccurredEvent(final Component component, final String functionName,
       final int errorNumber, final Object... messageArgs) {
@@ -846,6 +1053,60 @@ public class Form extends Activity
   }
 
   /**
+   * Event to handle when the app user has denied a needed permission.
+   *
+   * @param component The component that needs the denied permission.
+   * @param functionName The property or method of the component that needs the denied permission.
+   * @param permissionName The name of the permission that has been denied by the user.
+   */
+  @SimpleEvent
+  public void PermissionDenied(Component component, String functionName, String permissionName) {
+    if (permissionName.startsWith("android.permission.")) {
+      // Forward compatibility with iOS so that we don't have to pass around Android-specific names
+      permissionName = permissionName.replace("android.permission.", "");
+    }
+    if (!EventDispatcher.dispatchEvent(this, "PermissionDenied", component, functionName, permissionName)) {
+      dispatchErrorOccurredEvent(component, functionName, ErrorMessages.ERROR_PERMISSION_DENIED, permissionName);
+    }
+  }
+
+  /**
+   * Event to handle when the app user has granted a needed permission. This event is only run when permission is
+   * granted in response to the AskForPermission method.
+   *
+   * @param permissionName The name of the permission that was granted by the user.
+   */
+  @SimpleEvent
+  public void PermissionGranted(String permissionName) {
+    if (permissionName.startsWith("android.permission.")) {
+      // Forward compatibility with iOS so that we don't have to pass around Android-specific names
+      permissionName = permissionName.replace("android.permission.", "");
+    }
+    EventDispatcher.dispatchEvent(this, "PermissionGranted", permissionName);
+  }
+
+  /**
+   * Ask the user to grant access to a dangerous permission.
+   * @param permissionName The name of the permission to request from the user.
+   */
+  @SimpleFunction
+  public void AskForPermission(String permissionName) {
+    if (!permissionName.contains(".")) {
+      permissionName = "android.permission." + permissionName;
+    }
+    askPermission(permissionName, new PermissionResultHandler() {
+      @Override
+      public void HandlePermissionResponse(String permission, boolean granted) {
+        if (granted) {
+          PermissionGranted(permission);
+        } else {
+          PermissionDenied(Form.this, "RequestPermission", permission);
+        }
+      }
+    });
+  }
+
+  /**
    * Scrollable property getter method.
    *
    * @return  true if the screen is vertically scrollable
@@ -883,8 +1144,35 @@ public class Form extends Activity
     if (frameLayout != null) {
       frameLayout.removeAllViews();
     }
+    boolean needsTitleBar = titleBar != null && titleBar.getParent() == frameWithTitle;
+    frameWithTitle.removeAllViews();
+    if (needsTitleBar) {
+      frameWithTitle.addView(titleBar, new ViewGroup.LayoutParams(
+          ViewGroup.LayoutParams.MATCH_PARENT,
+          ViewGroup.LayoutParams.WRAP_CONTENT
+      ));
+    }
 
-    frameLayout = scrollable ? new ScrollView(this) : new FrameLayout(this);
+    // Layout
+    // ------frameWithTitle------
+    // | [======titleBar======] |
+    // | ------scaleLayout----- |
+    // | | ----frameLayout--- | |
+    // | | |                | | |
+    // | | ------------------ | |
+    // | ---------------------- |
+    // --------------------------
+
+    if (scrollable) {
+      frameLayout = new ScrollView(this);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        // Nougat changes how ScrollView handles its content size. Here we force it to fill the viewport
+        // in order to preserve the layout of apps developed prior to N that rely on the old behavior.
+        ((ScrollView) frameLayout).setFillViewport(true);
+      }
+    } else {
+      frameLayout = new FrameLayout(this);
+    }
     frameLayout.addView(viewLayout.getLayoutManager(), new ViewGroup.LayoutParams(
         ViewGroup.LayoutParams.MATCH_PARENT,
         ViewGroup.LayoutParams.MATCH_PARENT));
@@ -896,7 +1184,9 @@ public class Form extends Activity
     scaleLayout.addView(frameLayout, new ViewGroup.LayoutParams(
         ViewGroup.LayoutParams.MATCH_PARENT,
         ViewGroup.LayoutParams.MATCH_PARENT));
-    setContentView(scaleLayout);
+    frameWithTitle.addView(scaleLayout, new ViewGroup.LayoutParams(
+        ViewGroup.LayoutParams.MATCH_PARENT,
+        ViewGroup.LayoutParams.MATCH_PARENT));
     frameLayout.getViewTreeObserver().addOnGlobalLayoutListener(this);
     scaleLayout.requestLayout();
     androidUIHandler.post(new Runnable() {
@@ -909,7 +1199,7 @@ public class Form extends Activity
           }
           ReplayFormOrientation(); // Re-do Form layout because percentage code
                                    // needs to recompute objects sizes etc.
-          frameLayout.requestLayout();
+          frameWithTitle.requestLayout();
         } else {
           // Try again later.
           androidUIHandler.post(this);
@@ -937,7 +1227,12 @@ public class Form extends Activity
       defaultValue = Component.DEFAULT_VALUE_COLOR_WHITE)
   @SimpleProperty
   public void BackgroundColor(int argb) {
-    backgroundColor = argb;
+    if (argb == Component.COLOR_DEFAULT) {
+      usesDefaultBackground = true;
+    } else {
+      usesDefaultBackground = false;
+      backgroundColor = argb;
+    }
     // setBackground(viewLayout.getLayoutManager()); // Doesn't seem necessary anymore
     setBackground(frameLayout);
   }
@@ -1001,7 +1296,12 @@ public class Form extends Activity
       defaultValue = "")
   @SimpleProperty
   public void Title(String title) {
+    this.title = title;
+    if (titleBar != null) {
+      titleBar.setText(title);
+    }
     setTitle(title);
+    updateTitle();
   }
 
 
@@ -1052,14 +1352,11 @@ public class Form extends Activity
   @SimpleProperty(category = PropertyCategory.APPEARANCE)
   public void TitleVisible(boolean show) {
     if (show != showTitle) {
-      View v = (View)findViewById(android.R.id.title).getParent();
-      if (v != null) {
-        if (show) {
-          v.setVisibility(View.VISIBLE);
-        } else {
-          v.setVisibility(View.GONE);
-        }
-        showTitle = show;
+      showTitle = show;
+      if (actionBarEnabled) {
+        actionBarEnabled = themeHelper.setActionBarVisible(show);
+      } else {
+        maybeShowTitleBar();
       }
     }
   }
@@ -1188,6 +1485,26 @@ public class Form extends Activity
     }
   }
 
+  @DesignerProperty(editorType = PropertyTypeConstants.PROPERTY_TYPE_BOOLEAN,
+      defaultValue = "False")
+  @SimpleProperty(userVisible = false)
+  public void ActionBar(boolean enabled) {
+    if (SdkLevel.getLevel() < SdkLevel.LEVEL_HONEYCOMB) {
+      // ActionBar is available on SDK 11 or higher
+      return;
+    }
+    if (actionBarEnabled != enabled) {
+      setActionBarEnabled(enabled);
+      if (enabled) {
+        hideTitleBar();
+        actionBarEnabled = themeHelper.setActionBarVisible(showTitle);
+      } else {
+        maybeShowTitleBar();
+        actionBarEnabled = themeHelper.setActionBarVisible(false);
+      }
+      actionBarEnabled = enabled;
+    }
+  }
 
   // Note(halabelson): This section on centering is duplicated between Form and HVArrangement
   // I did not see a clean way to abstract it.  Someone should have a look.
@@ -1464,6 +1781,75 @@ public class Form extends Activity
     // We don't actually need to do anything.
   }
 
+  @DesignerProperty(editorType = PropertyTypeConstants.PROPERTY_TYPE_COLOR,
+      defaultValue = ComponentConstants.DEFAULT_PRIMARY_COLOR)
+  @SimpleProperty(userVisible = false, description = "This is the primary color used for " +
+      "Material UI elements, such as the ActionBar.", category = PropertyCategory.APPEARANCE)
+  public void PrimaryColor(final int color) {
+    setPrimaryColor(color);
+  }
+
+  @SimpleProperty()
+  public int PrimaryColor() {
+    return primaryColor;
+  }
+
+  @DesignerProperty(editorType = PropertyTypeConstants.PROPERTY_TYPE_COLOR,
+      defaultValue = ComponentConstants.DEFAULT_PRIMARY_DARK_COLOR)
+  @SimpleProperty(userVisible = false, description = "This is the primary color used for darker " +
+      "elements in Material UI.", category = PropertyCategory.APPEARANCE)
+  public void PrimaryColorDark(int color) {
+    primaryColorDark = color;
+  }
+
+  @SimpleProperty()
+  public int PrimaryColorDark() {
+    return primaryColorDark;
+  }
+
+  @DesignerProperty(editorType = PropertyTypeConstants.PROPERTY_TYPE_COLOR,
+      defaultValue = ComponentConstants.DEFAULT_ACCENT_COLOR)
+  @SimpleProperty(userVisible = false, description = "This is the accent color used for " +
+      "highlights and other user interface accents.", category = PropertyCategory.APPEARANCE)
+  public void AccentColor(int color) {
+    accentColor = color;
+  }
+
+  @SimpleProperty()
+  public int AccentColor() {
+    return accentColor;
+  }
+
+  @DesignerProperty(editorType = PropertyTypeConstants.PROPERTY_TYPE_THEME,
+      defaultValue = ComponentConstants.DEFAULT_THEME)
+  @SimpleProperty(userVisible = false, description = "Sets the theme used by the application.")
+  public void Theme(String theme) {
+    if (SdkLevel.getLevel() < SdkLevel.LEVEL_HONEYCOMB) {
+      backgroundColor = Component.COLOR_WHITE;
+      setBackground(frameLayout);
+      return;  // Only "Classic" is supported below SDK 11 due to minSDK in AppCompat
+    }
+    if (usesDefaultBackground) {
+      if (theme.equalsIgnoreCase("AppTheme") && !isClassicMode()) {
+        backgroundColor = Component.COLOR_BLACK;
+      } else {
+        backgroundColor = Component.COLOR_WHITE;
+      }
+      setBackground(frameLayout);
+    }
+    usesDarkTheme = false;
+    if (theme.equals("Classic")) {
+      setAppInventorTheme(Theme.CLASSIC);
+    } else if (theme.equals("AppTheme.Light.DarkActionBar")) {
+      setAppInventorTheme(Theme.DEVICE_DEFAULT);
+    } else if (theme.equals("AppTheme.Light")) {
+      setAppInventorTheme(Theme.BLACK_TITLE_TEXT);
+    } else if (theme.equals("AppTheme")) {
+      usesDarkTheme = true;
+      setAppInventorTheme(Theme.DARK);
+    }
+  }
+
   /**
    * Width property getter method.
    *
@@ -1486,6 +1872,16 @@ public class Form extends Activity
   public int Height() {
     Log.d(LOG_TAG, "Form.Height = " + formHeight);
     return formHeight;
+  }
+
+  @DesignerProperty(editorType = PropertyTypeConstants.PROPERTY_TYPE_STRING,
+    defaultValue = "")
+  @SimpleProperty(userVisible = false,
+    description = "A URL to use to populate the Tutorial Sidebar while "
+    + "editing a project. Used as a teaching aid.")
+  public void TutorialURL(String url) {
+    // We don't actually do anything This property is stored in the
+    // project properties file
   }
 
   /**
@@ -1881,9 +2277,12 @@ public class Form extends Activity
 
   // This is called from clear-current-form in runtime.scm.
   public void clear() {
+    Log.d(LOG_TAG, "Form " + formName + " clear called");
     viewLayout.getLayoutManager().removeAllViews();
-    frameLayout.removeAllViews();
-    frameLayout = null;
+    if (frameLayout != null) {
+      frameLayout.removeAllViews();
+      frameLayout = null;
+    }
     // Set all screen properties to default values.
     defaultPropertyValues();
     onStopListeners.clear();
@@ -1895,6 +2294,12 @@ public class Form extends Activity
     onCreateOptionsMenuListeners.clear();
     onOptionsItemSelectedListeners.clear();
     screenInitialized = false;
+    // Notifiy those who care
+    for (OnClearListener onClearListener : onClearListeners) {
+      onClearListener.onClear();
+    }
+    // And reset the list
+    onClearListeners.clear();
     System.err.println("Form.clear() About to do moby GC!");
     System.gc();
     dimChanges.clear();
@@ -2058,11 +2463,190 @@ public class Form extends Activity
   @SimpleFunction(description = "Hide the onscreen soft keyboard.")
   public void HideKeyboard() {
     View view = this.getCurrentFocus();
-    if (view != null) {
-      InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-      imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    if (view == null) {
+      view = frameLayout;
+    }
+    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+  }
+
+  protected void updateTitle() {
+    themeHelper.setTitle(title);
+  }
+
+  @Override
+  protected void maybeShowTitleBar() {
+    if (showTitle) {
+      super.maybeShowTitleBar();
     } else {
-      dispatchErrorOccurredEvent(this, "HideKeyboard", ErrorMessages.ERROR_NO_FOCUSABLE_VIEW_FOUND);
+      super.hideTitleBar();
+    }
+  }
+
+  public boolean isDarkTheme() {
+    return usesDarkTheme;
+  }
+
+  // Permission Handling Code
+
+  /**
+   * Test whether the permission is denied by the user.
+   *
+   * @param permission The name of the permission to test.
+   * @return true if the permission has been denied, otherwise false.
+   */
+  public boolean isDeniedPermission(String permission) {
+    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+        ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_DENIED;
+  }
+
+  /**
+   * Test whether the permission is denied by the user and throws a PermissionException if it has.
+   *
+   * @param permission The name of the permission to assert.
+   * @throws PermissionException if the permission is denied
+   */
+  public void assertPermission(String permission) {
+    if (isDeniedPermission(permission)) {
+      throw new PermissionException(permission);
+    }
+  }
+
+  /**
+   * askPermission -- Request the user to allow what Google claims is
+   *                  a "dangerous" permission.
+   *
+   * Newer versions of Android require explicit user consent for
+   * selected permissions, even if they are declared in the Android
+   * manifest. This routine permits components (and extensions) to
+   * query the user for the required permission. The caller should
+   * provide a "PermissionResultHandler" callback to handle the
+   * returned result. The caller should *not* continue to perform the
+   * operation that requires the new permission directly. Instead the
+   * operation needs to be continued in the PermissionResultHandler if
+   * the permission is granted (and should do something reasonable if
+   * it is not).
+   *
+   * @param permission        -- The requested Android Permission as a strong
+   * @param responseRequestor -- The PermissionResultHandler that
+   *                             takes actions based on the user
+   *                             provided answer.
+   */
+  public void askPermission(final String permission, final PermissionResultHandler responseRequestor) {
+    final Form form = this;
+    if (!isDeniedPermission(permission)) {
+      // We already have permission, so no need to ask
+      responseRequestor.HandlePermissionResponse(permission, true);
+      return;
+    }
+    androidUIHandler.post(new Runnable() {
+        @Override
+        public void run() {
+          int nonce = permissionRandom.nextInt(MAX_PERMISSION_NONCE);
+          Log.d(LOG_TAG, "askPermission: permission = " + permission +
+            " requestCode = " + nonce);
+          permissionHandlers.put(nonce, responseRequestor);
+          ActivityCompat.requestPermissions((Activity)form,
+            new String[] {permission}, nonce);
+        }
+      });
+  }
+
+  @Override
+  public void onRequestPermissionsResult(int requestCode,
+    String permissions[], int[] grantResults) {
+    PermissionResultHandler responder = permissionHandlers.get(requestCode);
+    if (responder == null) {
+      // Hmm. Shouldn't happen
+      Log.e(LOG_TAG, "Received permission response which we cannot match.");
+      return;
+    }
+    if (grantResults.length > 0) {
+      if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        responder.HandlePermissionResponse(permissions[0], true);
+      } else {
+        responder.HandlePermissionResponse(permissions[0], false);
+      }
+    } else {
+      Log.d(LOG_TAG, "onRequestPermissionsResult: grantResults.length = " + grantResults.length +
+        " requestCode = " + requestCode);
+    }
+    permissionHandlers.remove(requestCode);
+  }
+
+  /**
+   * Tests whether the app declares the given permission.
+   *
+   * @param permissionName The name of the permission to test.
+   * @see android.Manifest.permission
+   * @return True if the permission is declared in the manifest, otherwise false.
+   */
+  @SuppressWarnings("WeakerAccess")  // May be used by extensions
+  public boolean doesAppDeclarePermission(String permissionName) {
+    return permissions.contains(permissionName);
+  }
+
+  /**
+   * Gets the path to an asset.
+   *
+   * @param asset The filename of an application asset
+   * @return A file: URI to the asset
+   */
+  public String getAssetPath(String asset) {
+    return ASSETS_PREFIX + asset;
+  }
+
+  /**
+   * Opens an application asset.
+   *
+   * @param asset The filename of an application asset
+   * @return An open InputStream to the asset
+   * @throws IOException if the asset cannot be opened, e.g., if it is not bundled in the app
+   */
+  @SuppressWarnings({"WeakerAccess"})  // May be called by extensions
+  public InputStream openAsset(String asset) throws IOException {
+    return openAssetInternal(getAssetPath(asset));
+  }
+
+  /**
+   * Determines a WebView compatible, REPL-sensitive path for an asset provided by a given
+   * extension.
+   *
+   * @param component The extension that is requesting an asset
+   * @param asset The asset filename
+   * @return A string containing the path to the asset
+   * @throws FileNotFoundException if the asset cannot be located
+   */
+  public String getAssetPathForExtension(Component component, String asset) throws FileNotFoundException {
+    String extPkgName = component.getClass().getPackage().getName();
+    return ASSETS_PREFIX + extPkgName + "/" + asset;
+  }
+
+  /**
+   * Opens an asset for reading as an InputStream. If the asset cannot be found, an IOException will
+   * be raised.
+   *
+   * @param component The extension that is requesting an asset
+   * @param asset The asset filename
+   * @return A new input stream for the requested asset. The caller is responsible for closing the
+   * stream to prevent resource leaking.
+   * @throws IOException if the asset is not found or cannot be read
+   */
+  @SuppressWarnings("unused")  // May be called by extensions
+  public InputStream openAssetForExtension(Component component, String asset) throws IOException {
+    return openAssetInternal(getAssetPathForExtension(component, asset));
+  }
+
+  @SuppressWarnings("WeakerAccess")  // Visible for testing
+  @VisibleForTesting
+  InputStream openAssetInternal(String path) throws IOException {
+    if (path.startsWith(ASSETS_PREFIX)) {
+      final AssetManager am = getAssets();
+      return am.open(path.substring(ASSETS_PREFIX.length()));
+    } else if (path.startsWith("file:")) {
+      return FileUtil.openFile(URI.create(path));
+    } else {
+      return FileUtil.openFile(path);
     }
   }
 }

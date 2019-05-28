@@ -21,16 +21,16 @@ Blockly.Msg.fr.switch_language_to_french = {
   category: '',
   helpUrl: '',
   init: function() {
-    Blockly.ERROR_BLOCK_CANNOT_BE_IN_DEFINTION = 'Ce bloc ne peut pas être dans une définition';
-    Blockly.ERROR_DUPLICATE_EVENT_HANDLER = 'Ceci est un gestionnaire d\'évènement dupliqué pour ce composant.';
-    Blockly.ERROR_SELECT_VALID_ITEM_FROM_DROPDOWN = 'Sélectionner un élément valide dans le menu déroulant.';
-    Blockly.MSG_CHANGE_VALUE_TITLE = 'Modifier la valeur :';
-    Blockly.MSG_NEW_VARIABLE = 'Nouvelle variable...';
-    Blockly.MSG_NEW_VARIABLE_TITLE = 'Nom de la nouvelle variable:';
-    Blockly.MSG_PROCEDURE_CATEGORY = 'Procédures';
-    Blockly.MSG_RENAME_VARIABLE = 'Renommer la variable...';
-    Blockly.MSG_RENAME_VARIABLE_TITLE = 'Renommer les "%1" variables en:\' ';
-    Blockly.MSG_VARIABLE_CATEGORY = 'Variables';
+    Blockly.Msg.ERROR_BLOCK_CANNOT_BE_IN_DEFINTION = 'Ce bloc ne peut pas être dans une définition';
+    Blockly.Msg.ERROR_DUPLICATE_EVENT_HANDLER = 'Ceci est un gestionnaire d\'évènement dupliqué pour ce composant.';
+    Blockly.Msg.ERROR_SELECT_VALID_ITEM_FROM_DROPDOWN = 'Sélectionner un élément valide dans le menu déroulant.';
+    Blockly.Msg.CHANGE_VALUE_TITLE = 'Modifier la valeur :';
+    Blockly.Msg.NEW_VARIABLE = 'Nouvelle variable...';
+    Blockly.Msg.NEW_VARIABLE_TITLE = 'Nom de la nouvelle variable:';
+    Blockly.Msg.PROCEDURE_CATEGORY = 'Procédures';
+    Blockly.Msg.RENAME_VARIABLE = 'Renommer la variable...';
+    Blockly.Msg.RENAME_VARIABLE_TITLE = 'Renommer les "%1" variables en:\' ';
+    Blockly.Msg.VARIABLE_CATEGORY = 'Variables';
     Blockly.Msg.ADD_COMMENT = 'Ajouter un commentaire';
     Blockly.Msg.ARRANGE_H = 'Arranger les blocs horizontalement';
     Blockly.Msg.ARRANGE_S = 'Arrange les blocs en diagonale';
@@ -561,6 +561,15 @@ Blockly.Msg.fr.switch_language_to_french = {
     Blockly.Msg.VERTICAL_PARAMETERS = 'Arrange les paramètres verticalement';
     Blockly.Msg.WARNING_DELETE_X_BLOCKS = 'Voulez-vous vraiment supprimer tous les %1 blocs ?';
     Blockly.Msg.WRONG_TYPE_BLOCK_WARINGS = 'Ce bloc doit être connecté à un bloc d\'évènement ou la définition d\'une procédure';
+
+    Blockly.Msg.TIME_YEARS = "Années";
+    Blockly.Msg.TIME_MONTHS = "Mois";
+    Blockly.Msg.TIME_WEEKS = "Semaines";
+    Blockly.Msg.TIME_DAYS = "Jours";
+    Blockly.Msg.TIME_HOURS = "Heures";
+    Blockly.Msg.TIME_MINUTES = "Minutes";
+    Blockly.Msg.TIME_SECONDS = "Secondes";
+    Blockly.Msg.TIME_DURATION = "Durée";
 
   }
 };

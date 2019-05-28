@@ -16,7 +16,7 @@ goog.require('Blockly.Blocks.Utilities');
 
 Blockly.Blocks['lists_create_with'] = {
   // Create a list with any number of elements of any type.
-  category: 'VR_Lists',
+  category: 'Lists',
   helpUrl: Blockly.Msg.LANG_LISTS_CREATE_WITH_EMPTY_HELPURL,
   init: function() {
     this.setColour(Blockly.LIST_CATEGORY_HUE);
@@ -75,7 +75,7 @@ Blockly.Blocks['lists_create_with_item'] = {
 
 Blockly.Blocks['lists_add_items'] = {
   // Create a list with any number of elements of any type.
-  category: 'VR_Lists',
+  category: 'Lists',
   helpUrl: Blockly.Msg.LANG_LISTS_ADD_ITEMS_HELPURL,
   init: function() {
     this.setColour(Blockly.LIST_CATEGORY_HUE);
@@ -129,7 +129,7 @@ Blockly.Blocks['lists_add_items_item'] = {
 
 Blockly.Blocks['lists_is_in'] = {
   // Is in list?.
-  category : 'VR_Lists',
+  category : 'Lists',
   helpUrl : Blockly.Msg.LANG_LISTS_IS_IN_HELPURL,
   init : function() {
     this.setColour(Blockly.LIST_CATEGORY_HUE);
@@ -149,7 +149,7 @@ Blockly.Blocks['lists_is_in'] = {
 
 Blockly.Blocks['lists_length'] = {
   // Length of list.
-  category : 'VR_Lists',
+  category : 'Lists',
   helpUrl : Blockly.Msg.LANG_LISTS_LENGTH_HELPURL,
   init : function() {
     this.setColour(Blockly.LIST_CATEGORY_HUE);
@@ -217,7 +217,7 @@ Blockly.Blocks['lists_position_in'] = {
 
 Blockly.Blocks['lists_select_item'] = {
   // Select from list an item.
-  category : 'VR_Lists',
+  category : 'Lists',
   helpUrl : Blockly.Msg.LANG_LISTS_SELECT_ITEM_TITLE_HELPURL,
   init : function() {
     this.setColour(Blockly.LIST_CATEGORY_HUE);
@@ -349,6 +349,22 @@ Blockly.Blocks['lists_is_list'] = {
   typeblock: [{ translatedName: Blockly.Msg.LANG_LISTS_IS_LIST_TITLE_IS_LIST }]
 };
 
+Blockly.Blocks['lists_reverse'] = {
+  // Reverse the list.
+  category : 'Lists',
+  helpUrl : Blockly.Msg.LANG_LISTS_REVERSE_HELPURL,
+  init : function() {
+    this.setColour(Blockly.LIST_CATEGORY_HUE);
+    this.setOutput(true, Blockly.Blocks.Utilities.YailTypeToBlocklyType("list",Blockly.Blocks.Utilities.OUTPUT));
+    this.appendValueInput('LIST')
+      .setCheck(Blockly.Blocks.Utilities.YailTypeToBlocklyType("list",Blockly.Blocks.Utilities.INPUT))
+      .appendField(Blockly.Msg.LANG_LISTS_REVERSE_TITLE_REVERSE)
+      .appendField(Blockly.Msg.LANG_LISTS_REVERSE_INPUT_LIST);
+    this.setTooltip(Blockly.Msg.LANG_LISTS_REVERSE_TOOLTIP);
+  },
+  typeblock: [{ translatedName: Blockly.LANG_LISTS_REVERSE_TITLE_REVERSE }]
+}
+
 Blockly.Blocks['lists_to_csv_row'] = {
   // Make a csv row from list.
   category : 'Lists',
@@ -432,4 +448,23 @@ Blockly.Blocks['lists_lookup_in_pairs'] = {
     this.setInputsInline(false);
   },
   typeblock: [{ translatedName: Blockly.Msg.LANG_LISTS_LOOKUP_IN_PAIRS_TITLE_LOOKUP_IN_PAIRS }]
+};
+
+Blockly.Blocks['lists_join_with_separator'] = {
+  // Joins list items into a single string separated by specified separator
+  category : 'Lists',
+  helpUrl : Blockly.Msg.LANG_LISTS_JOIN_WITH_SEPARATOR_HELPURL,
+  init : function() {
+    this.setColour(Blockly.LIST_CATEGORY_HUE);
+    this.setOutput(true, Blockly.Blocks.Utilities.YailTypeToBlocklyType("text",Blockly.Blocks.Utilities.OUTPUT));
+    var checkTypeList = Blockly.Blocks.Utilities.YailTypeToBlocklyType("list",Blockly.Blocks.Utilities.INPUT);
+    var checkTypeText = Blockly.Blocks.Utilities.YailTypeToBlocklyType("text",Blockly.Blocks.Utilities.INPUT);
+    this.interpolateMsg(Blockly.Msg.LANG_LISTS_JOIN_WITH_SEPARATOR_INPUT,
+            ['SEPARATOR', checkTypeText, Blockly.ALIGN_RIGHT],
+            ['LIST', checkTypeList, Blockly.ALIGN_RIGHT],
+            Blockly.ALIGN_RIGHT);
+    this.setTooltip(Blockly.Msg.LANG_LISTS_JOIN_WITH_SEPARATOR_TOOLTIP);
+    this.setInputsInline(false);
+  },
+  typeblock: [{ translatedName: Blockly.Msg.LANG_LISTS_JOIN_WITH_SEPARATOR_TITLE }]
 };

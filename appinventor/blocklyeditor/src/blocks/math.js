@@ -16,7 +16,7 @@ goog.require('Blockly.Blocks.Utilities');
 
 Blockly.Blocks['math_number'] = {
   // Numeric value.
-  category: 'VR_Math',
+  category: 'Math',
   helpUrl: Blockly.Msg.LANG_MATH_NUMBER_HELPURL,
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -38,7 +38,7 @@ Blockly.Blocks.math_number.validator = function (text) {
 Blockly.Blocks['math_compare'] = {
   // Basic arithmetic operator.
   // TODO(Andrew): equality block needs to have any on the sockets.
-  category: 'VR_Math',
+  category: 'Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
     return Blockly.Blocks.math_compare.HELPURLS()[mode];
@@ -147,7 +147,7 @@ Blockly.Blocks.math_compare.HELPURLS = function () {
 
 Blockly.Blocks['math_add'] = {
   // Basic arithmetic operator.
-  category: 'VR_Math',
+  category: 'Math',
   helpUrl: Blockly.Msg.LANG_MATH_ARITHMETIC_HELPURL_ADD,
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -209,7 +209,7 @@ Blockly.Blocks['math_mutator_item'] = {
 
 Blockly.Blocks['math_subtract'] = {
   // Basic arithmetic operator.
-  category: 'VR_Math',
+  category: 'Math',
   helpUrl: Blockly.Msg.LANG_MATH_ARITHMETIC_HELPURL_MINUS,
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -228,7 +228,7 @@ Blockly.Blocks['math_subtract'] = {
 
 Blockly.Blocks['math_multiply'] = {
   // Basic arithmetic operator.
-  category: 'VR_Math',
+  category: 'Math',
   helpUrl: Blockly.Msg.LANG_MATH_ARITHMETIC_HELPURL_MULTIPLY,
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -275,7 +275,7 @@ Blockly.Blocks['math_multiply'] = {
 
 Blockly.Blocks['math_division'] = {
   // Basic arithmetic operator.
-  category: 'VR_Math',
+  category: 'Math',
   helpUrl: Blockly.Msg.LANG_MATH_ARITHMETIC_HELPURL_DIVIDE,
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -294,7 +294,7 @@ Blockly.Blocks['math_division'] = {
 
 Blockly.Blocks['math_power'] = {
   // Basic arithmetic operator.
-  category: 'VR_Math',
+  category: 'Math',
   helpUrl: Blockly.Msg.LANG_MATH_ARITHMETIC_HELPURL_POWER,
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -312,9 +312,110 @@ Blockly.Blocks['math_power'] = {
   typeblock: [{translatedName: Blockly.Msg.LANG_MATH_ARITHMETIC_POWER}]
 };
 
+
+Blockly.Blocks['math_bitwise'] = {
+  category: 'Math',
+  helpUrl: function () {
+    var mode = this.getFieldValue('OP');
+    return Blockly.Blocks.math_bitwise.HELPURLS()[mode];
+  },
+  init: function () {
+    // Assign 'this' to a variable for use in the closures below.
+    var thisBlock = this;
+    this.setColour(Blockly.MATH_CATEGORY_HUE);
+    this.setOutput(true, Blockly.Blocks.Utilities.YailTypeToBlocklyType("number", Blockly.Blocks.Utilities.OUTPUT));
+    this.appendValueInput('NUM0')
+        .setCheck(Blockly.Blocks.Utilities.YailTypeToBlocklyType("number", Blockly.Blocks.Utilities.INPUT))
+        .appendField(new Blockly.FieldDropdown(this.OPERATORS), 'OP');
+    this.appendValueInput('NUM1')
+        .setCheck(Blockly.Blocks.Utilities.YailTypeToBlocklyType("number", Blockly.Blocks.Utilities.INPUT));
+    this.setInputsInline(false);
+    this.setTooltip(function () {
+      var mode = thisBlock.getFieldValue('OP');
+      return Blockly.Blocks.math_bitwise.TOOLTIPS()[mode];
+    });
+    this.setMutator(new Blockly.Mutator(['math_mutator_item']));
+    this.itemCount_ = 2;
+    this.valuesToSave = {'OP': null};
+    this.emptyInputName = 'EMPTY';
+    this.repeatingInputName = 'NUM';
+  },
+  mutationToDom: Blockly.mutationToDom,
+  domToMutation: Blockly.domToMutation,
+  decompose: function (workspace) {
+    return Blockly.decompose(workspace, 'math_mutator_item', this);
+  },
+  compose: Blockly.compose,
+  saveConnections: Blockly.saveConnections,
+  addEmptyInput: function () {
+    var input = this.appendDummyInput(this.emptyInputName);
+    input.appendField(new Blockly.FieldDropdown(this.OPERATORS), 'OP');
+    this.setFieldValue(this.valuesToSave['OP'], 'OP');
+  },
+  addInput: function (inputNum) {
+    var input = this.appendValueInput(this.repeatingInputName + inputNum)
+        .setCheck(Blockly.Blocks.Utilities.YailTypeToBlocklyType("number", Blockly.Blocks.Utilities.INPUT));
+    if (inputNum == 0) {
+      input.appendField(new Blockly.FieldDropdown(this.OPERATORS), 'OP');
+      this.setFieldValue(this.valuesToSave['OP'], 'OP');
+    }
+    return input;
+  },
+  updateContainerBlock: function (containerBlock) {
+
+    for (var i = 0; i < Blockly.Blocks.math_bitwise.OPERATORS.length; i++) {
+      if (Blockly.Blocks.math_bitwise.OPERATORS[i][1] == this.getFieldValue("OP")) {
+        containerBlock.setFieldValue(Blockly.Blocks.math_bitwise.OPERATORS[i][0], "CONTAINER_TEXT");
+      }
+    }
+
+  },
+  typeblock: [{
+    translatedName: Blockly.Msg.LANG_MATH_BITWISE_AND,
+    dropDown: {
+      titleName: 'OP',
+      value: 'BITAND'
+    }
+  }, {
+    translatedName: Blockly.Msg.LANG_MATH_BITWISE_IOR,
+    dropDown: {
+      titleName: 'OP',
+      value: 'BITIOR'
+    }
+  }, {
+    translatedName: Blockly.Msg.LANG_MATH_BITWISE_XOR,
+    dropDown: {
+      titleName: 'OP',
+      value: 'BITXOR'
+    }
+  }]
+};
+
+Blockly.Blocks.math_bitwise.OPERATORS = function () {
+  return [[Blockly.Msg.LANG_MATH_BITWISE_AND, 'BITAND'],
+    [Blockly.Msg.LANG_MATH_BITWISE_IOR, 'BITIOR'],
+    [Blockly.Msg.LANG_MATH_BITWISE_XOR, 'BITXOR']]
+};
+
+Blockly.Blocks.math_bitwise.TOOLTIPS = function () {
+  return {
+    BITAND: Blockly.Msg.LANG_MATH_BITWISE_TOOLTIP_AND,
+    BITIOR: Blockly.Msg.LANG_MATH_BITWISE_TOOLTIP_IOR,
+    BITXOR: Blockly.Msg.LANG_MATH_BITWISE_TOOLTIP_XOR
+  }
+};
+
+Blockly.Blocks.math_bitwise.HELPURLS = function () {
+  return {
+    BITAND: Blockly.Msg.LANG_MATH_BITWISE_HELPURL_AND,
+    BITIOR: Blockly.Msg.LANG_MATH_BITWISE_HELPURL_IOR,
+    BITXOR: Blockly.Msg.LANG_MATH_BITWISE_HELPURL_XOR
+  }
+};
+
 Blockly.Blocks['math_random_int'] = {
   // Random integer between [X] and [Y].
-  category: 'VR_Math',
+  category: 'Math',
   helpUrl: Blockly.Msg.LANG_MATH_RANDOM_INT_HELPURL,
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -340,7 +441,7 @@ Blockly.Blocks['math_random_int'] = {
 
 Blockly.Blocks['math_random_float'] = {
   // Random fraction between 0 and 1.
-  category: 'VR_Math',
+  category: 'Math',
   helpUrl: Blockly.Msg.LANG_MATH_RANDOM_FLOAT_HELPURL,
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -373,8 +474,11 @@ Blockly.Blocks['math_random_set_seed'] = {
 Blockly.Blocks['math_on_list'] = {
   // Evaluate a list of numbers to return sum, average, min, max, etc.
   // Some functions also work on text (min, max, mode, median).
-  category: 'VR_Math',
-  helpUrl: '',
+  category: 'Math',
+  helpUrl: function () {
+    var mode = this.getFieldValue('OP');
+    return Blockly.Blocks.math_on_list.HELPURLS()[mode];
+  },
   init: function () {
     // Assign 'this' to a variable for use in the closures below.
     var thisBlock = this;
@@ -453,9 +557,16 @@ Blockly.Blocks.math_on_list.TOOLTIPS = function () {
   }
 };
 
+Blockly.Blocks.math_on_list.HELPURLS = function () {
+  return {
+    MIN: Blockly.Msg.LANG_MATH_ONLIST_HELPURL_MIN,
+    MAX: Blockly.Msg.LANG_MATH_ONLIST_HELPURL_MAX
+  }
+};
+
 Blockly.Blocks['math_single'] = {
   // Advanced math operators with single operand.
-  category: 'VR_Math',
+  category: 'Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
     return Blockly.Blocks.math_single.HELPURLS()[mode];
@@ -563,10 +674,10 @@ Blockly.Blocks.math_single.HELPURLS = function () {
 
 Blockly.Blocks['math_abs'] = {
   // Advanced math operators with single operand.
-  category: 'VR_Math',
+  category: 'Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
-    return Blockly.Blocks.math_single.HELPURLS[mode];
+    return Blockly.Blocks.math_single.HELPURLS()[mode];
   },
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -579,17 +690,17 @@ Blockly.Blocks['math_abs'] = {
     var thisBlock = this;
     this.setTooltip(function () {
       var mode = thisBlock.getFieldValue('OP');
-      return Blockly.Blocks.math_single.TOOLTIPS[mode];
+      return Blockly.Blocks.math_single.TOOLTIPS()[mode];
     });
   }
 };
 
 Blockly.Blocks['math_neg'] = {
   // Advanced math operators with single operand.
-  category: 'VR_Math',
+  category: 'Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
-    return Blockly.Blocks.math_single.HELPURLS[mode];
+    return Blockly.Blocks.math_single.HELPURLS()[mode];
   },
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -602,17 +713,17 @@ Blockly.Blocks['math_neg'] = {
     var thisBlock = this;
     this.setTooltip(function () {
       var mode = thisBlock.getFieldValue('OP');
-      return Blockly.Blocks.math_single.TOOLTIPS[mode];
+      return Blockly.Blocks.math_single.TOOLTIPS()[mode];
     });
   }
 };
 
 Blockly.Blocks['math_round'] = {
   // Advanced math operators with single operand.
-  category: 'VR_Math',
+  category: 'Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
-    return Blockly.Blocks.math_single.HELPURLS[mode];
+    return Blockly.Blocks.math_single.HELPURLS()[mode];
   },
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -625,17 +736,17 @@ Blockly.Blocks['math_round'] = {
     var thisBlock = this;
     this.setTooltip(function () {
       var mode = thisBlock.getFieldValue('OP');
-      return Blockly.Blocks.math_single.TOOLTIPS[mode];
+      return Blockly.Blocks.math_single.TOOLTIPS()[mode];
     });
   }
 };
 
 Blockly.Blocks['math_ceiling'] = {
   // Advanced math operators with single operand.
-  category: 'VR_Math',
+  category: 'Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
-    return Blockly.Blocks.math_single.HELPURLS[mode];
+    return Blockly.Blocks.math_single.HELPURLS()[mode];
   },
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -648,17 +759,17 @@ Blockly.Blocks['math_ceiling'] = {
     var thisBlock = this;
     this.setTooltip(function () {
       var mode = thisBlock.getFieldValue('OP');
-      return Blockly.Blocks.math_single.TOOLTIPS[mode];
+      return Blockly.Blocks.math_single.TOOLTIPS()[mode];
     });
   }
 };
 
 Blockly.Blocks['math_floor'] = {
   // Advanced math operators with single operand.
-  category: 'VR_Math',
+  category: 'Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
-    return Blockly.Blocks.math_single.HELPURLS[mode];
+    return Blockly.Blocks.math_single.HELPURLS()[mode];
   },
   init: function () {
     this.setColour(Blockly.MATH_CATEGORY_HUE);
@@ -671,7 +782,7 @@ Blockly.Blocks['math_floor'] = {
     var thisBlock = this;
     this.setTooltip(function () {
       var mode = thisBlock.getFieldValue('OP');
-      return Blockly.Blocks.math_single.TOOLTIPS[mode];
+      return Blockly.Blocks.math_single.TOOLTIPS()[mode];
     });
   }
 };
@@ -745,7 +856,7 @@ Blockly.Blocks.math_divide.HELPURLS = function () {
 
 Blockly.Blocks['math_trig'] = {
   // Trigonometry operators.
-  category: 'VR_Math',
+  category: 'Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
     return Blockly.Blocks.math_trig.HELPURLS()[mode];
@@ -835,7 +946,7 @@ Blockly.Blocks.math_trig.HELPURLS = function () {
 
 Blockly.Blocks['math_cos'] = {
   // Trigonometry operators.
-  category: 'VR_Math',
+  category: 'Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
     return Blockly.Blocks.math_trig.HELPURLS()[mode];
@@ -858,7 +969,7 @@ Blockly.Blocks['math_cos'] = {
 
 Blockly.Blocks['math_tan'] = {
   // Trigonometry operators.
-  category: 'VR_Math',
+  category: 'Math',
   helpUrl: function () {
     var mode = this.getFieldValue('OP');
     return Blockly.Blocks.math_trig.HELPURLS()[mode];

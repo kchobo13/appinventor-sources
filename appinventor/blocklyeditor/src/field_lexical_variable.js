@@ -1098,4 +1098,3 @@ Blockly.LexicalVariable.eventParameterDict = function (block) {
   }
   return dict;
 }
-

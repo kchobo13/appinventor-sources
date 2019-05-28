@@ -141,6 +141,7 @@ public class DesignToolbar extends Toolbar {
     }
   }
 
+  private static final String WIDGET_NAME_TUTORIAL_TOGGLE = "TutorialToggle";
   private static final String WIDGET_NAME_ADDFORM = "AddForm";
   private static final String WIDGET_NAME_REMOVEFORM = "RemoveForm";
   private static final String WIDGET_NAME_ADDVRSCREEN = "AddVRScreen";
@@ -148,6 +149,15 @@ public class DesignToolbar extends Toolbar {
   private static final String WIDGET_NAME_SCREENS_DROPDOWN = "ScreensDropdown";
   private static final String WIDGET_NAME_SWITCH_TO_BLOCKS_EDITOR = "SwitchToBlocksEditor";
   private static final String WIDGET_NAME_SWITCH_TO_FORM_EDITOR = "SwitchToFormEditor";
+
+  // Switch language
+  private static final String WIDGET_NAME_SWITCH_LANGUAGE = "Language";
+  private static final String WIDGET_NAME_SWITCH_LANGUAGE_ENGLISH = "English";
+  private static final String WIDGET_NAME_SWITCH_LANGUAGE_CHINESE_CN = "Simplified Chinese";
+  private static final String WIDGET_NAME_SWITCH_LANGUAGE_SPANISH_ES = "Spanish-Spain";
+  private static final String WIDGET_NAME_SWITCH_LANGUAGE_PORTUGUESE = "Portuguese";
+  //private static final String WIDGET_NAME_SWITCH_LANGUAGE_GERMAN = "German";
+  //private static final String WIDGET_NAME_SWITCH_LANGUAGE_VIETNAMESE = "Vietnamese";
 
   // Enum for type of view showing in the design tab
   public enum View {
@@ -190,6 +200,10 @@ public class DesignToolbar extends Toolbar {
     // width of palette minus cellspacing/border of buttons
     toolbar.setCellWidth(projectNameLabel, "222px");
 
+    addButton(new ToolbarItem(WIDGET_NAME_TUTORIAL_TOGGLE,
+        MESSAGES.toggleTutorialButton(), new ToogleTutorialAction()));
+    setButtonVisible(WIDGET_NAME_TUTORIAL_TOGGLE, false); // Don't show unless needed
+
     List<DropDownItem> screenItems = Lists.newArrayList();
     addDropDownButton(WIDGET_NAME_SCREENS_DROPDOWN, MESSAGES.screensButton(), screenItems);
 
@@ -214,15 +228,20 @@ public class DesignToolbar extends Toolbar {
     Ode.getInstance().getTopToolbar().updateFileMenuButtons(0);
   }
 
-  private class AddAction implements Command {
-    private final String tracking;
-    private final ChainableCommand command;
-
-    AddAction(String tracking, ChainableCommand command) {
-      this.tracking = tracking;
-      this.command = command;
+  private class ToogleTutorialAction implements Command {
+    @Override
+    public void execute() {
+      Ode ode = Ode.getInstance();
+      boolean visible = ode.isTutorialVisible();
+      if (visible) {
+        ode.setTutorialVisible(false);
+      } else {
+        ode.setTutorialVisible(true);
+      }
     }
+  }
 
+  private class AddFormAction implements Command {
     @Override
     public void execute() {
       Ode ode = Ode.getInstance();
@@ -712,6 +731,14 @@ public class DesignToolbar extends Toolbar {
 
   public View getCurrentView() {
     return currentView;
+  }
+
+  public void setTutorialToggleVisible(boolean value) {
+    if (value) {
+      setButtonVisible(WIDGET_NAME_TUTORIAL_TOGGLE, true);
+    } else {
+      setButtonVisible(WIDGET_NAME_TUTORIAL_TOGGLE, false);
+    }
   }
 
 }

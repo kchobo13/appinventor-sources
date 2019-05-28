@@ -6,59 +6,59 @@
 //goog.provide("Blockly.JavaScript");
 //goog.require("Blockly.Blocks.Utilities");
 
-Blockly.JavaScript["color_black"] = function() {
+Blockly.JavaScript["vr_color_black"] = function() {
   return ["0x" + this.getFieldValue("COLOR").substring(1), Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["color_white"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+Blockly.JavaScript["vr_color_white"] = function() {
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
-Blockly.JavaScript["color_red"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+Blockly.JavaScript["vr_color_red"] = function() {
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
-Blockly.JavaScript["color_pink"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+Blockly.JavaScript["vr_color_pink"] = function() {
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
-Blockly.JavaScript["color_orange"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+Blockly.JavaScript["vr_color_orange"] = function() {
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
-Blockly.JavaScript["color_yellow"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+Blockly.JavaScript["vr_color_yellow"] = function() {
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
-Blockly.JavaScript["color_green"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+Blockly.JavaScript["vr_color_green"] = function() {
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
-Blockly.JavaScript["color_cyan"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+Blockly.JavaScript["vr_color_cyan"] = function() {
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
-Blockly.JavaScript["color_blue"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+Blockly.JavaScript["vr_color_blue"] = function() {
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
-Blockly.JavaScript["color_magenta"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+Blockly.JavaScript["vr_color_magenta"] = function() {
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
-Blockly.JavaScript["color_light_gray"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+Blockly.JavaScript["vr_color_light_gray"] = function() {
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
-Blockly.JavaScript["color_gray"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+Blockly.JavaScript["vr_color_gray"] = function() {
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
-Blockly.JavaScript["color_dark_gray"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+Blockly.JavaScript["vr_color_dark_gray"] = function() {
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
-Blockly.JavaScript["color_make_color"] = function() {
+Blockly.JavaScript["vr_color_make_color"] = function() {
   var colors = Blockly.JavaScript.valueToCode(this, "COLORLIST", Blockly.Yail.ORDER_NONE) || "[0,0,0]";
   return ["((65536*" + colors + "[0])+(256*" + colors + "[1])+" + colors + "[2])", Blockly.JavaScript.ORDER_ATOMIC];
 }
@@ -221,7 +221,7 @@ Blockly.JavaScript["vr_get_window_size"] = function() {
   return [js, Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["controls_if"] = function() {
+Blockly.JavaScript["vr_controls_if"] = function() {
   var js = "";
   for (var i = 0; i <= this.elseifCount_; i++) {
     if (i !== 0) {
@@ -235,7 +235,7 @@ Blockly.JavaScript["controls_if"] = function() {
   return js;
 }
 
-Blockly.JavaScript["controls_forRange"] = function() {
+Blockly.JavaScript["vr_controls_forRange"] = function() {
   var op = "";
   var step = "";
   var index = this.getFieldValue("VAR");
@@ -251,15 +251,15 @@ Blockly.JavaScript["controls_forRange"] = function() {
   return "for(var " + index + "=" + start + ";" + index + op + end + ";" + index + step + (Blockly.JavaScript.valueToCode(this, "STEP", Blockly.JavaScript.ORDER_NONE) || "0") + "){" + Blockly.JavaScript.statementToCode(this, "DO", Blockly.JavaScript.ORDER_NONE) + "}";
 }
 
-Blockly.JavaScript["controls_while"] = function() {
+Blockly.JavaScript["vr_controls_while"] = function() {
   return "while(" + (Blockly.JavaScript.valueToCode(this, "TEST", Blockly.JavaScript.ORDER_NONE) || "false") + "){" + Blockly.JavaScript.statementToCode(this, "DO") + "}";
 }
 
-Blockly.JavaScript["controls_openAnotherScreen"] = function() {
+Blockly.JavaScript["vr_controls_openAnotherScreen"] = function() {
   return "switchScreen(" + (Blockly.JavaScript.valueToCode(this, "SCREEN", Blockly.JavaScript.ORDER_NONE) || "null") + ");";
 }
 
-Blockly.JavaScript["controls_openAnotherScreenWithStartValue"] = function() {
+Blockly.JavaScript["vr_controls_openAnotherScreenWithStartValue"] = function() {
   return "switchScreenWithValue(" + (Blockly.JavaScript.valueToCode(this, "SCREENNAME", Blockly.JavaScript.ORDER_NONE) || "null") + "," + (Blockly.JavaScript.valueToCode(this, "STARTVALUE", Blockly.JavaScript.ORDER_NONE) || "null") + ");";
 }
 
@@ -321,7 +321,7 @@ Blockly.JavaScript["vr_spot"] = function() {
   return Blockly.JavaScript.vr_light.call(this);
 }
 
-Blockly.JavaScript["lists_create_with"] = function() {
+Blockly.JavaScript["vr_lists_create_with"] = function() {
   var js = "";
   for (var i = 0; i < this.itemCount_; i++) {
     if (i !== 0) {
@@ -332,7 +332,7 @@ Blockly.JavaScript["lists_create_with"] = function() {
   return ["[" + js + "]", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["lists_add_items"] = function() {
+Blockly.JavaScript["vr_lists_add_items"] = function() {
   var list = "";
   for (var i = 0; i < this.itemCount_; i++) {
     if (i !== 0) {
@@ -343,15 +343,15 @@ Blockly.JavaScript["lists_add_items"] = function() {
   return (Blockly.JavaScript.valueToCode(this, "LIST", Blockly.JavaScript.ORDER_NONE) || "null") + "=" + (Blockly.JavaScript.valueToCode(this, "LIST", Blockly.JavaScript.ORDER_NONE) || "null") + ".concat([" + list + "]);";
 }
 
-Blockly.JavaScript["lists_is_in"] = function() {
+Blockly.JavaScript["vr_lists_is_in"] = function() {
   return [(Blockly.JavaScript.valueToCode(this, "LIST", Blockly.JavaScript.ORDER_NONE) || "null") + ".includes(" + (Blockly.JavaScript.valueToCode(this, "ITEM", Blockly.JavaScript.ORDER_NONE) || "null") + ")", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["lists_length"] = function() {
+Blockly.JavaScript["vr_lists_length"] = function() {
   return [(Blockly.JavaScript.valueToCode(this, "LIST", Blockly.JavaScript.ORDER_NONE) || "null") + ".length", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["lists_select_item"] = function() {
+Blockly.JavaScript["vr_lists_select_item"] = function() {
   return [(Blockly.JavaScript.valueToCode(this, "LIST", Blockly.JavaScript.ORDER_NONE) || "null") + "[" + (Blockly.JavaScript.valueToCode(this, "NUM", Blockly.JavaScript.ORDER_NONE) || "1") + "-1]", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
@@ -363,15 +363,15 @@ Blockly.JavaScript["logic_boolean"] = function() {
   }
 }
 
-Blockly.JavaScript["logic_false"] = function() {
+Blockly.JavaScript["vr_logic_false"] = function() {
   return Blockly.JavaScript.logic_boolean.call(this);
 }
 
-Blockly.JavaScript["logic_negate"] = function() {
+Blockly.JavaScript["vr_logic_negate"] = function() {
   return ["!" + (Blockly.JavaScript.valueToCode(this, "BOOL", Blockly.JavaScript.ORDER_NONE) || "false"), Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["logic_compare"] = function() {
+Blockly.JavaScript["vr_logic_compare"] = function() {
   var op = "";
   if (this.getFieldValue("OP") === "EQ") {
     op = "===";
@@ -381,7 +381,7 @@ Blockly.JavaScript["logic_compare"] = function() {
   return ["(" + (Blockly.JavaScript.valueToCode(this, "A", Blockly.JavaScript.ORDER_NONE) || "false") + op + (Blockly.JavaScript.valueToCode(this, "B", Blockly.JavaScript.ORDER_NONE) || "false") + ")", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["logic_operation"] = function() {
+Blockly.JavaScript["vr_logic_operation"] = function() {
   var op = "";
   if (this.getFieldValue("OP") === "AND") {
     op = "&&";
@@ -391,15 +391,15 @@ Blockly.JavaScript["logic_operation"] = function() {
   return ["(" + (Blockly.JavaScript.valueToCode(this, "A", Blockly.JavaScript.ORDER_NONE) || "false") + op + (Blockly.JavaScript.valueToCode(this, "B", Blockly.JavaScript.ORDER_NONE) || "false") + ")", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["logic_or"] = function() {
+Blockly.JavaScript["vr_logic_or"] = function() {
   return Blockly.JavaScript.logic_operation.call(this);
 }
 
-Blockly.JavaScript["math_number"] = function() {
+Blockly.JavaScript["vr_math_number"] = function() {
   return [this.getFieldValue("NUM"), Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["math_compare"] = function() {
+Blockly.JavaScript["vr_math_compare"] = function() {
   var op = "";
   var opValue = this.getFieldValue("OP");
   if (opValue === "EQ") {
@@ -418,7 +418,7 @@ Blockly.JavaScript["math_compare"] = function() {
   return ["(" + (Blockly.JavaScript.valueToCode(this, "A", Blockly.JavaScript.ORDER_NONE) || "0") + op + (Blockly.JavaScript.valueToCode(this, "B", Blockly.JavaScript.ORDER_NONE) || "0") + ")", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["math_add"] = function() {
+Blockly.JavaScript["vr_math_add"] = function() {
   var js = "";
   for (var i = 0; i < this.itemCount_; i++) {
     if (i !== 0) {
@@ -429,11 +429,11 @@ Blockly.JavaScript["math_add"] = function() {
   return ["(" + js + ")", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["math_subtract"] = function() {
+Blockly.JavaScript["vr_math_subtract"] = function() {
   return ["(" + (Blockly.JavaScript.valueToCode(this, "A", Blockly.JavaScript.ORDER_NONE) || "0") + "-" + (Blockly.JavaScript.valueToCode(this, "B", Blockly.JavaScript.ORDER_NONE) || "0") + ")", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["math_multiply"] = function() {
+Blockly.JavaScript["vr_math_multiply"] = function() {
   var js = "";
   for (var i = 0; i < this.itemCount_; i++) {
     if (i !== 0) {
@@ -444,25 +444,25 @@ Blockly.JavaScript["math_multiply"] = function() {
   return ["(" + js + ")", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["math_division"] = function() {
+Blockly.JavaScript["vr_math_division"] = function() {
   return ["(" + (Blockly.JavaScript.valueToCode(this, "A", Blockly.JavaScript.ORDER_NONE) || "0") + "/" + (Blockly.JavaScript.valueToCode(this, "B", Blockly.JavaScript.ORDER_NONE) || "1") + ")", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["math_power"] = function() {
+Blockly.JavaScript["vr_math_power"] = function() {
   return ["Math.pow(" + (Blockly.JavaScript.valueToCode(this, "A", Blockly.JavaScript.ORDER_NONE) || "0") + "," + (Blockly.JavaScript.valueToCode(this, "B", Blockly.JavaScript.ORDER_NONE) || "0") + ")", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["math_random_int"] = function() {
+Blockly.JavaScript["vr_math_random_int"] = function() {
   var min = Blockly.JavaScript.valueToCode(this, "FROM", Blockly.JavaScript.ORDER_NONE) || "0";
   var max = Blockly.JavaScript.valueToCode(this, "TO", Blockly.JavaScript.ORDER_NONE) || "0";
   return ["(Math.floor(Math.random()*(Math.floor(" + max + ")-Math.ceil(" + min + ")+1))+Math.ceil(" + min + "))", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["math_random_float"] = function() {
+Blockly.JavaScript["vr_math_random_float"] = function() {
   return ["Math.random()", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["math_on_list"] = function() {
+Blockly.JavaScript["vr_math_on_list"] = function() {
   var op = "";
   if (this.getFieldValue("OP") === "MIN") {
     op = "min";
@@ -479,14 +479,14 @@ Blockly.JavaScript["math_on_list"] = function() {
   return ["Math." + op + "(" + js + ")", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["math_single"] = function() {
+Blockly.JavaScript["vr_math_single"] = function() {
   var op = "";
   switch (this.getFieldValue("OP")) {
     case "ROOT":
-      op = "Math.sqrt";
+      op = "Math.vr_sqrt";
       break;
     case "ABS":
-      op = "Math.abs";
+      op = "Math.vr_abs";
       break;
     case "NEG":
       op = "-";
@@ -495,41 +495,41 @@ Blockly.JavaScript["math_single"] = function() {
       op = "Math.log";
       break;
     case "EXP":
-      op = "Math.exp";
+      op = "Math.vr_exp";
       break;
     case "ROUND":
-      op = "Math.round";
+      op = "Math.vr_round";
       break;
     case "CEILING":
-      op = "Math.ceil";
+      op = "Math.vr_ceil";
       break;
     default:
-      op = "Math.floor";
+      op = "Math.vr_floor";
   }
   return [op + "(" + (Blockly.JavaScript.valueToCode(this, "NUM", Blockly.JavaScript.ORDER_NONE) || "0") + ")", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["math_abs"] = function() {
+Blockly.JavaScript["vr_math_abs"] = function() {
   return Blockly.JavaScript.math_single.call(this);
 }
 
-Blockly.JavaScript["math_neg"] = function() {
+Blockly.JavaScript["vr_math_neg"] = function() {
   return Blockly.JavaScript.math_single.call(this);
 }
 
-Blockly.JavaScript["math_round"] = function() {
+Blockly.JavaScript["vr_math_round"] = function() {
   return Blockly.JavaScript.math_single.call(this);
 }
 
-Blockly.JavaScript["math_ceiling"] = function() {
+Blockly.JavaScript["vr_math_ceiling"] = function() {
   return Blockly.JavaScript.math_single.call(this);
 }
 
-Blockly.JavaScript["math_floor"] = function() {
+Blockly.JavaScript["vr_math_floor"] = function() {
   return Blockly.JavaScript.math_single.call(this);
 }
 
-Blockly.JavaScript["math_trig"] = function() {
+Blockly.JavaScript["vr_math_trig"] = function() {
   var op = "";
   switch (this.getFieldValue("OP")) {
     case "SIN":
@@ -554,11 +554,11 @@ Blockly.JavaScript["math_trig"] = function() {
   return ["Math." + op + "(" + (Blockly.JavaScript.valueToCode(this, "NUM", Blockly.JavaScript.ORDER_NONE) || "0") + ")", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["math_cos"] = function() {
+Blockly.JavaScript["vr_math_cos"] = function() {
   return Blockly.JavaScript.math_trig.call(this);
 }
 
-Blockly.JavaScript["math_tan"] = function() {
+Blockly.JavaScript["vr_math_tan"] = function() {
   return Blockly.JavaScript.math_trig.call(this);
 }
 
@@ -676,11 +676,11 @@ Blockly.JavaScript["vr_soft_tetrahedron"] = function() {
   return Blockly.JavaScript.vr_object.call(this);
 }
 
-Blockly.JavaScript["text"] = function() {
+Blockly.JavaScript["vr_text"] = function() {
   return [JSON.stringify(this.getFieldValue("TEXT")), Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["text_join"] = function() {
+Blockly.JavaScript["vr_text_join"] = function() {
   var js = "";
   for (var i = 0; i < this.itemCount_; i++) {
     if (i !== 0) {
@@ -691,18 +691,18 @@ Blockly.JavaScript["text_join"] = function() {
   return ["(" + js + ")", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["text_length"] = function() {
+Blockly.JavaScript["vr_text_length"] = function() {
   return [(Blockly.JavaScript.valueToCode(this, "VALUE", Blockly.JavaScript.ORDER_NONE) || "\"\"") + ".length", Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["global_declaration"] = function() {
+Blockly.JavaScript["vr_global_declaration"] = function() {
   return "var " + this.getFieldValue("NAME") + "=" + (Blockly.JavaScript.valueToCode(this, "VALUE", Blockly.JavaScript.ORDER_NONE) || "null") + ";";
 }
 
-Blockly.JavaScript["lexical_variable_get"] = function() {
+Blockly.JavaScript["vr_lexical_variable_get"] = function() {
   return [Blockly.unprefixName(this.getFieldValue("VAR"))[1], Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["lexical_variable_set"] = function() {
+Blockly.JavaScript["vr_lexical_variable_set"] = function() {
   return Blockly.unprefixName(this.getFieldValue("VAR"))[1] + "=" + (Blockly.JavaScript.valueToCode(this, "VALUE", Blockly.JavaScript.ORDER_NONE) || "null") + ";";
 }

@@ -1,5 +1,5 @@
 // -*- mode: java; c-basic-offset: 2; -*-
-// Copyright 2015 MIT, All rights reserved
+// Copyright 2015-2017 MIT, All rights reserved
 // Released under the Apache License, Version 2.0
 // http://www.apache.org/licenses/LICENSE-2.0
 
@@ -64,6 +64,7 @@ import org.json.JSONException;
         " to store and retrieve information.",
     category = ComponentCategory.EXPERIMENTAL,
     nonVisible = true,
+    androidMinSdk = 10,
     iconName = "images/firebaseDB.png")
 @SimpleObject
 @UsesPermissions(permissionNames = "android.permission.INTERNET")
@@ -764,7 +765,7 @@ public class FirebaseDB extends AndroidNonvisibleComponent implements Component 
           if (value instanceof List) {
             ((List)value).add(valueToAdd);
             try {
-              value = JsonUtil.getJsonRepresentation(YailList.makeList((List)value));
+              value = JsonUtil.getJsonRepresentation((List)value);
             } catch (JSONException e) {
               result.err = "Could not convert value to JSON.";
               return Transaction.abort();

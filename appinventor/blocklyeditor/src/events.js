@@ -59,6 +59,30 @@ AI.Events.COMPONENT_MOVE = 'component.move';
 AI.Events.COMPONENT_PROPERTY_CHANGE = 'property.change';
 
 /**
+ * Type identifier used for serializing StartArrangeBlocks events.
+ * @type {string}
+ */
+AI.Events.BLOCKS_ARRANGE_START = 'blocks.arrange.start';
+
+/**
+ * Type identifier used for serializing EndArrangeBlocks events.
+ * @type {string}
+ */
+AI.Events.BLOCKS_ARRANGE_END = 'blocks.arrange.end';
+
+/**
+ * Type identifier used for programmatic workspace shifts.
+ * @type {string}
+ */
+AI.Events.WORKSPACE_VIEWPORT_MOVE = "blocks.workspace.move";
+
+/**
+ * Type identifier used for forcing a workspace save (required after upgrades).
+ * @type {string}
+ */
+AI.Events.FORCE_SAVE = 'blocks.save.force';
+
+/**
  * Abstract class for all App Inventor events.
  * @constructor
  */
@@ -164,6 +188,7 @@ AI.Events.ScreenEvent.prototype.isTransient = true;
  */
 AI.Events.ScreenSwitch = function(projectId, screenName) {
   AI.Events.ScreenSwitch.superClass_.constructor.call(this, projectId, screenName);
+  this.recordUndo = false;
 };
 goog.inherits(AI.Events.ScreenSwitch, AI.Events.ScreenEvent);
 
@@ -288,4 +313,288 @@ AI.Events.PropertyChange = function(projectId, component, property, oldValue, ne
   this.property = property;
   this.oldValue = oldValue;
   this.newValue = newValue;
+};
+
+/**
+ * StartArrangeBlocks is an event placed at the start of an event group created during an
+ * arrangement operation. Its purpose is to reset the Blockly.workspace_arranged* flags during an
+ * undo operation so that they reflect the state immediately preceding the arrangement.
+ * @param workspaceId The identifier of the workspace the event occurred on
+ * @constructor
+ */
+AI.Events.StartArrangeBlocks = function(workspaceId) {
+  AI.Events.StartArrangeBlocks.superClass_.constructor.call(this);
+  this.old_arranged_type = Blockly.workspace_arranged_type;
+  this.old_arranged_position = Blockly.workspace_arranged_position;
+  this.old_arranged_latest_position = Blockly.workspace_arranged_latest_position;
+  this.recordUndo = Blockly.Events.recordUndo;
+  this.workspaceId = workspaceId;
+};
+goog.inherits(AI.Events.StartArrangeBlocks, Blockly.Events.Ui);
+
+AI.Events.StartArrangeBlocks.prototype.type = AI.Events.BLOCKS_ARRANGE_START;
+
+AI.Events.StartArrangeBlocks.prototype.toJson = function() {
+  var json = AI.Events.StartArrangeBlocks.superClass_.toJson.call(this);
+  json['old_arranged_type'] = this.old_arranged_type;
+  json['old_arranged_position'] = this.old_arranged_position;
+  json['old_arranged_latest_position'] = this.old_arranged_latest_position;
+  return json;
+};
+
+AI.Events.StartArrangeBlocks.prototype.fromJson = function(json) {
+  AI.Events.StartArrangeBlocks.superClass_.fromJson.call(this, json);
+  this.old_arranged_type = json['old_arranged_type'];
+  this.old_arranged_position = json['old_arranged_position'];
+  this.old_arranged_latest_position = json['old_arranged_latest_position'];
+};
+
+AI.Events.StartArrangeBlocks.prototype.run = function(forward) {
+  if (!forward) {
+    Blockly.Events.FIRE_QUEUE_.length = 0;
+    setTimeout(function() {
+      Blockly.workspace_arranged_type = this.old_arranged_type;
+      Blockly.workspace_arranged_position = this.old_arranged_position;
+      Blockly.workspace_arranged_latest_position = this.old_arranged_latest_position;
+    }.bind(this));
+  }
+};
+
+/**
+ * EndArrangeBlocks is an event placed at the end of an event group created during an
+ * arrangement operation. Its purpose is to set the Blockly.workspace_arranged* flags to the
+ * appropriate values since they are reset by {@Blockly.WorkspaceSvg#fireChangeListener}.
+ * @param type The type of arrangement (either null or Blockly.BLKS_CATEGORY)
+ * @param layout The layout to be applied (either Blockly.BLKS_VERTICAL or Blockly.BLKS_HORIZONTAL)
+ * @constructor
+ */
+AI.Events.EndArrangeBlocks = function(workspaceId, type, layout) {
+  AI.Events.EndArrangeBlocks.superClass_.constructor.call(this);
+  this.new_type = type;
+  this.new_layout = layout;
+  this.recordUndo = Blockly.Events.recordUndo;
+  this.workspaceId = workspaceId;
+};
+goog.inherits(AI.Events.EndArrangeBlocks, Blockly.Events.Ui);
+
+AI.Events.EndArrangeBlocks.prototype.type = AI.Events.BLOCKS_ARRANGE_END;
+
+AI.Events.EndArrangeBlocks.prototype.toJson = function() {
+  var json = AI.Events.EndArrangeBlocks.superClass_.toJson.call(this);
+  json['new_type'] = this.new_type;
+  json['new_layout'] = this.new_layout;
+  return json;
+};
+
+AI.Events.EndArrangeBlocks.prototype.fromJson = function(json) {
+  AI.Events.EndArrangeBlocks.superClass_.fromJson.call(this, json);
+  this.new_type = json['new_type'];
+  this.new_layout = json['new_layout'];
+};
+
+AI.Events.EndArrangeBlocks.prototype.run = function(forward) {
+  if (forward) {
+    Blockly.Events.FIRE_QUEUE_.length = 0;
+    setTimeout(function() {
+      Blockly.workspace_arranged_type = this.new_type;
+      Blockly.workspace_arranged_position = this.new_layout;
+      Blockly.workspace_arranged_latest_position = this.new_layout;
+    }.bind(this));
+  }
+};
+
+/**
+ * Class for capturing when the workspace is moved programmatically, to allow undoing by the user.
+ * @param {string} workspaceId The workspace that is being moved.
+ * @constructor
+ */
+AI.Events.WorkspaceMove = function(workspaceId) {
+  AI.Events.WorkspaceMove.superClass_.constructor.call(this);
+  this.workspaceId = workspaceId;
+  var metrics = Blockly.Workspace.getById(workspaceId).getMetrics();
+  this.oldX = metrics.viewLeft - metrics.contentLeft;
+  this.oldY = metrics.viewTop - metrics.contentTop;
+  this.newX = null;
+  this.newY = null;
+};
+goog.inherits(AI.Events.WorkspaceMove, AI.Events.Abstract);
+
+/**
+ * Type of this event.
+ * @type {string}
+ */
+AI.Events.WorkspaceMove.prototype.type = AI.Events.WORKSPACE_VIEWPORT_MOVE;
+
+/**
+ * Is the event transient?
+ * @type {boolean}
+ */
+AI.Events.WorkspaceMove.prototype.isTransient = true;
+
+/**
+ * Encode the event as JSON.
+ * @returns {!Object}
+ */
+AI.Events.WorkspaceMove.prototype.toJson = function() {
+  var json = AI.Events.WorkspaceMove.superClass_.toJson.call(this);
+  json['workspaceId'] = this.workspaceId;
+  if (this.newX) {
+    json['newX'] = this.newX;
+  }
+  if (this.newY) {
+    json['newY'] = this.newY;
+  }
+  return json;
+};
+
+/**
+ * Decode the JSON event.
+ * @param {!Object} json JSON representation.
+ */
+AI.Events.WorkspaceMove.prototype.fromJson = function() {
+  AI.Events.WorkspaceMove.superClass_.fromJson.call(this, json);
+  this.workspaceId = json['workspaceId'];
+  this.newX = json['newX'];
+  this.newY = json['newY'];
+};
+
+/**
+ * Record the new state of the workspace after the operation has occurred.
+ */
+AI.Events.WorkspaceMove.prototype.recordNew = function() {
+  var metrics = Blockly.Workspace.getById(this.workspaceId).getMetrics();
+  this.newX = metrics.viewLeft - metrics.contentLeft;
+  this.newY = metrics.viewTop - metrics.contentTop;
+};
+
+/**
+ * Check whether the event is null. For workspace moves, this is true if and only if that the new
+ * and old coordinates are the same.
+ * @returns {boolean}
+ */
+AI.Events.WorkspaceMove.prototype.isNull = function() {
+  return this.oldX === this.newX && this.oldY === this.newY;
+};
+
+/**
+ * Run a workspace move event.
+ * @param {boolean} forward True if run forward, false if run backward (undo).
+ */
+AI.Events.WorkspaceMove.prototype.run = function(forward) {
+  var workspace = Blockly.Workspace.getById(this.workspaceId);
+  var x = forward ? this.newX : this.oldX;
+  var y = forward ? this.newY : this.oldY;
+  workspace.scrollbar.set(x, y);
+};
+
+/**
+ * An event used to trigger a save of the blocks workspace.
+ * @param {Blockly.Workspace=} workspace The workspace to be saved.
+ * @constructor
+ */
+AI.Events.ForceSave = function(workspace) {
+  AI.Events.ForceSave.superClass_.constructor.call(this);
+  if (workspace) {
+    this.workspaceId = workspace.id;
+  }
+  this.recordUndo = false;
+};
+goog.inherits(AI.Events.ForceSave, AI.Events.Abstract);
+
+/**
+ * The type of the event.
+ * @type {string}
+ */
+AI.Events.ForceSave.prototype.type = AI.Events.FORCE_SAVE;
+
+/**
+ * ForceSave must not be transient. The isTransient flag is used to determine whether or not to
+ * save the workspace, so if ForceSave were transient the workspace would not save.
+ * @type {boolean}
+ */
+AI.Events.ForceSave.prototype.isTransient = false;
+
+/**
+ * Serialize the ForceSave event as a JSON object.
+ * @returns {Object}
+ */
+AI.Events.ForceSave.prototype.toJson = function() {
+  var json = AI.Events.ForceSave.superClass_.toJson.call(this);
+  json['workspaceId'] = this.workspaceId;
+  return json;
+};
+
+/**
+ * Deserialize the ForceSave event form a JSON object.
+ * @param {Object} json A JSON object previously created by {@link #toJson()}
+ */
+AI.Events.ForceSave.prototype.fromJson = function(json) {
+  AI.Events.ForceSave.superClass_.fromJson.call(this, json);
+  this.workspaceId = json['workspaceId'];
+};
+
+/**
+ * Filter the queued events and merge duplicates. This version is O(n) versus the implementation
+ * provided by Blockly that is O(n^2). This improves performance when people perform or undo
+ * operations that create, move, or delete a large number of blocks all at once.
+ * @param {!Array.<!Blockly.Events.Abstract>} queueIn Array of events.
+ * @param {boolean} forward True if forward (redo), false if backward (undo).
+ * @return {!Array.<!Blockly.Events.Abstract>} Array of filtered events.
+ */
+Blockly.Events.filter = function(queueIn, forward) {
+  var queue = goog.array.clone(queueIn);
+  if (!forward) {
+    // Undo is merged in reverse order.
+    queue.reverse();
+  }
+  var queue2 = [];
+  var hash = {};
+  // Merge duplicates.
+  for (var i = 0, event; event = queue[i]; i++) {
+    if (!event.isNull()) {
+      var key = [event.type, event.blockId, event.workspaceId].join(' ');
+      if (hash[key] === undefined) {
+        hash[key] = event;
+        queue2.push(event);
+      } else if (event.type == Blockly.Events.MOVE) {
+        // Merge move events.
+        hash[key].newParentId = event.newParentId;
+        hash[key].newInputName = event.newInputName;
+        hash[key].newCoordinate = event.newCoordinate;
+      } else if (event.type == Blockly.Events.CHANGE &&
+        event.element == hash[key].element &&
+        event.name == hash[key].name) {
+        // Merge change events.
+        hash[key].newValue = event.newValue;
+      } else if (event.type == Blockly.Events.UI &&
+        hash[key].element == 'click' &&
+        (event.element == 'commentOpen' ||
+        event.element == 'mutatorOpen' ||
+        event.element == 'warningOpen')) {
+        // Merge change events.
+        hash[key].newValue = event.newValue;
+      } else {
+        // Collision, but newer events should merge into this event to maintain order
+        hash[key] = event;
+        queue2.push(event);
+      }
+    }
+  }
+  // After merging, it is possible that the product of merging two events where isNull() returned
+  // false now returns true. This is one last pass to remove these null events on the filtered
+  // queue.
+  queue = queue2.filter(function(e) { return !e.isNull(); });
+  if (!forward) {
+    // Restore undo order.
+    queue.reverse();
+  }
+  // Move mutation events to the top of the queue.
+  // Intentionally skip first event.
+  for (var i = 1, event; event = queue[i]; i++) {
+    if (event.type == Blockly.Events.CHANGE &&
+      event.element == 'mutation') {
+      queue.unshift(queue.splice(i, 1)[0]);
+    }
+  }
+  return queue;
 };

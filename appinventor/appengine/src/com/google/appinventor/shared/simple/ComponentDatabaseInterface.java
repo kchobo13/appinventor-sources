@@ -27,10 +27,13 @@ public interface ComponentDatabaseInterface {
   public static class ComponentDefinition {
     private final String name;
     private final int version;
+    private final String versionName;
+    private final String dateBuilt;
     private final String type;
     private final boolean external;
     private final String categoryString;
     private final String helpString;
+    private final String helpUrl;
     private final boolean showOnPalette;
     private final String categoryDocUrlString;
     private final List<PropertyDefinition> properties;
@@ -42,14 +45,18 @@ public interface ComponentDatabaseInterface {
     private final String iconName;
     private final String typeDescription;
 
-    public ComponentDefinition(String name, int version, String type, boolean external, String categoryString, String helpString,
+    public ComponentDefinition(String name, int version, String versionName, String dateBuilt, String type, boolean external,
+              String categoryString, String helpString, String helpUrl,
               boolean showOnPalette, boolean nonVisible, String iconName, String typeDescription) {
       this.name = name;
       this.version = version;
+      this.versionName = versionName;
+      this.dateBuilt = dateBuilt;
       this.type = type;
       this.external = external;
       this.categoryString = categoryString;
       this.helpString = helpString;
+      this.helpUrl = helpUrl;
       this.showOnPalette = showOnPalette;
       this.categoryDocUrlString = ComponentCategory.valueOf(categoryString).getDocName();
       this.properties = new ArrayList<PropertyDefinition>();
@@ -87,6 +94,14 @@ public interface ComponentDatabaseInterface {
       return version;
     }
 
+    public String getVersionName() {
+      return versionName;
+    }
+
+    public String getDateBuilt() {
+      return dateBuilt;
+    }
+
     public String getType() {
       return type;
     }
@@ -102,6 +117,8 @@ public interface ComponentDatabaseInterface {
     public String getHelpString() {
       return helpString;
     }
+
+    public String getHelpUrl() { return helpUrl; }
 
     public boolean isShowOnPalette() {
       return showOnPalette;
@@ -154,16 +171,18 @@ public interface ComponentDatabaseInterface {
     private final String defaultValue;
     private final String caption;
     private final String editorType;
+    private final String[] editorArgs;
 
-    public PropertyDefinition(String name, String defaultValue, String editorType) {
-      this(name, defaultValue, name, editorType);
+    public PropertyDefinition(String name, String defaultValue, String editorType, String[] editorArgs) {
+      this(name, defaultValue, name, editorType, editorArgs);
     }
 
-    public PropertyDefinition(String name, String defaultValue, String caption, String editorType) {
+    public PropertyDefinition(String name, String defaultValue, String caption, String editorType, String[] editorArgs) {
       this.name = name;
       this.defaultValue = defaultValue;
       this.caption = caption;
       this.editorType = editorType;
+      this.editorArgs = editorArgs;
     }
 
     public String getName() {
@@ -180,6 +199,10 @@ public interface ComponentDatabaseInterface {
 
     public String getEditorType() {
       return editorType;
+    }
+
+    public String[] getEditorArgs() {
+      return editorArgs;
     }
   }
 
@@ -350,6 +373,22 @@ public interface ComponentDatabaseInterface {
   int getComponentVersion(String componentName);
 
   /**
+   * Returns the version name of a component.
+   *
+   * @param componentName  name of the component to query
+   * @return  the component version name, or the empty string if none is provided
+   */
+  String getComponentVersionName(String componentName);
+
+  /**
+   * Returns the build date of a component.
+   *
+   * @param componentName  mame of the component to query
+   * @return  the component build date, or the empty string if non is provided
+   */
+  String getComponentBuildDate(String componentName);
+
+  /**
    * Returns the String version of a component's category.  Note that this
    * is the result of calling getString() on a ComponentCategory, not the
    * result of calling getName().  For example, for the ComponentCategory
@@ -386,6 +425,14 @@ public interface ComponentDatabaseInterface {
    * @return helpful message about the component
    */
   String getHelpString(String componentName);
+
+  /**
+   * Returns a URL to documentation for extensions.
+   *
+   * @param componentName  name of component to query
+   * @return optional URL to external documentation for a component
+   */
+  String getHelpUrl(String componentName);
 
   /**
    * Returns whether the component with this name should be shown on the

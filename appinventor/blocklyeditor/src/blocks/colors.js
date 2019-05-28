@@ -16,7 +16,7 @@ goog.require('Blockly.Blocks.Utilities');
 
 Blockly.Blocks['color_black'] = {
   // Colour picker.
-  category: "VR_Colors",
+  category: "Colors",
   helpUrl: Blockly.Msg.LANG_COLOUR_PICKER_HELPURL,
   init: function() {
     this.setColour(Blockly.COLOR_CATEGORY_HUE);
@@ -29,7 +29,7 @@ Blockly.Blocks['color_black'] = {
 
 Blockly.Blocks['color_white'] = {
   // Colour picker.
-  category: "VR_Colors",
+  category: "Colors",
   helpUrl: Blockly.Msg.LANG_COLOUR_PICKER_HELPURL,
   init: function() {
     this.setColour(Blockly.COLOR_CATEGORY_HUE);
@@ -42,7 +42,7 @@ Blockly.Blocks['color_white'] = {
 
 Blockly.Blocks['color_red'] = {
   // Colour picker.
-  category: "VR_Colors",
+  category: "Colors",
   helpUrl: Blockly.Msg.LANG_COLOUR_PICKER_HELPURL,
   init: function() {
     this.setColour(Blockly.COLOR_CATEGORY_HUE);
@@ -55,7 +55,7 @@ Blockly.Blocks['color_red'] = {
 
 Blockly.Blocks['color_pink'] = {
   // Colour picker.
-  category: "VR_Colors",
+  category: "Colors",
   helpUrl: Blockly.Msg.LANG_COLOUR_PICKER_HELPURL,
   init: function() {
     this.setColour(Blockly.COLOR_CATEGORY_HUE);
@@ -68,7 +68,7 @@ Blockly.Blocks['color_pink'] = {
 
 Blockly.Blocks['color_orange'] = {
   // Colour picker.
-  category: "VR_Colors",
+  category: "Colors",
   helpUrl: Blockly.Msg.LANG_COLOUR_PICKER_HELPURL,
   init: function() {
     this.setColour(Blockly.COLOR_CATEGORY_HUE);
@@ -81,7 +81,7 @@ Blockly.Blocks['color_orange'] = {
 
 Blockly.Blocks['color_yellow'] = {
   // Colour picker.
-  category: "VR_Colors",
+  category: "Colors",
   helpUrl: Blockly.Msg.LANG_COLOUR_PICKER_HELPURL,
   init: function() {
     this.setColour(Blockly.COLOR_CATEGORY_HUE);
@@ -94,7 +94,7 @@ Blockly.Blocks['color_yellow'] = {
 
 Blockly.Blocks['color_green'] = {
   // Colour picker.
-  category: "VR_Colors",
+  category: "Colors",
   helpUrl: Blockly.Msg.LANG_COLOUR_PICKER_HELPURL,
   init: function() {
     this.setColour(Blockly.COLOR_CATEGORY_HUE);
@@ -107,7 +107,7 @@ Blockly.Blocks['color_green'] = {
 
 Blockly.Blocks['color_cyan'] = {
   // Colour picker.
-  category: "VR_Colors",
+  category: "Colors",
   helpUrl: Blockly.Msg.LANG_COLOUR_PICKER_HELPURL,
   init: function() {
     this.setColour(Blockly.COLOR_CATEGORY_HUE);
@@ -120,7 +120,7 @@ Blockly.Blocks['color_cyan'] = {
 
 Blockly.Blocks['color_blue'] = {
   // Colour picker.
-  category: "VR_Colors",
+  category: "Colors",
   helpUrl: Blockly.Msg.LANG_COLOUR_PICKER_HELPURL,
   init: function() {
     this.setColour(Blockly.COLOR_CATEGORY_HUE);
@@ -133,7 +133,7 @@ Blockly.Blocks['color_blue'] = {
 
 Blockly.Blocks['color_magenta'] = {
   // Colour picker.
-  category: "VR_Colors",
+  category: "Colors",
   helpUrl: Blockly.Msg.LANG_COLOUR_PICKER_HELPURL,
   init: function() {
     this.setColour(Blockly.COLOR_CATEGORY_HUE);
@@ -146,7 +146,7 @@ Blockly.Blocks['color_magenta'] = {
 
 Blockly.Blocks['color_light_gray'] = {
   // Colour picker.
-  category: "VR_Colors",
+  category: "Colors",
   helpUrl: Blockly.Msg.LANG_COLOUR_PICKER_HELPURL,
   init: function() {
     this.setColour(Blockly.COLOR_CATEGORY_HUE);
@@ -159,7 +159,7 @@ Blockly.Blocks['color_light_gray'] = {
 
 Blockly.Blocks['color_gray'] = {
   // Colour picker.
-  category: "VR_Colors",
+  category: "Colors",
   helpUrl: Blockly.Msg.LANG_COLOUR_PICKER_HELPURL,
   init: function() {
     this.setColour(Blockly.COLOR_CATEGORY_HUE);
@@ -173,7 +173,7 @@ Blockly.Blocks['color_gray'] = {
 
 Blockly.Blocks['color_dark_gray'] = {
   // Colour picker.
-  category: "VR_Colors",
+  category: "Colors",
   helpUrl: Blockly.Msg.LANG_COLOUR_PICKER_HELPURL,
   init: function() {
     this.setColour(Blockly.COLOR_CATEGORY_HUE);
@@ -185,7 +185,7 @@ Blockly.Blocks['color_dark_gray'] = {
 };
 
 Blockly.Blocks['color_make_color'] = {
-  category: "VR_Colors",
+  category: "Colors",
   helpUrl: Blockly.Msg.LANG_COLOUR_MAKE_COLOUR_HELPURL,
   init: function() {
     this.setColour(Blockly.COLOR_CATEGORY_HUE);

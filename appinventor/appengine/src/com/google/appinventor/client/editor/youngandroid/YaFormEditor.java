@@ -8,33 +8,51 @@ package com.google.appinventor.client.editor.youngandroid;
 
 import static com.google.appinventor.client.Ode.MESSAGES;
 
+import com.google.appinventor.client.ErrorReporter;
 import com.google.appinventor.client.Ode;
 import com.google.appinventor.client.OdeAsyncCallback;
+import com.google.appinventor.client.boxes.AssetListBox;
 import com.google.appinventor.client.boxes.PaletteBox;
+import com.google.appinventor.client.boxes.PropertiesBox;
+import com.google.appinventor.client.boxes.SourceStructureBox;
 import com.google.appinventor.client.editor.ProjectEditor;
-import com.google.appinventor.client.editor.designer.DesignerEditor;
+import com.google.appinventor.client.editor.simple.ComponentNotFoundException;
 import com.google.appinventor.client.editor.simple.SimpleComponentDatabase;
+import com.google.appinventor.client.editor.simple.SimpleEditor;
 import com.google.appinventor.client.editor.simple.SimpleNonVisibleComponentsPanel;
+import com.google.appinventor.client.editor.simple.SimpleVisibleComponentsPanel;
+import com.google.appinventor.client.editor.simple.components.FormChangeListener;
 import com.google.appinventor.client.editor.simple.components.MockComponent;
+import com.google.appinventor.client.editor.simple.components.MockContainer;
 import com.google.appinventor.client.editor.simple.components.MockForm;
 import com.google.appinventor.client.editor.simple.palette.DropTargetProvider;
+import com.google.appinventor.client.editor.simple.palette.SimpleComponentDescriptor;
+import com.google.appinventor.client.editor.simple.palette.SimplePalettePanel;
 import com.google.appinventor.client.editor.youngandroid.palette.YoungAndroidPalettePanel;
+import com.google.appinventor.client.explorer.SourceStructureExplorer;
+import com.google.appinventor.client.explorer.project.ComponentDatabaseChangeListener;
 import com.google.appinventor.client.output.OdeLog;
 import com.google.appinventor.client.properties.json.ClientJsonParser;
 import com.google.appinventor.client.properties.json.ClientJsonString;
 import com.google.appinventor.client.widgets.dnd.DropTarget;
 import com.google.appinventor.client.widgets.properties.EditableProperties;
+import com.google.appinventor.client.widgets.properties.PropertiesPanel;
 import com.google.appinventor.client.youngandroid.YoungAndroidFormUpgrader;
 import com.google.appinventor.components.common.YaVersion;
 import com.google.appinventor.shared.properties.json.JSONArray;
 import com.google.appinventor.shared.properties.json.JSONObject;
 import com.google.appinventor.shared.properties.json.JSONParser;
 import com.google.appinventor.shared.properties.json.JSONValue;
+import com.google.appinventor.shared.rpc.project.ChecksumedFileException;
+import com.google.appinventor.shared.rpc.project.ChecksumedLoadFile;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidFormNode;
 import com.google.appinventor.shared.youngandroid.YoungAndroidSourceAnalyzer;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Callback;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.DockPanel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,13 +67,52 @@ import java.util.Map;
  *
  * @author markf@google.com (Mark Friedman)
  * @author lizlooney@google.com (Liz Looney)
- * @author ewpatton@mit.edu (Evan W. Patton)
  */
-public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, MockForm,
-    YoungAndroidPalettePanel, SimpleComponentDatabase> {
+public final class YaFormEditor extends SimpleEditor implements FormChangeListener, ComponentDatabaseChangeListener {
+
+  private static class FileContentHolder {
+    private String content;
+
+    FileContentHolder(String content) {
+      this.content = content;
+    }
+
+    void setFileContent(String content) {
+      this.content = content;
+    }
+
+    String getFileContent() {
+      return content;
+    }
+  }
+
+  private static final String ERROR_EXISTING_UUID = "Component with UUID \"%1$s\" already exists.";
+  private static final String ERROR_NONEXISTENT_UUID = "No component exists with UUID \"%1$s\".";
 
   // JSON parser
   private static final JSONParser JSON_PARSER = new ClientJsonParser();
+
+  private final SimpleComponentDatabase COMPONENT_DATABASE;
+
+  private final YoungAndroidFormNode formNode;
+
+  // Flag to indicate when loading the file is completed. This is needed because building the mock
+  // form from the file properties fires events that need to be ignored, otherwise the file will be
+  // marked as being modified.
+  private boolean loadComplete;
+
+  // References to other panels that we need to control.
+  private final SourceStructureExplorer sourceStructureExplorer;
+
+  // Panels that are used as the content of the palette and properties boxes.
+  private final YoungAndroidPalettePanel palettePanel;
+  private final PropertiesPanel designProperties;
+
+  // UI elements
+  private final SimpleVisibleComponentsPanel visibleComponentsPanel;
+  private final SimpleNonVisibleComponentsPanel nonVisibleComponentsPanel;
+
+  private MockForm form;  // initialized lazily after the file is loaded from the ODE server
 
   // [lyn, 2014/10/13] Need to remember JSON initially loaded from .scm file *before* it is upgraded
   // by YoungAndroidFormUpgrader within upgradeFile. This JSON contains pre-upgrade component
@@ -65,6 +122,7 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
   // and we rely on the pre-upgraded .scm file for this info.
   private String preUpgradeJsonString;
 
+  private final List<ComponentDatabaseChangeListener> componentDatabaseChangeListeners = new ArrayList<ComponentDatabaseChangeListener>();
   private JSONArray authURL;    // List of App Inventor versions we have been edited on.
 
   /**
@@ -81,8 +139,25 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
    * @param formNode the YoungAndroidFormNode associated with this YaFormEditor
    */
   YaFormEditor(ProjectEditor projectEditor, YoungAndroidFormNode formNode) {
-    super(projectEditor, formNode, SimpleComponentDatabase.getInstance(formNode.getProjectId()),
-        new YaVisibleComponentsPanel(projectEditor, new SimpleNonVisibleComponentsPanel<MockForm>()));
+    super(projectEditor, formNode);
+
+    this.formNode = formNode;
+    COMPONENT_DATABASE = SimpleComponentDatabase.getInstance(getProjectId());
+
+    // Get reference to the source structure explorer
+    sourceStructureExplorer =
+        SourceStructureBox.getSourceStructureBox().getSourceStructureExplorer();
+
+    // Create UI elements for the designer panels.
+    nonVisibleComponentsPanel = new SimpleNonVisibleComponentsPanel();
+    componentDatabaseChangeListeners.add(nonVisibleComponentsPanel);
+    visibleComponentsPanel = new SimpleVisibleComponentsPanel(this, nonVisibleComponentsPanel);
+    componentDatabaseChangeListeners.add(visibleComponentsPanel);
+    DockPanel componentsPanel = new DockPanel();
+    componentsPanel.setHorizontalAlignment(DockPanel.ALIGN_CENTER);
+    componentsPanel.add(visibleComponentsPanel, DockPanel.NORTH);
+    componentsPanel.add(nonVisibleComponentsPanel, DockPanel.SOUTH);
+    componentsPanel.setSize("100%", "100%");
 
     // Create palettePanel, which will be used as the content of the PaletteBox.
     palettePanel = new YoungAndroidPalettePanel(this);
@@ -92,21 +167,74 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
         // TODO(markf): Figure out a good way to memorize the targets or refactor things so that
         // getDropTargets() doesn't get called for each component.
         // NOTE: These targets must be specified in depth-first order.
-        List<DropTarget> dropTargets = root.getDropTargetsWithin();
-        dropTargets.add(getVisibleComponentsPanel());
-        dropTargets.add(getNonVisibleComponentsPanel());
+        List<DropTarget> dropTargets = form.getDropTargetsWithin();
+        dropTargets.add(visibleComponentsPanel);
+        dropTargets.add(nonVisibleComponentsPanel);
         return dropTargets.toArray(new DropTarget[dropTargets.size()]);
       }
     });
     palettePanel.setSize("100%", "100%");
     componentDatabaseChangeListeners.add(palettePanel);
+
+    // Create designProperties, which will be used as the content of the PropertiesBox.
+    designProperties = new PropertiesPanel();
+    designProperties.setSize("100%", "100%");
+    initWidget(componentsPanel);
+    setSize("100%", "100%");
   }
 
   // FileEditor methods
 
   @Override
+  public void loadFile(final Command afterFileLoaded) {
+    final long projectId = getProjectId();
+    final String fileId = getFileId();
+    OdeAsyncCallback<ChecksumedLoadFile> callback = new OdeAsyncCallback<ChecksumedLoadFile>(MESSAGES.loadError()) {
+      @Override
+      public void onSuccess(ChecksumedLoadFile result) {
+        String contents;
+        try {
+          contents = result.getContent();
+        } catch (ChecksumedFileException e) {
+          this.onFailure(e);
+          return;
+        }
+        final FileContentHolder fileContentHolder = new FileContentHolder(contents);
+        upgradeFile(fileContentHolder, new Command() {
+          @Override
+          public void execute() {
+            try {
+              onFileLoaded(fileContentHolder.getFileContent());
+            } catch(IllegalArgumentException e) {
+              return;
+            }
+            if (afterFileLoaded != null) {
+              afterFileLoaded.execute();
+            }
+          }
+        });
+      }
+      @Override
+      public void onFailure(Throwable caught) {
+        if (caught instanceof ChecksumedFileException) {
+          Ode.getInstance().recordCorruptProject(projectId, fileId, caught.getMessage());
+        }
+        super.onFailure(caught);
+      }
+    };
+    Ode.getInstance().getProjectService().load2(projectId, fileId, callback);
+  }
+
+  @Override
   public String getTabText() {
-    return sourceNode.getFormName();
+    return formNode.getFormName();
+  }
+
+  @Override
+  public void onShow() {
+    OdeLog.log("YaFormEditor: got onShow() for " + getFileId());
+    super.onShow();
+    loadDesigner();
   }
 
   @Override
@@ -127,8 +255,8 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
 
   @Override
   public void onClose() {
-    root.removeDesignerChangeListener(this);
-    // Note: our partner YaBlocksEditor will remove itself as a DesignerChangeListener, even
+    form.removeFormChangeListener(this);
+    // Note: our partner YaBlocksEditor will remove itself as a FormChangeListener, even
     // though we added it.
   }
 
@@ -139,20 +267,111 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
     return YoungAndroidSourceAnalyzer.generateSourceFile(propertiesObject);
   }
 
-  // SimpleEditor methods
   @Override
-  public boolean isScreen1() {
-    return sourceNode.isScreen1();
+  public void onSave() {
   }
 
-  // DesignerChangeListener implementation
+  // SimpleEditor methods
+
+  @Override
+  public boolean isLoadComplete() {
+    return loadComplete;
+  }
+
+  @Override
+  public Map<String, MockComponent> getComponents() {
+    Map<String, MockComponent> map = Maps.newHashMap();
+    if (loadComplete) {
+      populateComponentsMap(form, map);
+    }
+    return map;
+  }
+
+  @Override
+  public List<String> getComponentNames() {
+    return new ArrayList<String>(getComponents().keySet());
+  }
+
+  @Override
+  public SimplePalettePanel getComponentPalettePanel() {
+    return palettePanel;
+  }
+
+  @Override
+  public SimpleNonVisibleComponentsPanel getNonVisibleComponentsPanel() {
+    return nonVisibleComponentsPanel;
+  }
+
+  public SimpleVisibleComponentsPanel getVisibleComponentsPanel() {
+    return visibleComponentsPanel;
+  }
+
+  @Override
+  public boolean isScreen1() {
+    return formNode.isScreen1();
+  }
+
+  // FormChangeListener implementation
 
   @Override
   public void onComponentPropertyChanged(MockComponent component,
       String propertyName, String propertyValue) {
-    super.onComponentPropertyChanged(component, propertyName, propertyValue);
-    if (isLoadComplete() && component.isPropertyPersisted(propertyName)) {
-      updatePhone();          // Push changes to the phone if it is connected
+    if (loadComplete) {
+      // If the property isn't actually persisted to the .scm file, we don't need to do anything.
+      if (component.isPropertyPersisted(propertyName)) {
+        Ode.getInstance().getEditorManager().scheduleAutoSave(this);
+        updatePhone();          // Push changes to the phone if it is connected
+      }
+    } else {
+      OdeLog.elog("onComponentPropertyChanged called when loadComplete is false");
+    }
+  }
+
+  @Override
+  public void onComponentRemoved(MockComponent component, boolean permanentlyDeleted) {
+    if (loadComplete) {
+      if (permanentlyDeleted) {
+        onFormStructureChange();
+      }
+    } else {
+      OdeLog.elog("onComponentRemoved called when loadComplete is false");
+    }
+  }
+
+  @Override
+  public void onComponentAdded(MockComponent component) {
+    if (loadComplete) {
+      onFormStructureChange();
+    } else {
+      OdeLog.elog("onComponentAdded called when loadComplete is false");
+    }
+  }
+
+  @Override
+  public void onComponentRenamed(MockComponent component, String oldName) {
+    if (loadComplete) {
+      onFormStructureChange();
+      updatePropertiesPanel(component);
+    } else {
+      OdeLog.elog("onComponentRenamed called when loadComplete is false");
+    }
+  }
+
+  @Override
+  public void onComponentSelectionChange(MockComponent component, boolean selected) {
+    if (loadComplete) {
+      if (selected) {
+        // Select the item in the source structure explorer.
+        sourceStructureExplorer.selectItem(component.getSourceStructureExplorerItem());
+
+        // Show the component properties in the properties panel.
+        updatePropertiesPanel(component);
+      } else {
+        // Unselect the item in the source structure explorer.
+        sourceStructureExplorer.unselectItem(component.getSourceStructureExplorerItem());
+      }
+    } else {
+      OdeLog.elog("onComponentSelectionChange called when loadComplete is false");
     }
   }
 
@@ -164,7 +383,7 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
    * @return a MockForm
    */
   public MockForm getForm() {
-    return root;
+    return form;
   }
 
   public String getComponentInstanceTypeName(String instanceName) {
@@ -186,7 +405,7 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
    *                              file has upgraded and saved back to the ODE
    *                              server
    */
-  protected void upgradeFile(FileContentHolder fileContentHolder,
+  private void upgradeFile(FileContentHolder fileContentHolder,
       final Command afterUpgradeComplete) {
     JSONObject propertiesObject = YoungAndroidSourceAnalyzer.parseSourceFile(
         fileContentHolder.getFileContent(), JSON_PARSER);
@@ -255,8 +474,13 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
     if (YoungAndroidFormUpgrader.upgradeSourceProperties(propertiesObject.getProperties())) {
       String upgradedContent = YoungAndroidSourceAnalyzer.generateSourceFile(propertiesObject);
       fileContentHolder.setFileContent(upgradedContent);
-
-      Ode.getInstance().getProjectService().save(Ode.getInstance().getSessionId(),
+      Ode ode = Ode.getInstance();
+      if (ode.isReadOnly()) {   // Do not attempt to save out the project if we are in readonly mode
+        if (afterUpgradeComplete != null) {
+          afterUpgradeComplete.execute(); // But do call the afterUpgradeComplete call
+        }
+      } else {
+        Ode.getInstance().getProjectService().save(Ode.getInstance().getSessionId(),
           getProjectId(), getFileId(), upgradedContent,
           new OdeAsyncCallback<Long>(MESSAGES.saveError()) {
             @Override
@@ -267,6 +491,7 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
               }
             }
           });
+      }
     } else {
       // No upgrade was necessary.
       // Execute the afterUpgradeComplete command if one was given.
@@ -276,32 +501,107 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
     }
   }
 
-  @Override
-  protected void onFileLoaded(String content) {
+  private void onFileLoaded(String content) {
     JSONObject propertiesObject = YoungAndroidSourceAnalyzer.parseSourceFile(
         content, JSON_PARSER);
-    root = createMockForm(propertiesObject.getProperties().get("Properties").asObject());
+    try {
+      form = createMockForm(propertiesObject.getProperties().get("Properties").asObject());
+    } catch(ComponentNotFoundException e) {
+      Ode.getInstance().recordCorruptProject(getProjectId(), getProjectRootNode().getName(),
+          e.getMessage());
+      ErrorReporter.reportError(MESSAGES.noComponentFound(e.getComponentName(),
+          getProjectRootNode().getName()));
+      throw e;
+    }
 
     // Initialize the nonVisibleComponentsPanel and visibleComponentsPanel.
-    nonVisibleComponentsPanel.setRoot(root);
-    visibleComponentsPanel.setRoot(root);
-    root.select();
+    nonVisibleComponentsPanel.setForm(form);
+    visibleComponentsPanel.setForm(form);
+    form.select();
 
-    super.onFileLoaded(content);
+    // Set loadCompleted to true.
+    // From now on, all change events will be taken seriously.
+    loadComplete = true;
   }
 
   /*
    * Parses the JSON properties and creates the form and its component structure.
    */
   private MockForm createMockForm(JSONObject propertiesObject) {
-    return (MockForm) createMockComponent(propertiesObject, null, MockForm.TYPE);
+    return (MockForm) createMockComponent(propertiesObject, null);
   }
 
+  /*
+   * Parses the JSON properties and creates the component structure. This method is called
+   * recursively for nested components. For the initial invocation parent shall be null.
+   */
+  private MockComponent createMockComponent(JSONObject propertiesObject, MockContainer parent) {
+    Map<String, JSONValue> properties = propertiesObject.getProperties();
+
+    // Component name and type
+    String componentType = properties.get("$Type").asString().getString();
+
+    // Instantiate a mock component for the visual designer
+    MockComponent mockComponent;
+    if (componentType.equals(MockForm.TYPE)) {
+      Preconditions.checkArgument(parent == null);
+
+      // Instantiate new root component
+      mockComponent = new MockForm(this);
+    } else {
+      mockComponent = SimpleComponentDescriptor.createMockComponent(componentType,
+          COMPONENT_DATABASE.getComponentType(componentType), this);
+
+      // Add the component to its parent component (and if it is non-visible, add it to the
+      // nonVisibleComponent panel).
+      parent.addComponent(mockComponent);
+      if (!mockComponent.isVisibleComponent()) {
+        nonVisibleComponentsPanel.addComponent(mockComponent);
+      }
+    }
+
+    // Set the name of the component (on instantiation components are assigned a generated name)
+    String componentName = properties.get("$Name").asString().getString();
+    mockComponent.changeProperty("Name", componentName);
+
+    // Set component properties
+    for (String name : properties.keySet()) {
+      if (name.charAt(0) != '$') { // Ignore special properties (name, type and nested components)
+        mockComponent.changeProperty(name, properties.get(name).asString().getString());
+      }
+    }
+
+
+
+    //This is for old project which doesn't have the AppName property
+    if (mockComponent instanceof MockForm) {
+      if (!properties.keySet().contains("AppName")) {
+        String fileId = getFileId();
+        String projectName = fileId.split("/")[3];
+        mockComponent.changeProperty("AppName", projectName);
+      }
+    }
+
+    // Add component type to the blocks editor
+    YaProjectEditor yaProjectEditor = (YaProjectEditor) projectEditor;
+    YaBlocksEditor blockEditor = yaProjectEditor.getBlocksFileEditor(formNode.getFormName());
+    blockEditor.addComponent(mockComponent.getType(), mockComponent.getName(),
+        mockComponent.getUuid());
+
+    // Add nested components
+    if (properties.containsKey("$Components")) {
+      for (JSONValue nestedComponent : properties.get("$Components").asArray().getElements()) {
+        createMockComponent(nestedComponent.asObject(), (MockContainer) mockComponent);
+      }
+    }
+
+    return mockComponent;
+  }
 
   @Override
   public void getBlocksImage(Callback<String, String> callback) {
     YaProjectEditor yaProjectEditor = (YaProjectEditor) projectEditor;
-    YaBlocksEditor blockEditor = yaProjectEditor.getBlocksFileEditor(sourceNode.getFormName());
+    YaBlocksEditor blockEditor = yaProjectEditor.getBlocksFileEditor(formNode.getFormName());
     blockEditor.getBlocksImage(callback);
   }
 
@@ -309,28 +609,64 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
    * Updates the the whole designer: form, palette, source structure explorer,
    * assets list, and properties panel.
    */
-  protected void loadDesigner() {
-    root.refresh();
-    selectedComponent = root.getSelectedComponent();
+  private void loadDesigner() {
+    form.refresh();
+    MockComponent selectedComponent = form.getSelectedComponent();
 
     // Set the palette box's content.
     PaletteBox paletteBox = PaletteBox.getPaletteBox();
     paletteBox.setContent(palettePanel);
 
+    // Update the source structure explorer with the tree of this form's components.
+    sourceStructureExplorer.updateTree(form.buildComponentsTree(),
+        selectedComponent.getSourceStructureExplorerItem());
+    SourceStructureBox.getSourceStructureBox().setVisible(true);
+
+    // Show the assets box.
+    AssetListBox assetListBox = AssetListBox.getAssetListBox();
+    assetListBox.setVisible(true);
+
+    // Set the properties box's content.
+    PropertiesBox propertiesBox = PropertiesBox.getPropertiesBox();
+    propertiesBox.setContent(designProperties);
+    updatePropertiesPanel(selectedComponent);
+    propertiesBox.setVisible(true);
+
     // Listen to changes on the form.
-    root.addDesignerChangeListener(this);
+    form.addFormChangeListener(this);
     // Also have the blocks editor listen to changes. Do this here instead
     // of in the blocks editor so that we don't risk it missing any updates.
-    OdeLog.log("Adding blocks editor as a listener for " + root.getName());
-    root.addDesignerChangeListener(((YaProjectEditor) projectEditor)
-        .getBlocksFileEditor(root.getName()));
-    super.loadDesigner();
+    OdeLog.log("Adding blocks editor as a listener for " + form.getName());
+    form.addFormChangeListener(((YaProjectEditor) projectEditor)
+        .getBlocksFileEditor(form.getName()));
   }
 
-  @Override
-  protected void onStructureChange() {
-    super.onStructureChange();
+  /*
+   * Show the given component's properties in the properties panel.
+   */
+  private void updatePropertiesPanel(MockComponent component) {
+    designProperties.setProperties(component.getProperties());
+    // need to update the caption after the setProperties call, since
+    // setProperties clears the caption!
+    designProperties.setPropertiesCaption(component.getName());
+  }
+
+  private void onFormStructureChange() {
+    Ode.getInstance().getEditorManager().scheduleAutoSave(this);
+
+    // Update source structure panel
+    sourceStructureExplorer.updateTree(form.buildComponentsTree(),
+        form.getSelectedComponent().getSourceStructureExplorerItem());
     updatePhone();          // Push changes to the phone if it is connected
+  }
+
+  private void populateComponentsMap(MockComponent component, Map<String, MockComponent> map) {
+    EditableProperties properties = component.getProperties();
+    map.put(properties.getPropertyValue("Name"), component);
+    List<MockComponent> children = component.getChildren();
+    for (MockComponent child : children) {
+      populateComponentsMap(child, map);
+    }
   }
 
   /*
@@ -347,9 +683,8 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
     sb.append("\"YaVersion\":\"").append(YaVersion.YOUNG_ANDROID_VERSION).append("\",");
     sb.append("\"Source\":\"Form\",");
     sb.append("\"Properties\":");
-    encodeComponentProperties(root, sb, forYail);
+    encodeComponentProperties(form, sb, forYail);
     sb.append("}");
-    OdeLog.log("encodeFormAsJsonString: " + sb.toString());
     return sb.toString();
   }
 
@@ -371,7 +706,7 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
     sb.append("\",\"$Type\":\"");
     sb.append(componentType);
     sb.append("\",\"$Version\":\"");
-    sb.append(componentDatabase.getComponentVersion(componentType));
+    sb.append(COMPONENT_DATABASE.getComponentVersion(componentType));
     sb.append('"');
 
     // Next the actual component properties
@@ -399,6 +734,31 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
     sb.append('}');
   }
 
+  /*
+   * Clears the palette, source structure explorer, and properties panel.
+   */
+  private void unloadDesigner() {
+    // The form can still potentially change if the blocks editor is displayed
+    // so don't remove the formChangeListener.
+
+    // Clear the palette box.
+    PaletteBox paletteBox = PaletteBox.getPaletteBox();
+    paletteBox.clear();
+
+    // Clear and hide the source structure explorer.
+    sourceStructureExplorer.clearTree();
+    SourceStructureBox.getSourceStructureBox().setVisible(false);
+
+    // Hide the assets box.
+    AssetListBox assetListBox = AssetListBox.getAssetListBox();
+    assetListBox.setVisible(false);
+
+    // Clear and hide the properties box.
+    PropertiesBox propertiesBox = PropertiesBox.getPropertiesBox();
+    propertiesBox.clear();
+    propertiesBox.setVisible(false);
+  }
+
   /**
    * Runs through all the Mock Components and upgrades if its corresponding Component was Upgraded
    * @param componentTypes the Component Types that got upgraded
@@ -418,30 +778,28 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
    */
   private void updatePhone() {
     YaProjectEditor yaProjectEditor = (YaProjectEditor) projectEditor;
-    YaBlocksEditor blockEditor = yaProjectEditor.getBlocksFileEditor(sourceNode.getFormName());
+    YaBlocksEditor blockEditor = yaProjectEditor.getBlocksFileEditor(formNode.getFormName());
     blockEditor.sendComponentData();
   }
 
   @Override
-  public String getJson() {
-    return preUpgradeJsonString;
-  }
-
-  @Override
-  protected MockForm newRootObject() {
-    return new MockForm(this);
-  }
-
-  @Override
   public void onComponentTypeAdded(List<String> componentTypes) {
-    super.onComponentTypeAdded(componentTypes);
+    COMPONENT_DATABASE.removeComponentDatabaseListener(this);
+    for (ComponentDatabaseChangeListener cdbChangeListener : componentDatabaseChangeListeners) {
+      cdbChangeListener.onComponentTypeAdded(componentTypes);
+    }
     //Update Mock Components
     updateMockComponents(componentTypes);
+    //Update the Properties Panel
+    updatePropertiesPanel(form.getSelectedComponent());
   }
 
   @Override
   public boolean beforeComponentTypeRemoved(List<String> componentTypes) {
-    boolean result = super.beforeComponentTypeRemoved(componentTypes);
+    boolean result = true;
+    for (ComponentDatabaseChangeListener cdbChangeListener : componentDatabaseChangeListeners) {
+      result = result & cdbChangeListener.beforeComponentTypeRemoved(componentTypes);
+    }
     List<MockComponent> mockComponents = new ArrayList<MockComponent>(getForm().getChildren());
     for (String compType : componentTypes) {
       for (MockComponent mockComp : mockComponents) {
@@ -451,5 +809,21 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
       }
     }
     return result;
+  }
+
+  @Override
+  public void onComponentTypeRemoved(Map<String, String> componentTypes) {
+    COMPONENT_DATABASE.removeComponentDatabaseListener(this);
+    for (ComponentDatabaseChangeListener cdbChangeListener : componentDatabaseChangeListeners) {
+      cdbChangeListener.onComponentTypeRemoved(componentTypes);
+    }
+  }
+
+  @Override
+  public void onResetDatabase() {
+    COMPONENT_DATABASE.removeComponentDatabaseListener(this);
+    for (ComponentDatabaseChangeListener cdbChangeListener : componentDatabaseChangeListeners) {
+      cdbChangeListener.onResetDatabase();
+    }
   }
 }

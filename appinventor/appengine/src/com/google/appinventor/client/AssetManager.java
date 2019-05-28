@@ -1,6 +1,6 @@
 // -*- mode: java; c-basic-offset: 2; -*-
 // Copyright 2009-2011 Google, All Rights reserved
-// Copyright 2011-2013 MIT, All rights reserved
+// Copyright 2011-2019 MIT, All rights reserved
 // Released under the Apache License, Version 2.0
 // http://www.apache.org/licenses/LICENSE-2.0
 
@@ -8,21 +8,30 @@ package com.google.appinventor.client;
 
 import com.google.appinventor.client.explorer.project.Project;
 import com.google.appinventor.client.explorer.project.ProjectChangeListener;
+
+import com.google.appinventor.client.output.OdeLog;
+
 import com.google.appinventor.common.utils.StringUtils;
+
+import com.google.appinventor.shared.rpc.project.ProjectNode;
+import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidAssetNode;
+import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidAssetsFolder;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidComponentNode;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidComponentsFolder;
 import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidProjectNode;
-import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidAssetNode;
-import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidAssetsFolder;
-import com.google.appinventor.shared.rpc.project.ProjectNode;
+
 import com.google.appinventor.shared.util.Base64Util;
-import com.google.appinventor.client.output.OdeLog;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArrayString;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
+import static com.google.appinventor.client.Ode.MESSAGES;
 
 /**
  * Manage known assets and components for a project and arrange to send them to the
@@ -46,12 +55,14 @@ public final class AssetManager implements ProjectChangeListener {
   private YoungAndroidAssetsFolder assetsFolder;
   private YoungAndroidComponentsFolder componentsFolder;
   private JavaScriptObject assetsTransferredCallback;
+  private List<String> extensions = new ArrayList<>();
+  private int retryCount = 0;
+  private volatile int assetTransferProgress = 0;
 
   private static AssetManager INSTANCE;
   private static boolean DEBUG = false;
   private static final String ASSETS_FOLDER = "assets";
   private static final String EXTERNAL_COMPS_FOLDER = "external_comps";
-
 
   private AssetManager() {
     exportMethodsToJavascript();
@@ -78,6 +89,7 @@ public final class AssetManager implements ProjectChangeListener {
       componentsFolder = ((YoungAndroidProjectNode) project.getRootNode()).getComponentsFolder();
       project.addProjectChangeListener(this);
       assets = new HashMap<String,AssetInfo>();
+      extensions.clear();
       // Add Asset Files
       for (ProjectNode node : assetsFolder.getChildren()) {
         if (nodeFilter(node)) {
@@ -98,6 +110,9 @@ public final class AssetManager implements ProjectChangeListener {
             continue;
           }
           else {
+            if (node.getName().equals("classes.jar")) {
+              extensions.add(node.getFileId().split("/")[2]);
+            }
             assetSetup(node);
           }
         }
@@ -158,12 +173,18 @@ public final class AssetManager implements ProjectChangeListener {
         allow = false;
 
         // Filter : For files in directly in EXTERNAL_COMPS_FOLDER/COMP_FOLDER
-        if (StringUtils.countMatches(fileId, "/") == 3) {
+        int depth = StringUtils.countMatches(fileId, "/");
+        if (depth == 3) {
 
           // Filter : For classes.jar File
           if (name.equals("classes.jar")) {
             allow = true;
 
+          }
+        } else if (depth > 3) {
+          String[] parts = fileId.split("/");
+          if (ASSETS_FOLDER.equals(parts[3])) {
+            return true;
           }
         }
       }
@@ -176,6 +197,7 @@ public final class AssetManager implements ProjectChangeListener {
       new AsyncCallback<String>() {
         @Override
           public void onSuccess(String data) {
+            assetTransferProgress++;
             assetInfo.fileContent = Base64Util.decodeLines(data);
             assetInfo.loaded = false; // Set to true when it is loaded to the repl
             assetInfo.transferred = false; // Set to true when file is received on phone
@@ -183,34 +205,50 @@ public final class AssetManager implements ProjectChangeListener {
           }
         @Override
           public void onFailure(Throwable ex) {
-          OdeLog.elog("Failed to load asset.");
+          if (retryCount > 0) {
+            retryCount--;
+            readIn(assetInfo);
+          } else {
+            OdeLog.elog("Failed to load asset.");
+          }
         }
       });
   }
 
   private void refreshAssets1(JavaScriptObject callback) {
     assetsTransferredCallback = callback;
+    assetTransferProgress = 0;
     refreshAssets1();
   }
 
   private void refreshAssets1() {
     for (AssetInfo a : assets.values()) {
       if (!a.loaded) {
-        if (a.fileContent == null) { // Need to fetch it from the server
-          readIn(a);       // Read it in asynchronously
+        if (a.fileContent == null && !useWebRTC()) { // Need to fetch it from the server
+          retryCount = 3;
+          ConnectProgressBar.setProgress(100 * assetTransferProgress / (2 * assets.size()),
+            MESSAGES.loadingAsset(a.fileId));
+          readIn(a);          // Read it in asynchronously
           break;                     // we'll resume when we have it
         } else {
-          boolean didit = doPutAsset(a.fileId, a.fileContent);
+          ConnectProgressBar.setProgress(100 * assetTransferProgress / (2 * assets.size()),
+            MESSAGES.sendingAssetToCompanion(a.fileId));
+          boolean didit = doPutAsset(Long.toString(projectId), a.fileId, a.fileContent);
           if (didit) {
+            assetTransferProgress++;
             a.loaded = true;
             a.fileContent = null; // Save memory
           }
         }
       }
     }
-    // If no assets are in the project, perform the callback immediately.
-    if (assets.values().size() == 0 && assetsTransferredCallback != null) {
-      doCallBack(assetsTransferredCallback);
+    // If no assets are in the project, close the Progress Bar and
+    // perform the callback immediately.
+    if (assets.values().size() == 0) {
+      ConnectProgressBar.hide();
+      if (assetsTransferredCallback != null) {
+        doCallBack(assetsTransferredCallback);
+      }
     }
   }
 
@@ -253,10 +291,22 @@ public final class AssetManager implements ProjectChangeListener {
         return true;
       }
     }
+    // Dismiss the progress bar if showing
+    ConnectProgressBar.hide();
     // If we get here, then all assets have been transferred to the device
     // so we fire the assetsTransferredCallback
     doCallBack(assetsTransferredCallback);
     return  true;
+  }
+
+  public static JsArrayString getExtensionsToLoad() {
+    JsArrayString result = JsArrayString.createArray().cast();
+    if (INSTANCE != null) {
+      for (String s : INSTANCE.extensions) {
+        result.push(s);
+      }
+    }
+    return result;
   }
 
   @Override
@@ -293,14 +343,20 @@ public final class AssetManager implements ProjectChangeListener {
       $entry(@com.google.appinventor.client.AssetManager::reset(Ljava/lang/String;));
     $wnd.AssetManager_markAssetTransferred =
       $entry(@com.google.appinventor.client.AssetManager::markAssetTransferred(Ljava/lang/String;));
+    $wnd.AssetManager_getExtensions =
+      $entry(@com.google.appinventor.client.AssetManager::getExtensionsToLoad());
   }-*/;
 
-  private static native boolean doPutAsset(String filename, byte[] content) /*-{
-    return Blockly.ReplMgr.putAsset(filename, content, function() { window.parent.AssetManager_markAssetTransferred(filename) });
+  private static native boolean doPutAsset(String projectId, String filename, byte[] content) /*-{
+    return Blockly.ReplMgr.putAsset(projectId, filename, content, function() { window.parent.AssetManager_markAssetTransferred(filename) });
   }-*/;
 
   private static native void doCallBack(JavaScriptObject callback) /*-{
     if (typeof callback === 'function') callback.call(null);
+  }-*/;
+
+  private static native boolean useWebRTC() /*-{
+    return top.usewebrtc;
   }-*/;
 
 }

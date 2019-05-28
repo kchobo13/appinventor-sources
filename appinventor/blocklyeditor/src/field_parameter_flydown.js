@@ -92,14 +92,14 @@ Blockly.FieldParameterFlydown.prototype.flydownBlocksXML_ = function() {
   var getterSetterXML =
        '<xml>' +
          '<block type="lexical_variable_get">' + mutation +
-           '<title name="VAR">' +
+           '<field name="VAR">' +
              name +
-           '</title>' +
+           '</field>' +
          '</block>' +
          '<block type="lexical_variable_set">' + mutation +
-           '<title name="VAR">' +
+           '<field name="VAR">' +
              name +
-           '</title>' +
+           '</field>' +
          '</block>' +
        '</xml>';
   return getterSetterXML;
@@ -148,7 +148,6 @@ Blockly.FieldParameterFlydown.addHorizontalVerticalOption = function (block, opt
     }
   }
 };
-
 
 
 
