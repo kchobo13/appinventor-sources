@@ -1,0 +1,553 @@
+
+all:
+
+init:
+
+MakeWarLibsDir:
+
+common_CommonUtils:
+
+init:
+
+CommonUtils:
+
+common_CommonVersion:
+
+init:
+
+CommonVersion:
+
+components_CommonConstants:
+
+init:
+
+CommonConstants:
+
+WarLibs:
+
+AiSharedLib:
+
+AiServerLib:
+
+components_JsonComponentDescription:
+
+init:
+
+CommonConstants:
+
+ComponentProcessingLib:
+
+HtmlEntities:
+
+common_CommonUtils:
+
+init:
+
+CommonUtils:
+
+AnnotationProcessors:
+
+common_CommonVersion:
+
+init:
+
+CommonVersion:
+
+CopyComponentLibraries:
+
+AndroidRuntime:
+
+JsonComponentDescription:
+
+components_ComponentTranslation:
+
+init:
+
+CommonConstants:
+
+ComponentProcessingLib:
+
+HtmlEntities:
+
+common_CommonUtils:
+
+init:
+
+CommonUtils:
+
+AnnotationProcessors:
+
+common_CommonVersion:
+
+init:
+
+CommonVersion:
+
+CopyComponentLibraries:
+
+AndroidRuntime:
+
+ComponentTranslation:
+
+AiClientLib:
+    [javac] Compiling 439 source files to /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/build/war/WEB-INF/classes
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:9: error: package com.google.appinventor.client.editor does not exist
+    [javac] import com.google.appinventor.client.editor.FileEditor;
+    [javac]                                            ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:10: error: package com.google.appinventor.client.editor does not exist
+    [javac] import com.google.appinventor.client.editor.ProjectEditor;
+    [javac]                                            ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:11: error: package com.google.appinventor.client.editor.blocks does not exist
+    [javac] import com.google.appinventor.client.editor.blocks.BlocklyPanel;
+    [javac]                                                   ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:13: error: package com.google.appinventor.client.explorer.commands does not exist
+    [javac] import com.google.appinventor.client.explorer.commands.AddFormCommand;
+    [javac]                                                       ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:14: error: package com.google.appinventor.client.explorer.commands does not exist
+    [javac] import com.google.appinventor.client.explorer.commands.AddVRScreenCommand;
+    [javac]                                                       ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:15: error: package com.google.appinventor.client.explorer.commands does not exist
+    [javac] import com.google.appinventor.client.explorer.commands.ChainableCommand;
+    [javac]                                                       ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:16: error: package com.google.appinventor.client.explorer.commands does not exist
+    [javac] import com.google.appinventor.client.explorer.commands.DeleteFileCommand;
+    [javac]                                                       ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:18: error: package com.google.appinventor.client.output does not exist
+    [javac] import com.google.appinventor.client.output.OdeLog;
+    [javac]                                            ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:20: error: package com.google.appinventor.client.tracking does not exist
+    [javac] import com.google.appinventor.client.tracking.Tracking;
+    [javac]                                              ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:22: error: package com.google.appinventor.client.widgets.DropDownButton does not exist
+    [javac] import com.google.appinventor.client.widgets.DropDownButton.DropDownItem;
+    [javac]                                                            ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:24: error: package com.google.appinventor.client.widgets does not exist
+    [javac] import com.google.appinventor.client.widgets.Toolbar;
+    [javac]                                             ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:28: error: package com.google.appinventor.shared.rpc.project does not exist
+    [javac] import com.google.appinventor.shared.rpc.project.ProjectRootNode;
+    [javac]                                                 ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:29: error: package com.google.appinventor.shared.rpc.project.vr does not exist
+    [javac] import com.google.appinventor.shared.rpc.project.vr.VRSourceNode;
+    [javac]                                                    ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:30: error: package com.google.appinventor.shared.rpc.project.youngandroid does not exist
+    [javac] import com.google.appinventor.shared.rpc.project.youngandroid.YoungAndroidSourceNode;
+    [javac]                                                              ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:47: error: cannot find symbol
+    [javac] import static com.google.appinventor.client.Ode.MESSAGES;
+    [javac]                                            ^
+    [javac]   symbol:   class Ode
+    [javac]   location: package com.google.appinventor.client
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:47: error: static import only from classes and interfaces
+    [javac] import static com.google.appinventor.client.Ode.MESSAGES;
+    [javac] ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:54: error: cannot find symbol
+    [javac] public class DesignToolbar extends Toolbar {
+    [javac]                                    ^
+    [javac]   symbol: class Toolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:584: error: cannot find symbol
+    [javac]   public void addScreen(long projectId, String name, FileEditor formEditor,
+    [javac]                                                      ^
+    [javac]   symbol:   class FileEditor
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:585: error: cannot find symbol
+    [javac]       FileEditor blocksEditor) {
+    [javac]       ^
+    [javac]   symbol:   class FileEditor
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:670: error: cannot find symbol
+    [javac]   public void addVRScreen(long projectId, String name, FileEditor designer, FileEditor blocks) {
+    [javac]                                                        ^
+    [javac]   symbol:   class FileEditor
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:670: error: cannot find symbol
+    [javac]   public void addVRScreen(long projectId, String name, FileEditor designer, FileEditor blocks) {
+    [javac]                                                                             ^
+    [javac]   symbol:   class FileEditor
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:109: error: cannot find symbol
+    [javac]     public boolean addScreen(String name, FileEditor formEditor, FileEditor blocksEditor) {
+    [javac]                                           ^
+    [javac]   symbol:   class FileEditor
+    [javac]   location: class DesignProject
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:109: error: cannot find symbol
+    [javac]     public boolean addScreen(String name, FileEditor formEditor, FileEditor blocksEditor) {
+    [javac]                                                                  ^
+    [javac]   symbol:   class FileEditor
+    [javac]   location: class DesignProject
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:126: error: cannot find symbol
+    [javac]     public boolean addVRScreen(String name, FileEditor vrEditor, FileEditor blocksEditor) {
+    [javac]                                             ^
+    [javac]   symbol:   class FileEditor
+    [javac]   location: class DesignProject
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:126: error: cannot find symbol
+    [javac]     public boolean addVRScreen(String name, FileEditor vrEditor, FileEditor blocksEditor) {
+    [javac]                                                                  ^
+    [javac]   symbol:   class FileEditor
+    [javac]   location: class DesignProject
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:76: error: cannot find symbol
+    [javac]     public Screen(String name, FileEditor formEditor, FileEditor blocksEditor) {
+    [javac]                                ^
+    [javac]   symbol:   class FileEditor
+    [javac]   location: class Screen
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:76: error: cannot find symbol
+    [javac]     public Screen(String name, FileEditor formEditor, FileEditor blocksEditor) {
+    [javac]                                                       ^
+    [javac]   symbol:   class FileEditor
+    [javac]   location: class Screen
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:65: error: cannot find symbol
+    [javac]     public final FileEditor designerEditor;
+    [javac]                  ^
+    [javac]   symbol:   class FileEditor
+    [javac]   location: class EditorPair
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:66: error: cannot find symbol
+    [javac]     public final FileEditor blocksEditor;
+    [javac]                  ^
+    [javac]   symbol:   class FileEditor
+    [javac]   location: class EditorPair
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:68: error: cannot find symbol
+    [javac]     public EditorPair(String name, FileEditor designerEditor, FileEditor blocksEditor) {
+    [javac]                                    ^
+    [javac]   symbol:   class FileEditor
+    [javac]   location: class EditorPair
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:68: error: cannot find symbol
+    [javac]     public EditorPair(String name, FileEditor designerEditor, FileEditor blocksEditor) {
+    [javac]                                                               ^
+    [javac]   symbol:   class FileEditor
+    [javac]   location: class EditorPair
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:82: error: cannot find symbol
+    [javac]     public VRScreen(String name, FileEditor vrEditor, FileEditor blocksEditor) {
+    [javac]                                  ^
+    [javac]   symbol:   class FileEditor
+    [javac]   location: class VRScreen
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:82: error: cannot find symbol
+    [javac]     public VRScreen(String name, FileEditor vrEditor, FileEditor blocksEditor) {
+    [javac]                                                       ^
+    [javac]   symbol:   class FileEditor
+    [javac]   location: class VRScreen
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:269: error: class DesignToolbar.AddFormAction is already defined in class DesignToolbar
+    [javac]   private class AddFormAction extends AddAction {
+    [javac]           ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/OdeMessages.java:2764: error: method mediafileParams() is already defined in interface OdeMessages
+    [javac]   String mediafileParams();
+    [javac]          ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:275: error: cannot find symbol
+    [javac]   private class AddVRScreenAction extends AddAction {
+    [javac]                                           ^
+    [javac]   symbol:   class AddAction
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/boxes/BlockSelectorBox.java:9: error: cannot find symbol
+    [javac] import com.google.appinventor.client.editor.youngandroid.BlockDrawerSelectionListener;
+    [javac]                                                         ^
+    [javac]   symbol:   class BlockDrawerSelectionListener
+    [javac]   location: package com.google.appinventor.client.editor.youngandroid
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/boxes/BlockSelectorBox.java:81: error: cannot find symbol
+    [javac]   private final Map<BlocksLanguage, TreeItem> languageTreeItems;
+    [javac]                     ^
+    [javac]   symbol:   class BlocksLanguage
+    [javac]   location: class BlockSelectorBox
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/boxes/BlockSelectorBox.java:83: error: cannot find symbol
+    [javac]   private List<BlockDrawerSelectionListener> drawerListeners;
+    [javac]                ^
+    [javac]   symbol:   class BlockDrawerSelectionListener
+    [javac]   location: class BlockSelectorBox
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/boxes/BlockSelectorBox.java:124: error: cannot find symbol
+    [javac]   public TreeItem getBuiltInBlocksTree(BlocksLanguage language) {
+    [javac]                                        ^
+    [javac]   symbol:   class BlocksLanguage
+    [javac]   location: class BlockSelectorBox
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/boxes/BlockSelectorBox.java:155: error: cannot find symbol
+    [javac]   public TreeItem getGenericComponentsTree(DesignerRootComponent form) {
+    [javac]                                            ^
+    [javac]   symbol:   class DesignerRootComponent
+    [javac]   location: class BlockSelectorBox
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/boxes/BlockSelectorBox.java:177: error: cannot find symbol
+    [javac]   public void addBlockDrawerSelectionListener(BlockDrawerSelectionListener listener) {
+    [javac]                                               ^
+    [javac]   symbol:   class BlockDrawerSelectionListener
+    [javac]   location: class BlockSelectorBox
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/boxes/BlockSelectorBox.java:181: error: cannot find symbol
+    [javac]   public void removeBlockDrawerSelectionListener(BlockDrawerSelectionListener listener) {
+    [javac]                                                  ^
+    [javac]   symbol:   class BlockDrawerSelectionListener
+    [javac]   location: class BlockSelectorBox
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/simple/SimpleVisibleComponentsPanel.java:15: error: cannot find symbol
+    [javac] import com.google.appinventor.client.explorer.project.ComponentDatabaseChangeListener;
+    [javac]                                                      ^
+    [javac]   symbol:   class ComponentDatabaseChangeListener
+    [javac]   location: package com.google.appinventor.client.explorer.project
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/simple/SimpleVisibleComponentsPanel.java:35: error: cannot find symbol
+    [javac] public final class SimpleVisibleComponentsPanel extends Composite implements DropTarget, ComponentDatabaseChangeListener {
+    [javac]                                                                                          ^
+    [javac]   symbol: class ComponentDatabaseChangeListener
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/designer/DesignerEditor.java:98: error: type SimpleVisibleComponentsPanel does not take parameters
+    [javac]   protected final SimpleVisibleComponentsPanel<T> visibleComponentsPanel;
+    [javac]                                               ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/designer/DesignerEditor.java:103: error: type SimpleVisibleComponentsPanel does not take parameters
+    [javac]                         SimpleVisibleComponentsPanel<T> visibleComponentsPanel) {
+    [javac]                                                     ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/simple/components/MockComponent.java:279: error: cannot find symbol
+    [javac]   private final ComponentDatabaseInterface COMPONENT_DATABASE;
+    [javac]                 ^
+    [javac]   symbol:   class ComponentDatabaseInterface
+    [javac]   location: class MockComponent
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/YaFormEditor.java:24: error: cannot find symbol
+    [javac] import com.google.appinventor.client.editor.simple.components.FormChangeListener;
+    [javac]                                                              ^
+    [javac]   symbol:   class FormChangeListener
+    [javac]   location: package com.google.appinventor.client.editor.simple.components
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/YaFormEditor.java:33: error: cannot find symbol
+    [javac] import com.google.appinventor.client.explorer.project.ComponentDatabaseChangeListener;
+    [javac]                                                      ^
+    [javac]   symbol:   class ComponentDatabaseChangeListener
+    [javac]   location: package com.google.appinventor.client.explorer.project
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/YaFormEditor.java:71: error: cannot find symbol
+    [javac] public final class YaFormEditor extends SimpleEditor implements FormChangeListener, ComponentDatabaseChangeListener {
+    [javac]                                                                 ^
+    [javac]   symbol: class FormChangeListener
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/YaFormEditor.java:71: error: cannot find symbol
+    [javac] public final class YaFormEditor extends SimpleEditor implements FormChangeListener, ComponentDatabaseChangeListener {
+    [javac]                                                                                     ^
+    [javac]   symbol: class ComponentDatabaseChangeListener
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/palette/YoungAndroidPalettePanel.java:18: error: cannot find symbol
+    [javac] import com.google.appinventor.client.explorer.project.ComponentDatabaseChangeListener;
+    [javac]                                                      ^
+    [javac]   symbol:   class ComponentDatabaseChangeListener
+    [javac]   location: package com.google.appinventor.client.explorer.project
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/palette/YoungAndroidPalettePanel.java:43: error: cannot find symbol
+    [javac] public class YoungAndroidPalettePanel extends Composite implements SimplePalettePanel, ComponentDatabaseChangeListener {
+    [javac]                                                                                        ^
+    [javac]   symbol: class ComponentDatabaseChangeListener
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/YaFormEditor.java:125: error: cannot find symbol
+    [javac]   private final List<ComponentDatabaseChangeListener> componentDatabaseChangeListeners = new ArrayList<ComponentDatabaseChangeListener>();
+    [javac]                      ^
+    [javac]   symbol:   class ComponentDatabaseChangeListener
+    [javac]   location: class YaFormEditor
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/palette/YoungAndroidPalettePanel.java:51: error: cannot find symbol
+    [javac]   private final Map<ComponentCategory, PaletteHelper> paletteHelpers;
+    [javac]                                        ^
+    [javac]   symbol:   class PaletteHelper
+    [javac]   location: class YoungAndroidPalettePanel
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/YaProjectEditor.java:21: error: cannot find symbol
+    [javac] import com.google.appinventor.client.explorer.project.ComponentDatabaseChangeListener;
+    [javac]                                                      ^
+    [javac]   symbol:   class ComponentDatabaseChangeListener
+    [javac]   location: package com.google.appinventor.client.explorer.project
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/YaProjectEditor.java:67: error: cannot find symbol
+    [javac] public final class YaProjectEditor extends ProjectEditor implements ProjectChangeListener, ComponentDatabaseChangeListener{
+    [javac]                                                                                            ^
+    [javac]   symbol: class ComponentDatabaseChangeListener
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/YaProjectEditor.java:93: error: cannot find symbol
+    [javac]   private final List<ComponentDatabaseChangeListener> componentDatabaseChangeListeners = new ArrayList<ComponentDatabaseChangeListener>();
+    [javac]                      ^
+    [javac]   symbol:   class ComponentDatabaseChangeListener
+    [javac]   location: class YaProjectEditor
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/YaBlocksEditor.java:16: error: cannot find symbol
+    [javac] import com.google.appinventor.client.editor.simple.components.FormChangeListener;
+    [javac]                                                              ^
+    [javac]   symbol:   class FormChangeListener
+    [javac]   location: package com.google.appinventor.client.editor.simple.components
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/YaBlocksEditor.java:25: error: cannot find symbol
+    [javac] import com.google.appinventor.client.explorer.project.ComponentDatabaseChangeListener;
+    [javac]                                                      ^
+    [javac]   symbol:   class ComponentDatabaseChangeListener
+    [javac]   location: package com.google.appinventor.client.explorer.project
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/YaBlocksEditor.java:56: error: cannot find symbol
+    [javac]     implements FormChangeListener, BlockDrawerSelectionListener, ComponentDatabaseChangeListener, BlocklyWorkspaceChangeListener {
+    [javac]                ^
+    [javac]   symbol: class FormChangeListener
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/YaBlocksEditor.java:56: error: cannot find symbol
+    [javac]     implements FormChangeListener, BlockDrawerSelectionListener, ComponentDatabaseChangeListener, BlocklyWorkspaceChangeListener {
+    [javac]                                    ^
+    [javac]   symbol: class BlockDrawerSelectionListener
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/YaBlocksEditor.java:56: error: cannot find symbol
+    [javac]     implements FormChangeListener, BlockDrawerSelectionListener, ComponentDatabaseChangeListener, BlocklyWorkspaceChangeListener {
+    [javac]                                                                  ^
+    [javac]   symbol: class ComponentDatabaseChangeListener
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/YaProjectEditor.java:685: error: cannot find symbol
+    [javac]   public void addComponentDatbaseListener(ComponentDatabaseChangeListener cdbChangeListener) {
+    [javac]                                           ^
+    [javac]   symbol:   class ComponentDatabaseChangeListener
+    [javac]   location: class YaProjectEditor
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/YaProjectEditor.java:689: error: cannot find symbol
+    [javac]   public void removeComponentDatbaseListener(ComponentDatabaseChangeListener cdbChangeListener) {
+    [javac]                                              ^
+    [javac]   symbol:   class ComponentDatabaseChangeListener
+    [javac]   location: class YaProjectEditor
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/vr/VRVisibleComponentsPanel.java:14: error: type SimpleVisibleComponentsPanel does not take parameters
+    [javac] public class VRVisibleComponentsPanel extends SimpleVisibleComponentsPanel<MockVREditor> {
+    [javac]                                                                           ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/editor/youngandroid/YaVisibleComponentsPanel.java:23: error: type SimpleVisibleComponentsPanel does not take parameters
+    [javac] public class YaVisibleComponentsPanel extends SimpleVisibleComponentsPanel<MockForm> {
+    [javac]                                                                           ^
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:103: error: cannot find symbol
+    [javac]       currentScreen = YoungAndroidSourceNode.SCREEN1_FORM_NAME;
+    [javac]                       ^
+    [javac]   symbol:   variable YoungAndroidSourceNode
+    [javac]   location: class DesignProject
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:105: error: cannot find symbol
+    [javac]       BlocklyPanel.setCurrentForm(projectId + "_" + currentScreen);
+    [javac]       ^
+    [javac]   symbol:   variable BlocklyPanel
+    [javac]   location: class DesignProject
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:127: error: cannot find symbol
+    [javac]       OdeLog.log("DesignToolbar: addVRScreen start");
+    [javac]       ^
+    [javac]   symbol:   variable OdeLog
+    [javac]   location: class DesignProject
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:128: error: cannot find symbol
+    [javac]       name = VRSourceNode.getPrefixedVRScreenName(name);
+    [javac]              ^
+    [javac]   symbol:   variable VRSourceNode
+    [javac]   location: class DesignProject
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:129: error: cannot find symbol
+    [javac]       OdeLog.log("addVRScreen: name is " + name);
+    [javac]       ^
+    [javac]   symbol:   variable OdeLog
+    [javac]   location: class DesignProject
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:132: error: cannot find symbol
+    [javac]         OdeLog.log("addVRScreen: returning true");
+    [javac]         ^
+    [javac]   symbol:   variable OdeLog
+    [javac]   location: class DesignProject
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:197: error: cannot find symbol
+    [javac]     HorizontalPanel toolbar = (HorizontalPanel) getWidget();
+    [javac]                                                 ^
+    [javac]   symbol:   method getWidget()
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:203: error: cannot find symbol
+    [javac]     addButton(new ToolbarItem(WIDGET_NAME_TUTORIAL_TOGGLE,
+    [javac]                   ^
+    [javac]   symbol:   class ToolbarItem
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:204: error: cannot find symbol
+    [javac]         MESSAGES.toggleTutorialButton(), new ToogleTutorialAction()));
+    [javac]         ^
+    [javac]   symbol:   variable MESSAGES
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:205: error: cannot find symbol
+    [javac]     setButtonVisible(WIDGET_NAME_TUTORIAL_TOGGLE, false); // Don't show unless needed
+    [javac]     ^
+    [javac]   symbol:   method setButtonVisible(String,boolean)
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:207: error: cannot find symbol
+    [javac]     List<DropDownItem> screenItems = Lists.newArrayList();
+    [javac]          ^
+    [javac]   symbol:   class DropDownItem
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:208: error: cannot find symbol
+    [javac]     addDropDownButton(WIDGET_NAME_SCREENS_DROPDOWN, MESSAGES.screensButton(), screenItems);
+    [javac]                                                     ^
+    [javac]   symbol:   variable MESSAGES
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:211: error: cannot find symbol
+    [javac]       addButton(new ToolbarItem(WIDGET_NAME_ADDFORM, MESSAGES.addFormButton(),
+    [javac]                     ^
+    [javac]   symbol:   class ToolbarItem
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:211: error: cannot find symbol
+    [javac]       addButton(new ToolbarItem(WIDGET_NAME_ADDFORM, MESSAGES.addFormButton(),
+    [javac]                                                      ^
+    [javac]   symbol:   variable MESSAGES
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:214: error: cannot find symbol
+    [javac]         addButton(new ToolbarItem(WIDGET_NAME_ADDVRSCREEN, MESSAGES.addVRScreenButton(),
+    [javac]                       ^
+    [javac]   symbol:   class ToolbarItem
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:214: error: cannot find symbol
+    [javac]         addButton(new ToolbarItem(WIDGET_NAME_ADDVRSCREEN, MESSAGES.addVRScreenButton(),
+    [javac]                                                            ^
+    [javac]   symbol:   variable MESSAGES
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:217: error: cannot find symbol
+    [javac]       addButton(new ToolbarItem(WIDGET_NAME_REMOVEFORM, MESSAGES.removeFormButton(),
+    [javac]                     ^
+    [javac]   symbol:   class ToolbarItem
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:217: error: cannot find symbol
+    [javac]       addButton(new ToolbarItem(WIDGET_NAME_REMOVEFORM, MESSAGES.removeFormButton(),
+    [javac]                                                         ^
+    [javac]   symbol:   variable MESSAGES
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:221: error: cannot find symbol
+    [javac]     addButton(new ToolbarItem(WIDGET_NAME_SWITCH_TO_FORM_EDITOR,
+    [javac]                   ^
+    [javac]   symbol:   class ToolbarItem
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:222: error: cannot find symbol
+    [javac]         MESSAGES.switchToFormEditorButton(), new SwitchToFormEditorAction()), true);
+    [javac]         ^
+    [javac]   symbol:   variable MESSAGES
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:223: error: cannot find symbol
+    [javac]     addButton(new ToolbarItem(WIDGET_NAME_SWITCH_TO_BLOCKS_EDITOR,
+    [javac]                   ^
+    [javac]   symbol:   class ToolbarItem
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:224: error: cannot find symbol
+    [javac]         MESSAGES.switchToBlocksEditorButton(), new SwitchToBlocksEditorAction()), true);
+    [javac]         ^
+    [javac]   symbol:   variable MESSAGES
+    [javac]   location: class DesignToolbar
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:251: error: cannot find symbol
+    [javac]       final ProjectRootNode projectRootNode = ode.getCurrentYoungAndroidProjectRootNode();
+    [javac]             ^
+    [javac]   symbol:   class ProjectRootNode
+    [javac]   location: class DesignToolbar.AddFormAction
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:256: error: cannot find symbol
+    [javac]               command.startExecuteChain(tracking, projectRootNode);
+    [javac]                                         ^
+    [javac]   symbol: variable tracking
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:256: error: cannot find symbol
+    [javac]               command.startExecuteChain(tracking, projectRootNode);
+    [javac]               ^
+    [javac]   symbol: variable command
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:277: error: cannot find symbol
+    [javac]       super(Tracking.PROJECT_ACTION_ADDVRSCREEN_VR, new AddVRScreenCommand());
+    [javac]             ^
+    [javac]   symbol:   variable Tracking
+    [javac]   location: class DesignToolbar.AddVRScreenAction
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:277: error: cannot find symbol
+    [javac]       super(Tracking.PROJECT_ACTION_ADDVRSCREEN_VR, new AddVRScreenCommand());
+    [javac]                                                         ^
+    [javac]   symbol:   class AddVRScreenCommand
+    [javac]   location: class DesignToolbar.AddVRScreenAction
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:288: error: cannot find symbol
+    [javac]       YoungAndroidSourceNode sourceNode = ode.getCurrentYoungAndroidSourceNode();
+    [javac]       ^
+    [javac]   symbol:   class YoungAndroidSourceNode
+    [javac]   location: class DesignToolbar.RemoveFormAction
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:295: error: cannot find symbol
+    [javac]         final String deleteConfirmationMessage = MESSAGES.reallyDeleteForm(
+    [javac]                                                  ^
+    [javac]   symbol:   variable MESSAGES
+    [javac]   location: class DesignToolbar.RemoveFormAction
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:297: error: cannot find symbol
+    [javac]         ChainableCommand cmd = new DeleteFileCommand() {
+    [javac]         ^
+    [javac]   symbol:   class ChainableCommand
+    [javac]   location: class DesignToolbar.RemoveFormAction
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:297: error: cannot find symbol
+    [javac]         ChainableCommand cmd = new DeleteFileCommand() {
+    [javac]                                    ^
+    [javac]   symbol:   class DeleteFileCommand
+    [javac]   location: class DesignToolbar.RemoveFormAction
+    [javac] /Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/src/com/google/appinventor/client/DesignToolbar.java:303: error: cannot find symbol
+    [javac]         cmd.startExecuteChain(Tracking.PROJECT_ACTION_REMOVEFORM_YA, sourceNode);
+    [javac]                               ^
+    [javac]   symbol:   variable Tracking
+    [javac]   location: class DesignToolbar.RemoveFormAction
+    [javac] Note: Some input files use or override a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation for details.
+    [javac] Note: Some input files use unchecked or unsafe operations.
+    [javac] Note: Recompile with -Xlint:unchecked for details.
+    [javac] Note: Some messages have been simplified; recompile with -Xdiags:verbose to get full output
+    [javac] 100 errors
+
+BUILD FAILED
+/Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/build.xml:16: The following error occurred while executing this line:
+/Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/appengine/build.xml:429: The following error occurred while executing this line:
+/Users/kcho13/Documents/MIT/MENG/appinventor-sources/appinventor/build-common.xml:125: Compile failed; see the compiler error output for details.
+
+Total time: 9 seconds
