@@ -16,7 +16,7 @@ goog.require('Blockly.Blocks.Utilities');
 
 Blockly.Blocks['text'] = {
   // Text value.
-  category: 'VR_Text',
+  category: 'Text',
   helpUrl: Blockly.Msg.LANG_TEXT_TEXT_HELPURL,
   init: function () {
     this.setColour(Blockly.TEXT_CATEGORY_HUE);
@@ -45,7 +45,7 @@ Blockly.Blocks.text.connectionCheck = function (myConnection, otherConnection) {
 Blockly.Blocks['text_join'] = {
   // Create a string made up of any number of elements of any type.
   // TODO: (Andrew) Make this handle multiple arguments.
-  category: 'VR_Text',
+  category: 'Text',
   helpUrl: Blockly.Msg.LANG_TEXT_JOIN_HELPURL,
   init: function () {
     this.setColour(Blockly.TEXT_CATEGORY_HUE);
@@ -99,7 +99,7 @@ Blockly.Blocks['text_join_item'] = {
 
 Blockly.Blocks['text_length'] = {
   // String length.
-  category: 'VR_Text',
+  category: 'Text',
   helpUrl: Blockly.Msg.LANG_TEXT_LENGTH_HELPURL,
   init: function () {
     this.setColour(Blockly.TEXT_CATEGORY_HUE);

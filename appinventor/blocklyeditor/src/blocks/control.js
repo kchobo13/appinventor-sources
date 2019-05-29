@@ -39,7 +39,7 @@ goog.require('Blockly.Blocks.Utilities');
 
 Blockly.Blocks['controls_if'] = {
   // If/elseif/else condition.
-  category: 'VR_Controls',
+  category: 'Controls',
   helpUrl: Blockly.Msg.LANG_CONTROLS_IF_HELPURL,
   init: function () {
     this.setColour(Blockly.CONTROL_CATEGORY_HUE);
@@ -237,7 +237,7 @@ Blockly.Blocks['controls_if_else'] = {
 
 Blockly.Blocks['controls_forRange'] = {
   // For range.
-  category: 'VR_Controls',
+  category: 'Controls',
   helpUrl: Blockly.Msg.LANG_CONTROLS_FORRANGE_HELPURL,
   init: function () {
     this.setColour(Blockly.CONTROL_CATEGORY_HUE);
@@ -424,7 +424,7 @@ Blockly.Blocks['controls_forEach'] = {
 
 Blockly.Blocks['controls_while'] = {
   // While condition.
-  category: 'VR_Controls',
+  category: 'Controls',
   helpUrl: Blockly.Msg.LANG_CONTROLS_WHILE_HELPURL,
   init: function () {
     this.setColour(Blockly.CONTROL_CATEGORY_HUE);
@@ -515,7 +515,7 @@ Blockly.Blocks['controls_eval_but_ignore'] = {
 
 Blockly.Blocks['controls_openAnotherScreen'] = {
   // Open another screen
-  category: 'VR_Controls',
+  category: 'Controls',
   helpUrl: Blockly.Msg.LANG_CONTROLS_OPEN_ANOTHER_SCREEN_HELPURL,
   init: function () {
     this.setColour(Blockly.CONTROL_CATEGORY_HUE);
@@ -532,7 +532,7 @@ Blockly.Blocks['controls_openAnotherScreen'] = {
 
 Blockly.Blocks['controls_openAnotherScreenWithStartValue'] = {
   // Open another screen with start value
-  category: 'VR_Controls',
+  category: 'Controls',
   helpUrl: Blockly.Msg.LANG_CONTROLS_OPEN_ANOTHER_SCREEN_WITH_START_VALUE_HELPURL,
   init: function () {
     this.setColour(Blockly.CONTROL_CATEGORY_HUE);

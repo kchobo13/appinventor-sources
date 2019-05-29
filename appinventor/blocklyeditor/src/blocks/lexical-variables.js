@@ -84,7 +84,7 @@ goog.require('goog.dom');
  */
 Blockly.Blocks['global_declaration'] = {
   // Global var defn
-  category: 'VR_Variables',
+  category: 'Variables',
   helpUrl: Blockly.Msg.LANG_VARIABLES_GLOBAL_DECLARATION_HELPURL,
   init: function() {
     this.setColour(Blockly.VARIABLE_CATEGORY_HUE);
@@ -111,7 +111,7 @@ Blockly.Blocks['global_declaration'] = {
  */
 Blockly.Blocks['lexical_variable_get'] = {
   // Variable getter.
-  category: 'VR_Variables',
+  category: 'Variables',
   helpUrl: Blockly.Msg.LANG_VARIABLES_GET_HELPURL,
   init: function() {
     this.setColour(Blockly.VARIABLE_CATEGORY_HUE);
@@ -171,7 +171,7 @@ Blockly.Blocks['lexical_variable_get'] = {
  */
 Blockly.Blocks['lexical_variable_set'] = {
   // Variable setter.
-  category: 'VR_Variables',
+  category: 'Variables',
   helpUrl: Blockly.Msg.LANG_VARIABLES_SET_HELPURL, // *** [lyn, 11/10/12] Fix this
   init: function() {
     this.setColour(Blockly.VARIABLE_CATEGORY_HUE);
