@@ -11,7 +11,7 @@ import static com.google.appinventor.client.Ode.MESSAGES;
 import com.google.appinventor.client.ErrorReporter;
 import com.google.appinventor.client.Ode;
 import com.google.appinventor.client.OdeAsyncCallback;
-import com.google.appinventor.client.editor.blocks.BlocksCodeGenerationException;
+import com.google.appinventor.client.editor.youngandroid.BlocksCodeGenerationException;
 import com.google.appinventor.client.editor.youngandroid.YaBlocksEditor;
 import com.google.appinventor.client.editor.vr.VRBlocksEditor;
 import com.google.appinventor.client.explorer.project.Project;

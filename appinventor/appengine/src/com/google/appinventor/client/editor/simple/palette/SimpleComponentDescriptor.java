@@ -60,7 +60,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Widget;
 
-import java.util.Map
+import java.util.Map;
 
 /**
  * Descriptor for components on the component palette panel.

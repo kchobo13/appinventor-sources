@@ -2,7 +2,7 @@
 // Copyright © 2017 Massachusetts Institute of Technology, All rights reserved
 package com.google.appinventor.client.editor.vr;
 
-import com.google.appinventor.client.editor.blocks.BlocklyPanel;
+import com.google.appinventor.client.editor.youngandroid.BlocklyPanel;
 import com.google.appinventor.client.editor.blocks.BlocksCategory;
 import com.google.appinventor.client.editor.blocks.BlocksCodeGenerationException;
 import com.google.appinventor.client.editor.blocks.BlocksCodeGenerationTarget;

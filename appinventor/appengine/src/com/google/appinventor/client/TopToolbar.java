@@ -8,7 +8,7 @@ package com.google.appinventor.client;
 
 import com.google.appinventor.client.boxes.ProjectListBox;
 import com.google.appinventor.client.boxes.ViewerBox;
-import com.google.appinventor.client.editor.blocks.BlocklyPanel;
+import com.google.appinventor.client.editor.youngandroid.BlocklyPanel;
 import com.google.appinventor.client.editor.youngandroid.YaBlocksEditor;
 import com.google.appinventor.client.editor.vr.VRBlocksEditor;
 import com.google.appinventor.client.explorer.commands.BuildCommand;
