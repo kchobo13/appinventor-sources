@@ -19,6 +19,7 @@ Blockly.WarningHandler = function(workspace) {
   this.allBlockErrors = [{name:'checkReplErrors'}];
   this.allBlockWarnings = [{name:'checkBlockAtRoot'},{name:'checkEmptySockets'}];
   this.cachedGlobalNames = [];
+  this.vrScreen = false;
   this.showWarningsToggle = false;
 };
 
@@ -81,12 +82,25 @@ Blockly.WarningHandler.prototype.checkAllBlocksForWarningsAndErrors = function()
     var topBlocks = this.workspace.getTopBlocks();
   }
   var allBlocks = this.workspace.getAllBlocks();
+  for(var i=0;i<allBlocks.length;i++) {
+    var block = allBlocks[i];
+    if (block.category.includes("VR")) {
+      this.vrScreen = true;
+      break;
+    }
+    this.vrScreen = false;
+  }
+
   try {
     if (Blockly.Instrument.useLynCacheGlobalNames) {
       // Compute and cache the list of global names once only
       // so that each call to checkDropDownContainsValidValue needn't recalculate this.
       this.cacheGlobalNames = false; // Set to false to actually compute names in next line.
-      this.cachedGlobalNames = Blockly.FieldLexicalVariable.getGlobalNames();
+      if (this.vrScreen) {
+        this.cachedGlobalNames = Blockly.FieldLexicalVariableVR.getGlobalNames();
+      } else {
+        this.cachedGlobalNames = Blockly.FieldLexicalVariable.getGlobalNames();
+      }
       this.cacheGlobalNames = true;
     }
     for(var i=0;i<allBlocks.length;i++) {

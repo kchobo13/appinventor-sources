@@ -221,7 +221,7 @@ Blockly.JavaScript["vr_get_window_size"] = function() {
   return [js, Blockly.JavaScript.ORDER_ATOMIC];
 }
 
-Blockly.JavaScript["controls_if"] = function() {
+Blockly.JavaScript["vr_controls_if"] = function() {
   var js = "";
   for (var i = 0; i <= this.elseifCount_; i++) {
     if (i !== 0) {
@@ -235,7 +235,7 @@ Blockly.JavaScript["controls_if"] = function() {
   return js;
 }
 
-Blockly.JavaScript["controls_forRange"] = function() {
+Blockly.JavaScript["vr_controls_forRange"] = function() {
   var op = "";
   var step = "";
   var index = this.getFieldValue("VAR");
@@ -364,7 +364,7 @@ Blockly.JavaScript["vr_logic_boolean"] = function() {
 }
 
 Blockly.JavaScript["vr_logic_false"] = function() {
-  return Blockly.JavaScript.logic_boolean.call(this);
+  return Blockly.JavaScript.vr_logic_boolean.call(this);
 }
 
 Blockly.JavaScript["vr_logic_negate"] = function() {

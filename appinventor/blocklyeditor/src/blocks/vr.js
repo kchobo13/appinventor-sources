@@ -19,7 +19,7 @@ Blockly.Blocks['vr_global_declaration'] = {
     this.setColour(Blockly.VARIABLE_CATEGORY_HUE);
     this.appendValueInput('VALUE')
         .appendField(Blockly.Msg.LANG_VARIABLES_GLOBAL_DECLARATION_TITLE_INIT)
-        .appendField(new Blockly.FieldGlobalFlydown(Blockly.Msg.LANG_VARIABLES_GLOBAL_DECLARATION_NAME,
+        .appendField(new Blockly.FieldGlobalFlydownVR(Blockly.Msg.LANG_VARIABLES_GLOBAL_DECLARATION_NAME,
                                                     Blockly.FieldFlydown.DISPLAY_BELOW), 'NAME')
         .appendField(Blockly.Msg.LANG_VARIABLES_GLOBAL_DECLARATION_TO);
     this.setTooltip(Blockly.Msg.LANG_VARIABLES_GLOBAL_DECLARATION_TOOLTIP);
@@ -45,7 +45,7 @@ Blockly.Blocks['vr_lexical_variable_get'] = {
   helpUrl: Blockly.Msg.LANG_VARIABLES_GET_HELPURL,
   init: function() {
     this.setColour(Blockly.VARIABLE_CATEGORY_HUE);
-    this.fieldVar_ = new Blockly.FieldLexicalVariable(" ");
+    this.fieldVar_ = new Blockly.FieldLexicalVariableVR(" ");
     this.fieldVar_.setBlock(this);
     this.appendDummyInput()
         .appendField(Blockly.Msg.LANG_VARIABLES_GET_TITLE_GET)
@@ -55,10 +55,10 @@ Blockly.Blocks['vr_lexical_variable_get'] = {
     this.errors = [{name:"checkIsInDefinition"},{name:"checkDropDownContainsValidValue",dropDowns:["VAR"]}];
   },
   mutationToDom: function() { // Handle getters for event parameters specially (to support i8n)
-    return Blockly.LexicalVariable.eventParamMutationToDom(this);
+    return Blockly.LexicalVariableVR.eventParamMutationToDom(this);
   },
   domToMutation: function(xmlElement) { // Handler getters for event parameters specially (to support i8n)
-    Blockly.LexicalVariable.eventParamDomToMutation(this, xmlElement);
+    Blockly.LexicalVariableVR.eventParamDomToMutation(this, xmlElement);
   },
   getVars: function() {
     return this.getFieldValue('VAR');
@@ -105,7 +105,7 @@ Blockly.Blocks['vr_lexical_variable_set'] = {
   helpUrl: Blockly.Msg.LANG_VARIABLES_SET_HELPURL, // *** [lyn, 11/10/12] Fix this
   init: function() {
     this.setColour(Blockly.VARIABLE_CATEGORY_HUE);
-    this.fieldVar_ = new Blockly.FieldLexicalVariable(" ");
+    this.fieldVar_ = new Blockly.FieldLexicalVariableVR(" ");
     this.fieldVar_.setBlock(this);
     this.appendValueInput('VALUE')
         .appendField(Blockly.Msg.LANG_VARIABLES_SET_TITLE_SET)
@@ -117,10 +117,10 @@ Blockly.Blocks['vr_lexical_variable_set'] = {
     this.errors = [{name:"checkIsInDefinition"},{name:"checkDropDownContainsValidValue",dropDowns:["VAR"]}];
   },
   mutationToDom: function() { // Handle setters for event parameters specially (to support i8n)
-    return Blockly.LexicalVariable.eventParamMutationToDom(this);
+    return Blockly.LexicalVariableVR.eventParamMutationToDom(this);
   },
   domToMutation: function(xmlElement) { // Handler setters for event parameters specially (to support i8n)
-    Blockly.LexicalVariable.eventParamDomToMutation(this, xmlElement);
+    Blockly.LexicalVariableVR.eventParamDomToMutation(this, xmlElement);
   },
   getVars: function() {
     return this.getFieldValue('VAR');
@@ -139,11 +139,11 @@ Blockly.Blocks['vr_lexical_variable_set'] = {
       }
     }
     // [lyn, 06/26/2014] Don't forget to rename children!
-    this.getChildren().map( function(blk) { Blockly.LexicalVariable.renameFree(blk, freeSubstitution); })
+    this.getChildren().map( function(blk) { Blockly.LexicalVariableVR.renameFree(blk, freeSubstitution); })
   },
   freeVariables: function() { // return the free lexical variables of this block
     // [lyn, 06/27/2014] Find free vars of *all* children, including subsequent commands in NEXT slot.
-    var childrenFreeVars = this.getChildren().map( function(blk) { return Blockly.LexicalVariable.freeVariables(blk); } );
+    var childrenFreeVars = this.getChildren().map( function(blk) { return Blockly.LexicalVariableVR.freeVariables(blk); } );
     var result = Blockly.NameSet.unionAll(childrenFreeVars);
     var prefixPair = Blockly.unprefixName(this.getFieldValue('VAR'));
     var prefix = prefixPair[0];
@@ -2071,32 +2071,32 @@ Blockly.Blocks['vr_controls_forRange'] = {
     }
   },
   renameBound: function (boundSubstitution, freeSubstitution) {
-    Blockly.LexicalVariable.renameFree(this.getInputTargetBlock('START'), freeSubstitution);
-    Blockly.LexicalVariable.renameFree(this.getInputTargetBlock('END'), freeSubstitution);
-    Blockly.LexicalVariable.renameFree(this.getInputTargetBlock('STEP'), freeSubstitution);
+    Blockly.LexicalVariableVR.renameFree(this.getInputTargetBlock('START'), freeSubstitution);
+    Blockly.LexicalVariableVR.renameFree(this.getInputTargetBlock('END'), freeSubstitution);
+    Blockly.LexicalVariableVR.renameFree(this.getInputTargetBlock('STEP'), freeSubstitution);
     var oldIndexVar = this.getFieldValue('VAR');
     var newIndexVar = boundSubstitution.apply(oldIndexVar);
     if (newIndexVar !== oldIndexVar) {
       this.renameVar(oldIndexVar, newIndexVar);
       var indexSubstitution = Blockly.Substitution.simpleSubstitution(oldIndexVar, newIndexVar);
       var extendedFreeSubstitution = freeSubstitution.extend(indexSubstitution);
-      Blockly.LexicalVariable.renameFree(this.getInputTargetBlock('DO'), extendedFreeSubstitution);
+      Blockly.LexicalVariableVR.renameFree(this.getInputTargetBlock('DO'), extendedFreeSubstitution);
     } else {
       var removedFreeSubstitution = freeSubstitution.remove([oldIndexVar]);
-      Blockly.LexicalVariable.renameFree(this.getInputTargetBlock('DO'), removedFreeSubstitution);
+      Blockly.LexicalVariableVR.renameFree(this.getInputTargetBlock('DO'), removedFreeSubstitution);
     }
     if (this.nextConnection) {
       var nextBlock = this.nextConnection.targetBlock();
-      Blockly.LexicalVariable.renameFree(nextBlock, freeSubstitution);
+      Blockly.LexicalVariableVR.renameFree(nextBlock, freeSubstitution);
     }
   },
   renameFree: function (freeSubstitution) {
     var indexVar = this.getFieldValue('VAR');
-    var bodyFreeVars = Blockly.LexicalVariable.freeVariables(this.getInputTargetBlock('DO'));
+    var bodyFreeVars = Blockly.LexicalVariableVR.freeVariables(this.getInputTargetBlock('DO'));
     bodyFreeVars.deleteName(indexVar);
     var renamedBodyFreeVars = bodyFreeVars.renamed(freeSubstitution);
     if (renamedBodyFreeVars.isMember(indexVar)) { // Variable capture!
-      var newIndexVar = Blockly.FieldLexicalVariable.nameNotIn(indexVar, renamedBodyFreeVars.toList());
+      var newIndexVar = Blockly.FieldLexicalVariableVR.nameNotIn(indexVar, renamedBodyFreeVars.toList());
       var boundSubstitution = Blockly.Substitution.simpleSubstitution(indexVar, newIndexVar);
       this.renameBound(boundSubstitution, freeSubstitution);
     } else {
@@ -2104,14 +2104,14 @@ Blockly.Blocks['vr_controls_forRange'] = {
     }
   },
   freeVariables: function () { // return the free variables of this block
-    var result = Blockly.LexicalVariable.freeVariables(this.getInputTargetBlock('DO'));
+    var result = Blockly.LexicalVariableVR.freeVariables(this.getInputTargetBlock('DO'));
     result.deleteName(this.getFieldValue('VAR')); // Remove bound index variable from body free vars
-    result.unite(Blockly.LexicalVariable.freeVariables(this.getInputTargetBlock('START')));
-    result.unite(Blockly.LexicalVariable.freeVariables(this.getInputTargetBlock('END')));
-    result.unite(Blockly.LexicalVariable.freeVariables(this.getInputTargetBlock('STEP')));
+    result.unite(Blockly.LexicalVariableVR.freeVariables(this.getInputTargetBlock('START')));
+    result.unite(Blockly.LexicalVariableVR.freeVariables(this.getInputTargetBlock('END')));
+    result.unite(Blockly.LexicalVariableVR.freeVariables(this.getInputTargetBlock('STEP')));
     if (this.nextConnection) {
       var nextBlock = this.nextConnection.targetBlock();
-      result.unite(Blockly.LexicalVariable.freeVariables(nextBlock));
+      result.unite(Blockly.LexicalVariableVR.freeVariables(nextBlock));
     }
     return result;
   },
@@ -2162,30 +2162,30 @@ Blockly.Blocks['vr_controls_forRange'] = {
 //     }
 //   },
 //   renameBound: function (boundSubstitution, freeSubstitution) {
-//     Blockly.LexicalVariable.renameFree(this.getInputTargetBlock('LIST'), freeSubstitution);
+//     Blockly.LexicalVariableVR.renameFree(this.getInputTargetBlock('LIST'), freeSubstitution);
 //     var oldIndexVar = this.getFieldValue('VAR');
 //     var newIndexVar = boundSubstitution.apply(oldIndexVar);
 //     if (newIndexVar !== oldIndexVar) {
 //       this.renameVar(oldIndexVar, newIndexVar);
 //       var indexSubstitution = Blockly.Substitution.simpleSubstitution(oldIndexVar, newIndexVar);
 //       var extendedFreeSubstitution = freeSubstitution.extend(indexSubstitution);
-//       Blockly.LexicalVariable.renameFree(this.getInputTargetBlock('DO'), extendedFreeSubstitution);
+//       Blockly.LexicalVariableVR.renameFree(this.getInputTargetBlock('DO'), extendedFreeSubstitution);
 //     } else {
 //       var removedFreeSubstitution = freeSubstitution.remove([oldIndexVar]);
-//       Blockly.LexicalVariable.renameFree(this.getInputTargetBlock('DO'), removedFreeSubstitution);
+//       Blockly.LexicalVariableVR.renameFree(this.getInputTargetBlock('DO'), removedFreeSubstitution);
 //     }
 //     if (this.nextConnection) {
 //       var nextBlock = this.nextConnection.targetBlock();
-//       Blockly.LexicalVariable.renameFree(nextBlock, freeSubstitution);
+//       Blockly.LexicalVariableVR.renameFree(nextBlock, freeSubstitution);
 //     }
 //   },
 //   renameFree: function (freeSubstitution) {
 //     var indexVar = this.getFieldValue('VAR');
-//     var bodyFreeVars = Blockly.LexicalVariable.freeVariables(this.getInputTargetBlock('DO'));
+//     var bodyFreeVars = Blockly.LexicalVariableVR.freeVariables(this.getInputTargetBlock('DO'));
 //     bodyFreeVars.deleteName(indexVar);
 //     var renamedBodyFreeVars = bodyFreeVars.renamed(freeSubstitution);
 //     if (renamedBodyFreeVars.isMember(indexVar)) { // Variable capture!
-//       var newIndexVar = Blockly.FieldLexicalVariable.nameNotIn(indexVar, renamedBodyFreeVars.toList());
+//       var newIndexVar = Blockly.FieldLexicalVariableVR.nameNotIn(indexVar, renamedBodyFreeVars.toList());
 //       var boundSubstitution = Blockly.Substitution.simpleSubstitution(indexVar, newIndexVar);
 //       this.renameBound(boundSubstitution, freeSubstitution);
 //     } else {
@@ -2193,12 +2193,12 @@ Blockly.Blocks['vr_controls_forRange'] = {
 //     }
 //   },
 //   freeVariables: function () { // return the free variables of this block
-//     var result = Blockly.LexicalVariable.freeVariables(this.getInputTargetBlock('DO'));
+//     var result = Blockly.LexicalVariableVR.freeVariables(this.getInputTargetBlock('DO'));
 //     result.deleteName(this.getFieldValue('VAR')); // Remove bound index variable from body free vars
-//     result.unite(Blockly.LexicalVariable.freeVariables(this.getInputTargetBlock('LIST')));
+//     result.unite(Blockly.LexicalVariableVR.freeVariables(this.getInputTargetBlock('LIST')));
 //     if (this.nextConnection) {
 //       var nextBlock = this.nextConnection.targetBlock();
-//       result.unite(Blockly.LexicalVariable.freeVariables(nextBlock));
+//       result.unite(Blockly.LexicalVariableVR.freeVariables(nextBlock));
 //     }
 //     return result;
 //   },
