@@ -11,51 +11,51 @@ Blockly.JavaScript["vr_color_black"] = function() {
 }
 
 Blockly.JavaScript["vr_color_white"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
 Blockly.JavaScript["vr_color_red"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
 Blockly.JavaScript["vr_color_pink"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
 Blockly.JavaScript["vr_color_orange"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
 Blockly.JavaScript["vr_color_yellow"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
 Blockly.JavaScript["vr_color_green"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
 Blockly.JavaScript["vr_color_cyan"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
 Blockly.JavaScript["vr_color_blue"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
 Blockly.JavaScript["vr_color_magenta"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
 Blockly.JavaScript["vr_color_light_gray"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
 Blockly.JavaScript["vr_color_gray"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
 Blockly.JavaScript["vr_color_dark_gray"] = function() {
-  return Blockly.JavaScript.color_black.call(this);
+  return Blockly.JavaScript.vr_color_black.call(this);
 }
 
 Blockly.JavaScript["vr_color_make_color"] = function() {
@@ -392,7 +392,7 @@ Blockly.JavaScript["vr_logic_operation"] = function() {
 }
 
 Blockly.JavaScript["vr_logic_or"] = function() {
-  return Blockly.JavaScript.logic_operation.call(this);
+  return Blockly.JavaScript.vr_logic_operation.call(this);
 }
 
 Blockly.JavaScript["vr_math_number"] = function() {
@@ -510,23 +510,23 @@ Blockly.JavaScript["vr_math_single"] = function() {
 }
 
 Blockly.JavaScript["vr_math_abs"] = function() {
-  return Blockly.JavaScript.math_single.call(this);
+  return Blockly.JavaScript.vr_math_single.call(this);
 }
 
 Blockly.JavaScript["vr_math_neg"] = function() {
-  return Blockly.JavaScript.math_single.call(this);
+  return Blockly.JavaScript.vr_math_single.call(this);
 }
 
 Blockly.JavaScript["vr_math_round"] = function() {
-  return Blockly.JavaScript.math_single.call(this);
+  return Blockly.JavaScript.vr_math_single.call(this);
 }
 
 Blockly.JavaScript["vr_math_ceiling"] = function() {
-  return Blockly.JavaScript.math_single.call(this);
+  return Blockly.JavaScript.vr_math_single.call(this);
 }
 
 Blockly.JavaScript["vr_math_floor"] = function() {
-  return Blockly.JavaScript.math_single.call(this);
+  return Blockly.JavaScript.vr_math_single.call(this);
 }
 
 Blockly.JavaScript["vr_math_trig"] = function() {
@@ -555,11 +555,11 @@ Blockly.JavaScript["vr_math_trig"] = function() {
 }
 
 Blockly.JavaScript["vr_math_cos"] = function() {
-  return Blockly.JavaScript.math_trig.call(this);
+  return Blockly.JavaScript.vr_math_trig.call(this);
 }
 
 Blockly.JavaScript["vr_math_tan"] = function() {
-  return Blockly.JavaScript.math_trig.call(this);
+  return Blockly.JavaScript.vr_math_trig.call(this);
 }
 
 Blockly.JavaScript["vr_object"] = function() {
