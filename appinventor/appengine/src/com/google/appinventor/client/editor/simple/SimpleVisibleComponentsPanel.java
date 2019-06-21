@@ -13,6 +13,8 @@ import com.google.appinventor.client.widgets.dnd.DropTarget;
 import com.google.appinventor.shared.simple.ComponentDatabaseChangeListener;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.ListBox;
+
 
 import java.util.List;
 import java.util.Map;
@@ -23,6 +25,7 @@ import java.util.Map;
  */
 public abstract class SimpleVisibleComponentsPanel<T extends DesignerRootComponent>
     extends Composite implements DropTarget, ComponentDatabaseChangeListener {
+
   // Corresponding panel for non-visible components (because we allow users to drop
   // non-visible components onto the root, but we show them in the non-visible
   // components panel)

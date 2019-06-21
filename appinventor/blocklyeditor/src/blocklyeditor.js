@@ -20,6 +20,11 @@ goog.require('AI.Blockly.Drawer');
 // App Inventor extensions to Blockly
 goog.require('Blockly.TypeBlock');
 
+goog.require('Blockly.Flyout');
+
+// Make dragging a block from flyout work in any direction (default: 70)
+Blockly.Flyout.prototype.dragAngleRange_ = 360;
+
 if (Blockly.BlocklyEditor === undefined) {
   Blockly.BlocklyEditor = {};
 }
@@ -35,6 +40,39 @@ Blockly.configForTypeBlock = {
 Blockly.BlocklyEditor.render = function() {
 };
 
+function unboundVariableHandler(myBlock, yailText) {
+  var unbound_vars = Blockly.LexicalVariable.freeVariables(myBlock);
+  unbound_vars = unbound_vars.toList();
+  if (unbound_vars.length == 0) {
+    Blockly.ReplMgr.putYail(yailText, myBlock);
+  } else {
+    var form = "<form onsubmit='return false;'>" + Blockly.Msg.DIALOG_ENTER_VALUES + "<br>";
+    for (var v in unbound_vars) {
+      form  +=  unbound_vars[v] + ' = <input type=text name=' + unbound_vars[v] + '><br>';
+    }
+    form += "</form>";
+    var dialog = new Blockly.Util.Dialog(Blockly.Msg.DIALOG_UNBOUND_VAR, form, Blockly.Msg.DO_IT, false, Blockly.Msg.REPL_CANCEL, 10, function (button) {
+      if (button == Blockly.Msg.DIALOG_SUBMIT) {
+        var code = "(let (";
+        for (var i in unbound_vars) {
+          code += '($' + unbound_vars[i] + ' ' + Blockly.Yail.quotifyForREPL(document.querySelector('input[name="' + unbound_vars[i] + '"]').value) + ') ';
+        };
+        code += ")" + yailText + ")";
+        Blockly.ReplMgr.putYail(code, myBlock);
+      }
+      dialog.hide();
+    });
+  };
+}
+
+Blockly.BlocklyEditor.addPngExportOption = function(myBlock, options) {
+  var downloadBlockOption = {enabled: true, text: Blockly.Msg.DOWNLOAD_BLOCKS_AS_PNG};
+  downloadBlockOption.callback = function() {
+    Blockly.exportBlockAsPng(myBlock);
+  };
+  options.splice(options.length - 1, 0, downloadBlockOption);
+};
+
 /**
  * Add a "Do It" option to the context menu for every block. If the user is an admin also
  * add a "Generate Yail" option to the context menu for every block. The generated yail will go in
@@ -44,7 +82,7 @@ Blockly.BlocklyEditor.render = function() {
  */
 Blockly.Block.prototype.customContextMenu = function(options) {
   var myBlock = this;
-  var doitOption = { enabled: !this.disabled};
+  Blockly.BlocklyEditor.addPngExportOption(myBlock, options);
   if (window.parent.BlocklyPanel_checkIsAdmin()) {
     var yailOption = {enabled: !this.disabled};
     yailOption.text = Blockly.Msg.GENERATE_YAIL;
@@ -62,6 +100,8 @@ Blockly.Block.prototype.customContextMenu = function(options) {
     };
     options.push(yailOption);
   }
+  var connectedToRepl = top.ReplState.state === Blockly.ReplMgr.rsState.CONNECTED;
+  var doitOption = { enabled: !this.disabled && connectedToRepl};
   doitOption.text = Blockly.Msg.DO_IT;
   doitOption.callback = function() {
     var yailText;
@@ -69,8 +109,8 @@ Blockly.Block.prototype.customContextMenu = function(options) {
     //and an array if the block is a value
     var yailTextOrArray = Blockly.Yail.blockToCode1(myBlock);
     var dialog;
-    if (window.parent.ReplState.state != Blockly.ReplMgr.rsState.CONNECTED) {
-      dialog = new goog.ui.Dialog(null, true);
+    if (!connectedToRepl) {
+      dialog = new goog.ui.Dialog(null, true, new goog.dom.DomHelper(top.document));
       dialog.setTitle(Blockly.Msg.CAN_NOT_DO_IT);
       dialog.setTextContent(Blockly.Msg.CONNECT_TO_DO_IT);
       dialog.setButtonSet(new goog.ui.Dialog.ButtonSet().
@@ -83,7 +123,7 @@ Blockly.Block.prototype.customContextMenu = function(options) {
       } else {
         yailText = yailTextOrArray;
       }
-      Blockly.ReplMgr.putYail(yailText, myBlock);
+      unboundVariableHandler(myBlock, yailText);
     }
   };
   options.push(doitOption);
@@ -99,6 +139,20 @@ Blockly.Block.prototype.customContextMenu = function(options) {
   }
   if(myBlock.procCustomContextMenu){
     myBlock.procCustomContextMenu(options);
+  }
+};
+
+Blockly.Block.prototype.flyoutCustomContextMenu = function(menuOptions) {
+  // Option for the backpack.
+  if (this.workspace.isBackpack) {
+    var id = this.id;
+    var removeOption = {enabled: true};
+    removeOption.text = Blockly.Msg.REMOVE_FROM_BACKPACK;
+    var backpack = this.workspace.targetWorkspace.backpack_;
+    removeOption.callback = function() {
+      backpack.removeFromBackpack([id]);
+    };
+    menuOptions.splice(menuOptions.length - 1, 0, removeOption);
   }
 };
 
@@ -136,7 +190,6 @@ Blockly.usePrefixInYail = false;
      + maybe index variables have prefix "index", or maybe instead they are treated as "param"
 */
 
-Blockly.globalNamePrefix = "global"; // For names introduced by global variable declarations
 Blockly.procedureParameterPrefix = "input"; // For names introduced by procedure/function declarations
 Blockly.handlerParameterPrefix = "input"; // For names introduced by event handlers
 Blockly.localNamePrefix = "local"; // For names introduced by local variable declarations
@@ -163,14 +216,14 @@ function (prefix) {
 };
 
 Blockly.prefixGlobalMenuName = function (name) {
-  return Blockly.globalNamePrefix + Blockly.menuSeparator + name;
+  return Blockly.Msg.LANG_VARIABLES_GLOBAL_PREFIX + Blockly.menuSeparator + name;
 };
 
 // Return a list of (1) prefix (if it exists, "" if not) and (2) unprefixed name
 Blockly.unprefixName = function (name) {
-  if (name.indexOf(Blockly.globalNamePrefix + Blockly.menuSeparator) == 0) {
+  if (name.indexOf(Blockly.Msg.LANG_VARIABLES_GLOBAL_PREFIX + Blockly.menuSeparator) == 0) {
     // Globals always have prefix, regardless of flags. Handle these specially
-    return [Blockly.globalNamePrefix, name.substring(Blockly.globalNamePrefix.length + Blockly.menuSeparator.length)];
+    return [Blockly.Msg.LANG_VARIABLES_GLOBAL_PREFIX, name.substring(Blockly.Msg.LANG_VARIABLES_GLOBAL_PREFIX.length + Blockly.menuSeparator.length)];
   } else if (!Blockly.showPrefixToUser) {
     return ["", name];
   } else {
@@ -179,7 +232,7 @@ Blockly.unprefixName = function (name) {
                     Blockly.localNamePrefix,
                     Blockly.loopParameterPrefix,
                     Blockly.loopRangeParameterPrefix];
-    for (i=0; i < prefixes.length; i++) {
+    for (var i=0; i < prefixes.length; i++) {
       if (name.indexOf(prefixes[i]) == 0) {
         // name begins with prefix
         return [prefixes[i], name.substring(prefixes[i].length + Blockly.menuSeparator.length)]
@@ -352,6 +405,10 @@ Blockly.ai_inject = function(container, workspace) {
   workspace.markFocused();
   Blockly.bindEvent_(svg, 'focus', workspace, workspace.markFocused);
   workspace.resize();
+  // Hide scrollbars by default (otherwise ghost rectangles intercept mouse events)
+  workspace.flyout_.scrollbar_ && workspace.flyout_.scrollbar_.setContainerVisible(false);
+  workspace.backpack_.flyout_.scrollbar_ && workspace.backpack_.flyout_.scrollbar_.setContainerVisible(false);
+  workspace.flydown_.scrollbar_ && workspace.flydown_.scrollbar_.setContainerVisible(false);
   // Render blocks created prior to the workspace being rendered.
   workspace.rendered = true;
   var blocks = workspace.getAllBlocks();
@@ -391,6 +448,7 @@ Blockly.ai_inject = function(container, workspace) {
   //   var block = blocks[i];
   //   block.render(false);
   // }
+  workspace.getWarningHandler().determineDuplicateComponentEventHandlers();
   workspace.getWarningHandler().checkAllBlocksForWarningsAndErrors();
   // center on blocks
   workspace.setScale(1);

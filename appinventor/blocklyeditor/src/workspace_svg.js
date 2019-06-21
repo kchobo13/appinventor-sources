@@ -1,5 +1,5 @@
 // -*- mode: javascript; js-indent-level: 2; -*-
-// Copyright © 2016 Massachusetts Institute of Technology. All rights reserved.
+// Copyright © 2016-2018 Massachusetts Institute of Technology. All rights reserved.
 
 /**
  * @license
@@ -44,6 +44,13 @@ Blockly.WorkspaceSvg.prototype.componentDb_ = null;
 Blockly.WorkspaceSvg.prototype.typeBlock_ = null;
 
 /**
+ * Shared flydown for parameters and variables.
+ * @type {Blockly.Flydown}
+ * @private
+ */
+Blockly.WorkspaceSvg.prototype.flydown_ = null;
+
+/**
  * A list of blocks that need rendering the next time the workspace is shown.
  * @type {?Array.<Blockly.BlockSvg>}
  */
@@ -55,6 +62,12 @@ Blockly.WorkspaceSvg.prototype.blocksNeedingRendering = null;
  * @type {{x: number, y: number}}
  */
 Blockly.WorkspaceSvg.prototype.latestClick = { x: 0, y: 0 };
+
+/** 
+ * Whether the workspace elements are hidden
+ * @type {boolean}
+ */
+Blockly.WorkspaceSvg.prototype.chromeHidden = false;
 
 /**
  * Wrap the onMouseClick_ event to handle additional behaviors.
@@ -108,7 +121,64 @@ Blockly.WorkspaceSvg.prototype.createDom = (function(func) {
     return func;
   } else {
     var f = function() {
-      return func.apply(this, Array.prototype.slice.call(arguments));
+      var self = /** @type {Blockly.WorkspaceSvg} */ this;
+      var result = func.apply(this, Array.prototype.slice.call(arguments));
+      // BEGIN: Configure drag and drop of blocks images to workspace
+      result.addEventListener('dragenter', function(e) {
+        if (e.dataTransfer.types.indexOf('Files') >= 0 ||
+            e.dataTransfer.types.indexOf('text/uri-list') >= 0) {
+          self.svgBackground_.style.fill = 'rgba(0, 255, 0, 0.3)';
+          e.dataTransfer.dropEffect = 'copy';
+          e.preventDefault();
+        }
+      }, true);
+      result.addEventListener('dragover', function(e) {
+        if (e.dataTransfer.types.indexOf('Files') >= 0 ||
+            e.dataTransfer.types.indexOf('text/uri-list') >= 0) {
+          self.svgBackground_.style.fill = 'rgba(0, 255, 0, 0.3)';
+          e.dataTransfer.dropEffect = 'copy';
+          e.preventDefault();
+        }
+      }, true);
+      result.addEventListener('dragleave', function(e) {
+        self.setGridSettings(self.options.gridOptions['enabled'], self.options.gridOptions['snap']);
+      }, true);
+      result.addEventListener('dragexit', function(e) {
+        self.setGridSettings(self.options.gridOptions['enabled'], self.options.gridOptions['snap']);
+      }, true);
+      result.addEventListener('drop', function(e) {
+        self.setGridSettings(self.options.gridOptions['enabled'], self.options.gridOptions['snap']);
+        if (e.dataTransfer.types.indexOf('Files') >= 0) {
+          if (e.dataTransfer.files.item(0).type === 'image/png') {
+            e.preventDefault();
+            var metrics = Blockly.mainWorkspace.getMetrics();
+            var point = Blockly.utils.mouseToSvg(e, self.getParentSvg(), self.getInverseScreenCTM());
+            point.x = (point.x + metrics.viewLeft) / self.scale;
+            point.y = (point.y + metrics.viewTop) / self.scale;
+            Blockly.importPngAsBlock(self, point, e.dataTransfer.files.item(0));
+          }
+        } else if (e.dataTransfer.types.indexOf('text/uri-list') >= 0) {
+          var data = e.dataTransfer.getData('text/uri-list')
+          if (data.match(/\.png$/)) {
+            e.preventDefault();
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+              if (xhr.readyState === 4 && xhr.status === 200) {
+                var metrics = Blockly.mainWorkspace.getMetrics();
+                var point = Blockly.utils.mouseToSvg(e, self.getParentSvg(), self.getInverseScreenCTM());
+                point.x = (point.x + metrics.viewLeft) / self.scale;
+                point.y = (point.y + metrics.viewTop) / self.scale;
+                Blockly.importPngAsBlock(self, point, xhr.response);
+              }
+            };
+            xhr.responseType = 'blob';
+            xhr.open('GET', data, true);
+            xhr.send();
+          }
+        }
+      });
+      // END: Configure drag and drop of blocks images to workspace
+      return result;
     };
     f.isWrapper = true;
     return f;
@@ -234,16 +304,21 @@ Blockly.WorkspaceSvg.prototype.isDrawerShowing = function() {
   }
 };
 
+/**
+ * Render the workspace.
+ * @param {Array.<Blockly.BlockSvg>=} blocks
+ */
 // Override Blockly's render with optimized version from lyn
-Blockly.WorkspaceSvg.prototype.render = function() {
+Blockly.WorkspaceSvg.prototype.render = function(blocks) {
   this.rendered = true;
+  this.bulkRendering = true;
   Blockly.Field.startCache();
   try {
     if (Blockly.Instrument.isOn) {
       var start = new Date().getTime();
     }
     // [lyn, 04/08/14] Get both top and all blocks for stats
-    var topBlocks = this.getTopBlocks(/* ordered */ false);
+    var topBlocks = blocks || this.getTopBlocks(/* ordered */ false);
     var allBlocks = this.getAllBlocks();
     if (Blockly.Instrument.useRenderDown) {
       for (var t = 0, topBlock; topBlock = topBlocks[t]; t++) {
@@ -272,6 +347,8 @@ Blockly.WorkspaceSvg.prototype.render = function() {
       Blockly.Instrument.stats.workspaceRenderTime += timeDiffOuter;
     }
   } finally {
+    this.bulkRendering = false;
+    this.requestConnectionDBUpdate();
     Blockly.Field.stopCache();  // must balance with startCache() call above
   }
 };
@@ -304,9 +381,8 @@ Blockly.WorkspaceSvg.prototype.getProcedureDatabase = function() {
  */
 Blockly.WorkspaceSvg.prototype.addComponent = function(uid, instanceName, typeName) {
   if (this.componentDb_.addInstance(uid, instanceName, typeName)) {
-    return this;
+    this.typeBlock_.needsReload.components = true;
   }
-  this.typeBlock_.needsReload.components = true;
   return this;
 };
 
@@ -319,6 +395,12 @@ Blockly.WorkspaceSvg.prototype.addComponent = function(uid, instanceName, typeNa
  */
 Blockly.WorkspaceSvg.prototype.removeComponent = function(uid) {
   var component = this.componentDb_.getInstance(uid);
+
+  // Fixes #1175
+  if (this.drawer_ && component.name === this.drawer_.lastComponent) {
+    this.drawer_.hide();
+  }
+
   if (!this.componentDb_.removeInstance(uid)) {
     return this;
   }
@@ -384,10 +466,15 @@ Blockly.WorkspaceSvg.prototype.populateComponentTypes = function(strComponentInf
 Blockly.WorkspaceSvg.prototype.loadBlocksFile = function(formJson, blocksContent) {
   if (blocksContent.length != 0) {
     try {
-      Blockly.Block.isRenderingOn = false;
-      Blockly.Versioning.upgrade(formJson, blocksContent, this);
+      Blockly.Events.disable();
+      if (Blockly.Versioning.upgrade(formJson, blocksContent, this)) {
+        var self = this;
+        setTimeout(function() {
+          self.fireChangeListener(new AI.Events.ForceSave(self));
+        });
+      }
     } finally {
-      Blockly.Block.isRenderingOn = true;
+      Blockly.Events.enable();
     }
     if (this.getCanvas() != null) {
       this.render();
@@ -441,6 +528,9 @@ Blockly.WorkspaceSvg.prototype.getFormYail = function(formJson, packageName, opt
  * @returns {Blockly.WarningHandler}
  */
 Blockly.WorkspaceSvg.prototype.getWarningHandler = function() {
+  if (!this.warningHandler_) {
+    this.warningHandler_ = new Blockly.WarningHandler(this);
+  }
   return this.warningHandler_;
 };
 
@@ -461,23 +551,30 @@ Blockly.WorkspaceSvg.prototype.getFlydown = function() {
   return this.flydown_;
 };
 
-Blockly.WorkspaceSvg.prototype.hideChaff = function() {
+Blockly.WorkspaceSvg.prototype.hideChaff = function(opt_allowToolbox) {
   this.flydown_ && this.flydown_.hide();
   this.typeBlock_ && this.typeBlock_.hide();
+  if (!opt_allowToolbox) {  // Fixes #1269
+    this.backpack_ && this.backpack_.hide();
+  }
+  this.setScrollbarsVisible(true);
 };
 
 Blockly.WorkspaceSvg.prototype.activate = function() {
   Blockly.mainWorkspace = this;
 };
 
-/*
 Blockly.WorkspaceSvg.prototype.buildComponentMap = function(warnings, errors, forRepl, compileUnattachedBlocks) {
   var map = {components: {}, globals: []};
-  var blocks = this.getTopBlocks(true);
+  var blocks = this.getTopBlocks(/* ordered */ true);
   for (var i = 0, block; block = blocks[i]; ++i) {
     if (block.type == 'procedures_defnoreturn' || block.type == 'procedures_defreturn' || block.type == 'global_declaration') {
       map.globals.push(block);
     } else if (block.category == 'Component' && block.type == 'event') {
+      if (block.isGeneric) {
+        map.globals.push(block);
+        continue;
+      }
       var instanceName = block.instanceName;
       if (!map.components[instanceName]) {
         map.components[instanceName] = [];
@@ -487,7 +584,6 @@ Blockly.WorkspaceSvg.prototype.buildComponentMap = function(warnings, errors, fo
   }
   return map;
 };
-*/
 
 Blockly.WorkspaceSvg.prototype.resize = (function(resize) {
   return function() {
@@ -539,23 +635,34 @@ Blockly.WorkspaceSvg.prototype.customContextMenu = function(menuOptions) {
   };
   menuOptions.splice(3, 0, exportOption);
 
+  //Show or hide workspace SVG elements backpack, zoom, and trashcan
+  var workspaceOption = {enabled: true};
+  workspaceOption.text = this.chromeHidden ? Blockly.Msg.SHOW : Blockly.Msg.HIDE;
+  var displayStyle = this.chromeHidden ? 'block' : 'none';
+  workspaceOption.callback= function() {
+    self.backpack_.svgGroup_.style.display=displayStyle;
+    self.trashcan.svgGroup_.style.display=displayStyle;
+    self.zoomControls_.svgGroup_.style.display=displayStyle;
+    self.warningIndicator_.svgGroup_.style.display=displayStyle;
+    self.chromeHidden = !self.chromeHidden;
+  };
+  menuOptions.push(workspaceOption);
+
   // Arrange blocks in row order.
   var arrangeOptionH = {enabled: (Blockly.workspace_arranged_position !== Blockly.BLKS_HORIZONTAL)};
   arrangeOptionH.text = Blockly.Msg.ARRANGE_H;
-  arrangeOptionH.callback = function() {
-    Blockly.workspace_arranged_position = Blockly.BLKS_HORIZONTAL;
-    Blockly.workspace_arranged_latest_position= Blockly.BLKS_HORIZONTAL;
-    arrangeBlocks(Blockly.BLKS_HORIZONTAL);
+  arrangeOptionH.callback = function(opt_type) {
+    opt_type = opt_type instanceof goog.events.Event ? null : opt_type;
+    arrangeBlocks(opt_type? opt_type : Blockly.workspace_arranged_type, Blockly.BLKS_HORIZONTAL);
   };
   menuOptions.push(arrangeOptionH);
 
   // Arrange blocks in column order.
   var arrangeOptionV = {enabled: (Blockly.workspace_arranged_position !== Blockly.BLKS_VERTICAL)};
   arrangeOptionV.text = Blockly.Msg.ARRANGE_V;
-  arrangeOptionV.callback = function() {
-    Blockly.workspace_arranged_position = Blockly.BLKS_VERTICAL;
-    Blockly.workspace_arranged_latest_position = Blockly.BLKS_VERTICAL;
-    arrangeBlocks(Blockly.BLKS_VERTICAL);
+  arrangeOptionV.callback = function(opt_type) {
+    opt_type = opt_type instanceof goog.events.Event ? null : opt_type;
+    arrangeBlocks(opt_type? opt_type : Blockly.workspace_arranged_type, Blockly.BLKS_VERTICAL);
   };
   menuOptions.push(arrangeOptionV);
 
@@ -592,7 +699,15 @@ Blockly.WorkspaceSvg.prototype.customContextMenu = function(menuOptions) {
   }
 
   // Arranges block in layout (Horizontal or Vertical).
-  function arrangeBlocks(layout) {
+  function arrangeBlocks(type, layout) {
+    Blockly.Events.setGroup(true);  // group these movements together
+    // start arrangement
+    var workspaceId = Blockly.mainWorkspace.id;
+    Blockly.Events.fire(new AI.Events.StartArrangeBlocks(workspaceId));
+    Blockly.workspace_arranged_type = type;
+    Blockly.workspace_arranged_position = layout;
+    Blockly.workspace_arranged_latest_position = layout;
+    var event = new AI.Events.EndArrangeBlocks(workspaceId, type, layout);
     var SPACER = 25;
     var topblocks = Blockly.mainWorkspace.getTopBlocks(/* ordered */ false);
     // If the blocks are arranged by Category, sort the array
@@ -600,12 +715,16 @@ Blockly.WorkspaceSvg.prototype.customContextMenu = function(menuOptions) {
       topblocks.sort(sortByCategory);
     }
     var metrics = Blockly.mainWorkspace.getMetrics();
-    var viewLeft = metrics.viewLeft + 5;
-    var viewTop = metrics.viewTop + 5;
+    var spacing = Blockly.mainWorkspace.options.gridOptions.spacing;
+    var spacingInv = 1 / spacing;
+    var snap = Blockly.mainWorkspace.options.gridOptions.snap ?
+      function(x) { return (Math.ceil(x * spacingInv) - .5) * spacing; } : function(x) { return x; };
+    var viewLeft = snap(metrics.viewLeft + 5);
+    var viewTop = snap(metrics.viewTop + 5);
     var x = viewLeft;
     var y = viewTop;
-    var wsRight = viewLeft + metrics.viewWidth;
-    var wsBottom = viewTop + metrics.viewHeight;
+    var wsRight = viewLeft + metrics.viewWidth / Blockly.mainWorkspace.scale;
+    var wsBottom = viewTop + metrics.viewHeight / Blockly.mainWorkspace.scale;
     var maxHgt = 0;
     var maxWidth = 0;
     for (var i = 0, len = topblocks.length; i < len; i++) {
@@ -619,55 +738,127 @@ Blockly.WorkspaceSvg.prototype.customContextMenu = function(menuOptions) {
         if (x < wsRight) {
           blk.moveBy(x - blkXY.x, y - blkXY.y);
           blk.select();
-          x += blkWidth + SPACER;
+          x = snap(x + blkWidth + SPACER);
           if (blkHgt > maxHgt) // Remember highest block
             maxHgt = blkHgt;
         } else {
-          y += maxHgt + SPACER;
+          y = snap(y + maxHgt + SPACER);
           maxHgt = blkHgt;
           x = viewLeft;
           blk.moveBy(x - blkXY.x, y - blkXY.y);
           blk.select();
-          x += blkWidth + SPACER;
+          x = snap(x + blkWidth + SPACER);
         }
         break;
       case Blockly.BLKS_VERTICAL:
         if (y < wsBottom) {
           blk.moveBy(x - blkXY.x, y - blkXY.y);
           blk.select();
-          y += blkHgt + SPACER;
+          y = snap(y + blkHgt + SPACER);
           if (blkWidth > maxWidth)  // Remember widest block
             maxWidth = blkWidth;
         } else {
-          x += maxWidth + SPACER;
+          x = snap(x + maxWidth + SPACER);
           maxWidth = blkWidth;
           y = viewTop;
           blk.moveBy(x - blkXY.x, y - blkXY.y);
           blk.select();
-          y += blkHgt + SPACER;
+          y = snap(y + blkHgt + SPACER);
         }
         break;
       }
     }
+    Blockly.Events.fire(event);  // end arrangement
+    Blockly.Events.setGroup(false);
+    setTimeout(function() {
+      Blockly.workspace_arranged_type = type;
+      Blockly.workspace_arranged_position = layout;
+      Blockly.workspace_arranged_latest_position = layout;
+    });  // need to run after all events have run
   }
 
   // Sort by Category.
   var sortOptionCat = {enabled: (Blockly.workspace_arranged_type !== Blockly.BLKS_CATEGORY)};
   sortOptionCat.text = Blockly.Msg.SORT_C;
   sortOptionCat.callback = function() {
-    Blockly.workspace_arranged_type = Blockly.BLKS_CATEGORY;
-    rearrangeWorkspace();
+    rearrangeWorkspace(Blockly.BLKS_CATEGORY);
   };
   menuOptions.push(sortOptionCat);
 
   // Called after a sort or collapse/expand to redisplay blocks.
-  function rearrangeWorkspace() {
+  function rearrangeWorkspace(opt_type) {
     //default arrangement position set to Horizontal if it hasn't been set yet (is null)
     if (Blockly.workspace_arranged_latest_position === null || Blockly.workspace_arranged_latest_position === Blockly.BLKS_HORIZONTAL)
-      arrangeOptionH.callback();
+      arrangeOptionH.callback(opt_type);
     else if (Blockly.workspace_arranged_latest_position === Blockly.BLKS_VERTICAL)
-      arrangeOptionV.callback();
+      arrangeOptionV.callback(opt_type);
   }
+
+  // Enable all blocks
+  var enableAll = {enabled: true};
+  enableAll.text = Blockly.Msg.ENABLE_ALL_BLOCKS;
+  enableAll.callback = function() {
+    var allBlocks = Blockly.mainWorkspace.getAllBlocks();
+    Blockly.Events.setGroup(true);
+    for (var x = 0, block; block = allBlocks[x]; x++) {
+      block.setDisabled(false);
+    }
+    Blockly.Events.setGroup(false);
+  };
+  menuOptions.push(enableAll);
+
+  // Disable all blocks
+  var disableAll = {enabled: true};
+  disableAll.text = Blockly.Msg.DISABLE_ALL_BLOCKS;
+  disableAll.callback = function() {
+    var allBlocks = Blockly.mainWorkspace.getAllBlocks();
+    Blockly.Events.setGroup(true);
+    for (var x = 0, block; block = allBlocks[x]; x++) {
+      block.setDisabled(true);
+    }
+    Blockly.Events.setGroup(false);
+  };
+  menuOptions.push(disableAll);
+
+  // Show all comments
+  var showAll = {enabled: true};
+  showAll.text = Blockly.Msg.SHOW_ALL_COMMENTS;
+  showAll.callback = function() {
+    var allBlocks = Blockly.mainWorkspace.getAllBlocks();
+    Blockly.Events.setGroup(true);
+    for (var x = 0, block; block = allBlocks[x]; x++) {
+      if (block.comment != null) {
+        block.comment.setVisible(true);
+      }
+    }
+    Blockly.Events.setGroup(false);
+  };
+  menuOptions.push(showAll);
+
+  // Hide all comments
+  var hideAll = {enabled: true};
+  hideAll.text = Blockly.Msg.HIDE_ALL_COMMENTS;
+  hideAll.callback = function() {
+    var allBlocks = Blockly.mainWorkspace.getAllBlocks();
+    Blockly.Events.setGroup(true);
+    for (var x = 0, block; block = allBlocks[x]; x++) {
+      if (block.comment != null) {
+        block.comment.setVisible(false);
+      }
+    }
+    Blockly.Events.setGroup(false);
+  };
+  menuOptions.push(hideAll);
+
+  // Copy all blocks to backpack option.
+  var backpackCopyAll = {enabled: true};
+  backpackCopyAll.text = Blockly.Msg.COPY_ALLBLOCKS;
+  backpackCopyAll.callback = function() {
+    if (Blockly.getMainWorkspace().hasBackpack()) {
+      Blockly.getMainWorkspace().getBackpack().addAllToBackpack();
+    }
+  };
+  menuOptions.push(backpackCopyAll);
 
   // Retrieve from backpack option.
   var backpackRetrieve = {enabled: true};
@@ -675,29 +866,10 @@ Blockly.WorkspaceSvg.prototype.customContextMenu = function(menuOptions) {
     Blockly.getMainWorkspace().getBackpack().count() + ")";
   backpackRetrieve.callback = function() {
     if (Blockly.getMainWorkspace().hasBackpack()) {
-      Blockly.getMainWorkspace().getBackpack().pasteBackpack(this.backpack_);
+      Blockly.getMainWorkspace().getBackpack().pasteBackpack();
     }
   };
   menuOptions.push(backpackRetrieve);
-
-  // Copy all blocks to backpack option.
-  var backpackCopyAll = {enabled: true};
-  backpackCopyAll.text = Blockly.Msg.COPY_ALLBLOCKS;
-  backpackCopyAll.callback = function() {
-    if (this.backpack_) {
-      Blockly.getMainWorkspace().getBackpack().addAllToBackpack();
-    }
-  };
-  menuOptions.push(backpackCopyAll);
-
-  // Clear backpack.
-  var backpackClear = {enabled: true};
-  backpackClear.text = Blockly.Msg.BACKPACK_EMPTY;
-  backpackClear.callback = function() {
-    Blockly.getMainWorkspace().getBackpack().clear();
-    backpackRetrieve.text = Blockly.Msg.BACKPACK_GET;
-  };
-  menuOptions.push(backpackClear);
 
   // Enable grid
   var gridOption = {enabled: true};
@@ -748,7 +920,17 @@ Blockly.WorkspaceSvg.prototype.recordDeleteAreas = function() {
   } else {
     this.deleteAreaTrash_ = null;
   }
-  this.deleteAreaToolbox_ = null;
+  if (this.isMutator) {
+    if (this.flyout_) {
+      this.deleteAreaToolbox_ = this.flyout_.getClientRect();
+    } else if (this.toolbox_) {
+      this.deleteAreaToolbox_ = this.toolbox_.getClientRect();
+    } else {
+      this.deleteAreaToolbox_ = null;
+    }
+  } else {
+    this.deleteAreaToolbox_ = null;
+  }
 };
 
 Blockly.WorkspaceSvg.prototype.getBackpack = function() {
@@ -833,12 +1015,16 @@ Blockly.WorkspaceSvg.prototype.buildComponentMap = function(warnings, errors, fo
     if (!block.category) {
       continue;
     }
-    if (block.type == 'procedures_defnoreturn' || block.type == 'procedures_defreturn' || block.type == 'global_declaration' || block.type == 'vr_global_declaration' || block.category == 'VR_Events') {
+    if (block.type == 'procedures_defnoreturn' || block.type == 'procedures_defreturn' || block.type == 'global_declaration') {
       map.globals.push(block);
       // TODO: eventually deal with variable declarations, once we have them
     } else if (block.category == 'Component') {
       var instanceName = block.instanceName;
       if(block.blockType != "event") {
+        continue;
+      }
+      if (block.isGeneric) {
+        map.globals.push(block);
         continue;
       }
       if (!map.components[instanceName]) {
@@ -864,4 +1050,207 @@ Blockly.WorkspaceSvg.prototype.getTopWorkspace = function() {
     parent = parent.targetWorkspace;
   }
   return parent;
+};
+
+Blockly.WorkspaceSvg.prototype.fireChangeListener = function(event) {
+  Blockly.WorkspaceSvg.superClass_.fireChangeListener.call(this, event);
+  if (event instanceof Blockly.Events.Move) {
+    // Reset arrangement parameters
+    Blockly.workspace_arranged_latest_position = null;
+    Blockly.workspace_arranged_position = null;
+    Blockly.workspace_arranged_type = null;
+    var oldParent = this.blockDB_[event.oldParentId],
+      block = this.blockDB_[event.blockId];
+    oldParent && this.requestErrorChecking(oldParent);
+    block && this.requestErrorChecking(block);
+  }
+};
+
+/**
+ * Request a re-render the workspace. If <code>block</code> is provided, only descendants of
+ * <code>block</code>'s top-most block will be rendered. This may be called multiple times to queue
+ * many blocks to be rendered.
+ * @param {Blockly.BlockSvg=} block
+ */
+Blockly.WorkspaceSvg.prototype.requestRender = function(block) {
+  if (!this.pendingRender) {
+    this.needsRendering = [];
+    this.pendingBlockIds = {};
+    this.pendingRender = setTimeout(function() {
+      try {
+        this.render(this.needsRendering.length === 0 ? undefined : this.needsRendering);
+      } finally {
+        this.pendingRender = null;
+      }
+    }.bind(this));
+  }
+  if (block) {
+    // Rendering uses Blockly.BlockSvg.renderDown, so we only need a list of the topmost blocks
+    while (block.getParent()) {
+      block = /** @type {Blockly.BlockSvg} */ block.getParent();
+    }
+    if (!(block.id in this.pendingBlockIds)) {
+      this.pendingBlockIds[block.id] = true;
+      this.needsRendering.push(block);
+    }
+  }
+};
+
+/**
+ * Request error checking on the specified block. This will queue error checking events until the
+ * next time the JavaScript thread relinquishes control to the UI thread.
+ * @param {Blockly.BlockSvg=} block
+ */
+Blockly.WorkspaceSvg.prototype.requestErrorChecking = function(block) {
+  if (!this.warningHandler_) {
+    return;  // no error checking before warning handler exists
+  }
+  if (this.checkAllBlocks) {
+    return;  // already planning to check all blocks
+  }
+  if (!this.pendingErrorCheck) {
+    this.needsErrorCheck = [];
+    this.pendingErrorBlockIds = {};
+    this.checkAllBlocks = !!block;
+    this.pendingErrorCheck = setTimeout(function() {
+      try {
+        var handler = this.getWarningHandler();
+        if (handler) {  // not true for flyouts and before the main workspace is rendered.
+          goog.array.forEach(this.checkAllBlocks ? this.getAllBlocks() : this.needsErrorCheck,
+            function(block) {
+              handler.checkErrors(block);
+            });
+        }
+      } finally {
+        this.pendingErrorCheck = null;
+        this.checkAllBlocks = false;
+        // Let any disposed blocks be GCed...
+        this.needsErrorCheck = null;
+        this.pendingErrorBlockIds = null;
+      }
+    }.bind(this));
+  }
+  if (block && !(block.id in this.pendingErrorBlockIds)) {
+    while (block.getParent()) {
+      block = /** @type {Blockly.BlockSvg} */ block.getParent();
+    }
+    var pendingBlocks = [block];
+    while (pendingBlocks.length > 0) {
+      block = pendingBlocks.shift();
+      if (!(block.id in this.pendingErrorBlockIds)) {
+        this.pendingErrorBlockIds[block.id] = true;
+        this.needsErrorCheck.push(block);
+      }
+      Array.prototype.push.apply(pendingBlocks, block.getChildren());
+    }
+  } else if (!block) {
+    // schedule all blocks
+    this.checkAllBlocks = true;
+  }
+};
+
+/**
+ * Sort the workspace's connection database. This only needs to be called if the bulkRendering
+ * property of the workspace is set to true to false as any connections that Blockly attempted to
+ * update during that time may be incorrectly ordered in the database.
+ */
+Blockly.WorkspaceSvg.prototype.sortConnectionDB = function() {
+  goog.array.forEach(this.connectionDBList, function(connectionDB) {
+    connectionDB.sort(function(a, b) {
+      return a.y_ - b.y_;
+    });
+    // If we are rerendering due to a new error, we only redraw the error block, which means that
+    // we can't clear the database, otherwise all other connections disappear. Instead, we add
+    // the moved connections anyway, and at this point we can remove the duplicate entries in the
+    // database. We remove after sorting so that the operation is O(n) rather than O(n^2). This
+    // assumption may break in the future if Blockly decides on a different mechanism for indexing
+    // connections.
+    connectionDB.removeDupes();
+  });
+};
+
+/**
+ * Request an update to the connection database's order due to movement of a block while a bulk
+ * rendering operation was in progress.
+ */
+Blockly.WorkspaceSvg.prototype.requestConnectionDBUpdate = function() {
+  if (!this.pendingConnectionDBUpdate) {
+    this.pendingConnectionDBUpdate = setTimeout(function() {
+      try {
+        this.sortConnectionDB();
+      } finally {
+        this.pendingConnectionDBUpdate = null;
+      }
+    }.bind(this));
+  }
+};
+
+/**
+ * Scroll the workspace to center on the given block.
+ * @param {?string} id ID of block center on.
+ * @public
+ */
+// TODO: This is code from a later version of Blockly. Remove on next Blockly update.
+Blockly.WorkspaceSvg.prototype.centerOnBlock = function(id) {
+  if (!this.scrollbar) {
+    console.warn('Tried to scroll a non-scrollable workspace.');
+    return;
+  }
+
+  var block = this.getBlockById(id);
+  if (!block) {
+    return;
+  }
+
+  // XY is in workspace coordinates.
+  var xy = block.getRelativeToSurfaceXY();
+  // Height/width is in workspace units.
+  var heightWidth = block.getHeightWidth();
+
+  // Find the enter of the block in workspace units.
+  var blockCenterY = xy.y + heightWidth.height / 2;
+
+  // In RTL the block's position is the top right of the block, not top left.
+  var multiplier = this.RTL ? -1 : 1;
+  var blockCenterX = xy.x + (multiplier * heightWidth.width / 2);
+
+  // Workspace scale, used to convert from workspace coordinates to pixels.
+  var scale = this.scale;
+
+  // Center in pixels.  0, 0 is at the workspace origin.  These numbers may
+  // be negative.
+  var pixelX = blockCenterX * scale;
+  var pixelY = blockCenterY * scale;
+
+  var metrics = this.getMetrics();
+
+  // Scrolling to here would put the block in the top-left corner of the
+  // visible workspace.
+  var scrollToBlockX = pixelX - metrics.contentLeft;
+  var scrollToBlockY = pixelY - metrics.contentTop;
+
+  // viewHeight and viewWidth are in pixels.
+  var halfViewWidth = metrics.viewWidth / 2;
+  var halfViewHeight = metrics.viewHeight / 2;
+
+  // Put the block in the center of the visible workspace instead.
+  var scrollToCenterX = scrollToBlockX - halfViewWidth;
+  var scrollToCenterY = scrollToBlockY - halfViewHeight;
+
+  Blockly.hideChaff();
+  var event = new AI.Events.WorkspaceMove(this.id);
+  this.scrollbar.set(scrollToCenterX, scrollToCenterY);
+  event.recordNew();
+  Blockly.Events.fire(event);
+
+};
+
+/*
+* Refresh the state of the backpack. Called from BlocklyPanel.java
+*/
+
+Blockly.WorkspaceSvg.prototype.refreshBackpack = function() {
+  if (this.backpack_) {
+    this.backpack_.resize();
+  }
 };

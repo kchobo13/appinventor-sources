@@ -1,12 +1,13 @@
 // -*- mode: java; c-basic-offset: 2; -*-
 // Copyright © 2009-2011 Google, All Rights reserved
-// Copyright © 2011-2017 Massachusetts Institute of Technology, All rights reserved
+// Copyright © 2011-2019 Massachusetts Institute of Technology, All rights reserved
 // Released under the Apache License, Version 2.0
 // http://www.apache.org/licenses/LICENSE-2.0
 
 package com.google.appinventor.client.editor.blocks;
 
 import com.google.appinventor.client.ComponentsTranslation;
+import com.google.appinventor.client.ConnectProgressBar;
 import com.google.appinventor.client.DesignToolbar;
 import com.google.appinventor.client.ErrorReporter;
 import com.google.appinventor.client.Ode;
@@ -71,7 +72,9 @@ public class BlocklyPanel extends HTMLPanel {
     exportMethodsToJavascript();
     // Tell the blockly world about companion versions.
     setLanguageVersion(YaVersion.YOUNG_ANDROID_VERSION, YaVersion.BLOCKS_LANGUAGE_VERSION);
-    setPreferredCompanion(YaVersion.PREFERRED_COMPANION, YaVersion.COMPANION_UPDATE_URL);
+    setPreferredCompanion(YaVersion.PREFERRED_COMPANION, YaVersion.COMPANION_UPDATE_URL,
+      YaVersion.COMPANION_UPDATE_URL1,
+      YaVersion.COMPANION_UPDATE_EMULATOR_URL);
     for (int i = 0; i < YaVersion.ACCEPTABLE_COMPANIONS.length; i++) {
       addAcceptableCompanion(YaVersion.ACCEPTABLE_COMPANIONS[i]);
     }
@@ -100,6 +103,9 @@ public class BlocklyPanel extends HTMLPanel {
 
   // The currently displayed entity (project/screen)
   private static String currentForm;
+
+  // Warning indicator visibility status
+  private static boolean isWarningVisible = false;
 
   // My entity name
   private final String formName;
@@ -325,12 +331,14 @@ public class BlocklyPanel extends HTMLPanel {
    * @param mess       The message to display
    * @param buttonName The string to display in the "OK" button.
    * @param size       0 or 1. 0 makes a smaller box 1 makes a larger box.
+   * @param destructive Indicates if the button should be styled as a destructive action.
    * @param callback   an opague JavaScriptObject that contains the
    *                   callback function provided by the Javascript code.
    * @return The created dialog box.
    */
 
-  public static DialogBox createDialog(String title, String mess, final String buttonName, final String cancelButtonName, int size, final JavaScriptObject callback) {
+  public static DialogBox createDialog(String title, String mess, final String buttonName, Boolean destructive,
+                                       final String cancelButtonName, int size, final JavaScriptObject callback) {
     final DialogBox dialogBox = new DialogBox();
     dialogBox.setStylePrimaryName("ode-DialogBox");
     dialogBox.setText(title);
@@ -346,16 +354,6 @@ public class BlocklyPanel extends HTMLPanel {
     VerticalPanel DialogBoxContents = new VerticalPanel();
     HTML message = new HTML(mess);
     HorizontalPanel holder = new HorizontalPanel();
-    if (buttonName != null) {           // If buttonName and cancelButtonName are null
-      Button ok = new Button(buttonName); // We won't have any buttons and other
-      ok.addClickHandler(new ClickHandler() { // code is needed to dismiss us
-        @Override
-        public void onClick(ClickEvent event) {
-          doCallBack(callback, buttonName);
-        }
-      });
-      holder.add(ok);
-    }
     if (cancelButtonName != null) {
       Button cancel = new Button(cancelButtonName);
       cancel.addClickHandler(new ClickHandler() {
@@ -366,10 +364,24 @@ public class BlocklyPanel extends HTMLPanel {
       });
       holder.add(cancel);
     }
+    if (buttonName != null) {           // If buttonName and cancelButtonName are null
+      Button ok = new Button(buttonName); // We won't have any buttons and other
+      if (destructive) {
+        ok.addStyleName("destructive-action");
+      }
+      ok.addClickHandler(new ClickHandler() { // code is needed to dismiss us
+        @Override
+        public void onClick(ClickEvent event) {
+          doCallBack(callback, buttonName);
+        }
+      });
+      holder.add(ok);
+    }
     DialogBoxContents.add(message);
     DialogBoxContents.add(holder);
     dialogBox.setWidget(DialogBoxContents);
     terminateDrag();  // cancel a drag before showing the modal dialog
+    ConnectProgressBar.tempHide(true); // Hide any connection progress bar
     dialogBox.show();
     return dialogBox;
   }
@@ -383,6 +395,7 @@ public class BlocklyPanel extends HTMLPanel {
    */
 
   public static void HideDialog(DialogBox dialog) {
+    ConnectProgressBar.tempHide(false); // unhide the progress bar if it was hidden
     dialog.hide();
   }
 
@@ -480,6 +493,50 @@ public class BlocklyPanel extends HTMLPanel {
     Ode.getUserSettings().saveSettings(null);
   }
 
+  /**
+   * Fetch a shared backpack from the server, call the callback with the
+   * backpack content.
+   *
+   * @param backPackId the backpack id
+   * @param callback callback to call with the backpack contents
+   */
+
+  public static void getSharedBackpack(String backPackId, final JavaScriptObject callback) {
+    Ode.getInstance().getUserInfoService().getSharedBackpack(backPackId,
+        new AsyncCallback<String>() {
+          @Override
+          public void onSuccess(String content) {
+            doCallBack(callback, content);
+          }
+          @Override
+          public void onFailure(Throwable caught) {
+            OdeLog.log("getSharedBackpack failed.");
+          }
+        });
+  }
+
+  /**
+   * Store shared backpack to the server.
+   *
+   * @param backPackId the backpack id
+   * @param content the contents to store (XML String)
+   */
+
+  public static void storeSharedBackpack(String backPackId, String content) {
+    Ode.getInstance().getUserInfoService().storeSharedBackpack(backPackId, content,
+      new AsyncCallback<Void>() {
+        @Override
+        public void onSuccess(Void v) {
+          // Nothing to do
+        }
+        @Override
+        public void onFailure(Throwable caught) {
+          OdeLog.log("storeSharedBackpack failed.");
+        }
+      });
+  }
+
+
   // ------------ Native methods ------------
 
   /**
@@ -487,9 +544,10 @@ public class BlocklyPanel extends HTMLPanel {
    * and call it.
    *
    * @param callback the Javascript callback.
+   * @param arg argument to the callback
    */
-  private static native void doCallBack(JavaScriptObject callback, String buttonName) /*-{
-    callback.call(null, buttonName);
+  private static native void doCallBack(JavaScriptObject callback, String arg) /*-{
+    callback.call(null, arg);
   }-*/;
 
   private static native void exportMethodsToJavascript() /*-{
@@ -503,7 +561,7 @@ public class BlocklyPanel extends HTMLPanel {
     $wnd.BlocklyPanel_popScreen =
         $entry(@com.google.appinventor.client.editor.blocks.BlocklyPanel::popScreen());
     $wnd.BlocklyPanel_createDialog =
-        $entry(@com.google.appinventor.client.editor.blocks.BlocklyPanel::createDialog(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILcom/google/gwt/core/client/JavaScriptObject;));
+        $entry(@com.google.appinventor.client.editor.blocks.BlocklyPanel::createDialog(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/String;ILcom/google/gwt/core/client/JavaScriptObject;));
     $wnd.BlocklyPanel_hideDialog =
         $entry(@com.google.appinventor.client.editor.blocks.BlocklyPanel::HideDialog(Lcom/google/gwt/user/client/ui/DialogBox;));
     $wnd.BlocklyPanel_setDialogContent =
@@ -522,6 +580,11 @@ public class BlocklyPanel extends HTMLPanel {
       $entry(@com.google.appinventor.client.editor.blocks.BlocklyPanel::getSnapEnabled());
     $wnd.BlocklyPanel_saveUserSettings =
       $entry(@com.google.appinventor.client.editor.blocks.BlocklyPanel::saveUserSettings());
+    $wnd.BlocklyPanel_getSharedBackpack =
+      $entry(@com.google.appinventor.client.editor.blocks.BlocklyPanel::getSharedBackpack(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;));
+    $wnd.BlocklyPanel_storeSharedBackpack =
+      $entry(@com.google.appinventor.client.editor.blocks.BlocklyPanel::storeSharedBackpack(Ljava/lang/String;Ljava/lang/String;));
+
   }-*/;
 
   private native void initWorkspace(String projectId, boolean readOnly, boolean rtl, String targetLang)/*-{
@@ -538,11 +601,14 @@ public class BlocklyPanel extends HTMLPanel {
         block.rename(e.oldValue, e.newValue);
       }
       cb(e);
-      // [lyn 12/31/2013] Check for duplicate component event handlers before
-      // running any error handlers to avoid quadratic time behavior.
-      var handler = this.getWarningHandler();
-      if (handler) {
-        handler.determineDuplicateComponentEventHandlers();
+      if (workspace.rendered && !e.isTransient) {
+        var handler = this.getWarningHandler();
+        if (handler) {
+          // [lyn 12/31/2013] Check for duplicate component event handlers before
+          // running any error handlers to avoid quadratic time behavior.
+          handler.determineDuplicateComponentEventHandlers();
+          this.requestErrorChecking(block);
+        }
       }
     }.bind(workspace));
     this.@com.google.appinventor.client.editor.blocks.BlocklyPanel::workspace = workspace;
@@ -741,9 +807,11 @@ public class BlocklyPanel extends HTMLPanel {
     return $wnd.PREFERRED_COMPANION;
   }-*/;
 
-  static native void setPreferredCompanion(String comp, String url) /*-{
+  static native void setPreferredCompanion(String comp, String url, String url1, String url2) /*-{
     $wnd.PREFERRED_COMPANION = comp;
     $wnd.COMPANION_UPDATE_URL = url;
+    $wnd.COMPANION_UPDATE_URL1 = url1;
+    $wnd.COMPANION_UPDATE_EMULATOR_URL = url2;
   }-*/;
 
   static native void addAcceptableCompanionPackage(String comp) /*-{
@@ -805,6 +873,10 @@ public class BlocklyPanel extends HTMLPanel {
    */
   public static native void setInitialBackpack(String backpack)/*-{
     Blockly.Backpack.shared_contents = JSON.parse(backpack);
+  }-*/;
+
+  public static native void setSharedBackpackId(String backPackId)/*-{
+    Blockly.Backpack.backPackId = backPackId;
   }-*/;
 
   /**

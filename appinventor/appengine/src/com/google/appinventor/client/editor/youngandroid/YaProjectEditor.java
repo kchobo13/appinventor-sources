@@ -11,6 +11,7 @@ import com.google.appinventor.client.ErrorReporter;
 import com.google.appinventor.client.Ode;
 import com.google.appinventor.client.OdeAsyncCallback;
 import com.google.appinventor.client.boxes.AssetListBox;
+import com.google.appinventor.client.editor.EditorManager;
 import com.google.appinventor.client.editor.FileEditor;
 import com.google.appinventor.client.editor.ProjectEditor;
 import com.google.appinventor.client.editor.ProjectEditorFactory;
@@ -24,7 +25,9 @@ import com.google.appinventor.client.explorer.project.ProjectChangeListener;
 import com.google.appinventor.client.output.OdeLog;
 import com.google.appinventor.client.properties.json.ClientJsonParser;
 import com.google.appinventor.common.utils.StringUtils;
+import com.google.appinventor.shared.properties.json.JSONArray;
 import com.google.appinventor.shared.properties.json.JSONObject;
+import com.google.appinventor.shared.properties.json.JSONValue;
 import com.google.appinventor.shared.rpc.project.ChecksumedFileException;
 import com.google.appinventor.shared.rpc.project.ChecksumedLoadFile;
 import com.google.appinventor.shared.rpc.project.ProjectNode;
@@ -41,6 +44,8 @@ import com.google.appinventor.shared.storage.StorageUtil;
 import com.google.appinventor.shared.youngandroid.YoungAndroidSourceAnalyzer;
 import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.RepeatingCommand;
+import com.google.gwt.json.client.JSONException;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -48,8 +53,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.google.appinventor.client.Ode.MESSAGES;
 
@@ -79,6 +86,14 @@ public final class YaProjectEditor extends ProjectEditor implements ProjectChang
   
   // List of External Components
   private final List<String> externalComponents = new ArrayList<String>();
+
+  // Mapping of package names to extensions defined by the package (n > 1)
+  private final Map<String, Set<String>> externalCollections = new HashMap<>();
+  private final Map<String, String> extensionToNodeName = new HashMap<>();
+  private final Map<String, Set<String>> extensionsInNode = new HashMap<>();
+
+  // Number of external component descriptors loaded since there is no longer a 1-1 correspondence
+  private volatile int numExternalComponentsLoaded = 0;
 
   // List of ComponentDatabaseChangeListeners
   private final List<ComponentDatabaseChangeListener> componentDatabaseChangeListeners = new ArrayList<ComponentDatabaseChangeListener>();
@@ -524,12 +539,62 @@ public final class YaProjectEditor extends ProjectEditor implements ProjectChang
           this.onFailure(e);
           return;
         }
-        JSONObject componentJSONObject = new ClientJsonParser().parse(jsonFileContent).asObject();
-        COMPONENT_DATABASE.addComponentDatabaseListener(YaProjectEditor.this);
-        COMPONENT_DATABASE.addComponent(componentJSONObject);
-        if (!externalComponents.contains(componentJSONObject.get("name").toString())) { // In case of upgrade, we do not need to add entry
-          externalComponents.add(componentJSONObject.get("name").toString());
+        JSONValue value = null;
+        try {
+          value = new ClientJsonParser().parse(jsonFileContent);
+        } catch(JSONException e) {
+          // thrown if jsonFileContent is not valid JSON
+          String[] parts = fileId.split("/");
+          if (parts.length > 3 && fileId.endsWith("components.json")) {
+            ErrorReporter.reportError(Ode.MESSAGES.extensionDescriptorCorrupt(parts[2], project.getProjectName()));
+          } else {
+            ErrorReporter.reportError(Ode.MESSAGES.invalidExtensionInProject(project.getProjectName()));
+          }
+          numExternalComponentsLoaded++;
+          if (afterComponentAdded != null) {
+            afterComponentAdded.execute();
+          }
+          return;
         }
+        COMPONENT_DATABASE.addComponentDatabaseListener(YaProjectEditor.this);
+        if (value instanceof JSONArray) {
+          JSONArray componentList = value.asArray();
+          COMPONENT_DATABASE.addComponents(componentList);
+          for (JSONValue component : componentList.getElements()) {
+            String name = component.asObject().get("type").asString().getString();
+            // group new extensions by package name
+            String packageName = name.substring(0, name.lastIndexOf('.'));
+            if (!externalCollections.containsKey(packageName)) {
+              externalCollections.put(packageName, new HashSet<String>());
+            }
+            externalCollections.get(packageName).add(name);
+
+            if (!extensionsInNode.containsKey(fileId)) {
+              extensionsInNode.put(fileId, new HashSet<String>());
+            }
+            extensionsInNode.get(fileId).add(name);
+            extensionToNodeName.put(name, fileId);
+
+            name = packageName;
+            if (!externalComponents.contains(name)) {
+              externalComponents.add(name);
+            } else {
+              // Upgraded an extension. Force a save to ensure version numbers are updated serverside.
+              saveProject();
+            }
+          }
+        } else {
+          JSONObject componentJSONObject = value.asObject();
+          COMPONENT_DATABASE.addComponent(componentJSONObject);
+          // In case of upgrade, we do not need to add entry
+          if (!externalComponents.contains(componentJSONObject.get("type").toString())) {
+            externalComponents.add(componentJSONObject.get("type").toString());
+          } else {
+            // Upgraded an extension. Force a save to ensure version numbers are updated serverside.
+            saveProject();
+          }
+        }
+        numExternalComponentsLoaded++;
         if (afterComponentAdded != null) {
           afterComponentAdded.execute();
         }
@@ -552,8 +617,26 @@ public final class YaProjectEditor extends ProjectEditor implements ProjectChang
   public  void removeComponent(Map<String, String> componentTypes) {
     final Ode ode = Ode.getInstance();
     final YoungAndroidComponentsFolder componentsFolder = ((YoungAndroidProjectNode) project.getRootNode()).getComponentsFolder();
+    Set<String> externalCompFolders = new HashSet<String>();
+    // Old projects with old extensions will use FQCN for the directory name rather than the package
+    // Prefer deleting com.foo.Bar over com.foo if com.foo.Bar exists.
+    for (ProjectNode child : componentsFolder.getChildren()) {
+      String[] parts = child.getFileId().split("/");
+      if (parts.length >= 3) {
+        externalCompFolders.add(parts[2]);
+      }
+    }
+    Set<String> removedPackages = new HashSet<String>();
     for (String componentType : componentTypes.keySet()) {
-      final String directory = componentsFolder.getFileId() + "/" + componentTypes.get(componentType) + "/";
+      String typeName = componentTypes.get(componentType);
+      if (!externalCompFolders.contains(typeName) && !externalComponents.contains(typeName)) {
+        typeName = typeName.substring(0, typeName.lastIndexOf('.'));
+        if (removedPackages.contains(typeName)) {
+          continue;
+        }
+        removedPackages.add(typeName);
+      }
+      final String directory = componentsFolder.getFileId() + "/" + typeName + "/";
       ode.getProjectService().deleteFolder(ode.getSessionId(), this.projectId, directory,
           new AsyncCallback<Long>() {
             @Override
@@ -569,6 +652,8 @@ public final class YaProjectEditor extends ProjectEditor implements ProjectChang
                   ode.updateModificationDate(node.getProjectId(), date);
                 }
               }
+              // Change in extensions requires companion refresh
+              YaBlocksEditor.resendExtensionsList();
             }
           });
     }
@@ -606,7 +691,7 @@ public final class YaProjectEditor extends ProjectEditor implements ProjectChang
       addComponent(componentNode, new Command() {
         @Override
         public void execute() {
-          if (componentCount == externalComponents.size()) { // This will be true for the last component added
+          if (componentCount == numExternalComponentsLoaded) { // true for the last component added
             externalComponentsLoaded = true;
           }
         }
@@ -619,8 +704,16 @@ public final class YaProjectEditor extends ProjectEditor implements ProjectChang
 
   private void resetExternalComponents() {
     COMPONENT_DATABASE.addComponentDatabaseListener(this);
-    COMPONENT_DATABASE.resetDatabase();
+    try {
+      COMPONENT_DATABASE.resetDatabase();
+    } catch(JSONException e) {
+      // thrown if any of the component/extension descriptions are not valid JSON
+      ErrorReporter.reportError(Ode.MESSAGES.componentDatabaseCorrupt(project.getProjectName()));
+    }
     externalComponents.clear();
+    extensionsInNode.clear();
+    extensionToNodeName.clear();
+    numExternalComponentsLoaded = 0;
   }
 
   private static boolean isScreen1(String formName) {
@@ -650,11 +743,26 @@ public final class YaProjectEditor extends ProjectEditor implements ProjectChang
       editors.formEditor.onComponentTypeAdded(componentTypes);
       editors.blocksEditor.onComponentTypeAdded(componentTypes);
     }
+    // Change of extensions...
+    YaBlocksEditor.resendAssetsAndExtensions();
   }
 
   @Override
   public boolean beforeComponentTypeRemoved(List<String> componentTypes) {
     boolean result = true;
+    Set<String> removedTypes = new HashSet<>(componentTypes);
+    // aggregate types in the same package
+    for (String type : removedTypes) {
+      Set<String> siblings = extensionsInNode.get(extensionToNodeName.get(COMPONENT_DATABASE.getComponentType(type)));
+      if (siblings != null) {
+        for (String siblingType : siblings) {
+          String siblingName = siblingType.substring(siblingType.lastIndexOf('.') + 1);
+          if (!removedTypes.contains(siblingName)) {
+            componentTypes.add(siblingName);
+          }
+        }
+      }
+    }
     for (ComponentDatabaseChangeListener cdbChangeListener : componentDatabaseChangeListeners) {
       result = result & cdbChangeListener.beforeComponentTypeRemoved(componentTypes);
     }
@@ -690,6 +798,19 @@ public final class YaProjectEditor extends ProjectEditor implements ProjectChang
       EditorSet editors = editorMap.get(formName);
       editors.formEditor.onResetDatabase();
       editors.blocksEditor.onResetDatabase();
+    }
+  }
+
+  /**
+   * Save all editors in the project.
+   */
+  public void saveProject() {
+    EditorManager manager = Ode.getInstance().getEditorManager();
+    for (EditorSet editors : editorMap.values()) {
+      // It would be more efficient to check if the editors use the component in question,
+      // but we are conservative and save everything, for now.
+      manager.scheduleAutoSave(editors.formEditor);
+      manager.scheduleAutoSave(editors.blocksEditor);
     }
   }
 }

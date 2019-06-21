@@ -1,6 +1,6 @@
 // -*- mode: java; c-basic-offset: 2; -*-
 // Copyright 2009-2011 Google, All Rights reserved
-// Copyright 2011-2012 MIT, All rights reserved
+// Copyright 2011-2017 MIT, All rights reserved
 // Released under the Apache License, Version 2.0
 // http://www.apache.org/licenses/LICENSE-2.0
 
@@ -20,25 +20,31 @@ import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroid
 import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidColorChoicePropertyEditor;
 import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidComponentSelectorPropertyEditor;
 import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidDefaultURLPropertyEditor;
+import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidFloatRangePropertyEditor;
 import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidFontTypefaceChoicePropertyEditor;
-import com.google.appinventor.client.editor.
-       youngandroid.properties.YoungAndroidHorizontalAlignmentChoicePropertyEditor;
+import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidGeoJSONPropertyEditor;
+import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidGeographicPointPropertyEditor;
+import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidHorizontalAlignmentChoicePropertyEditor;
+import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidIntegerRangePropertyEditor;
 import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidLegoEv3ColorSensorModeChoicePropertyEditor;
 import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidLegoEv3GyroSensorModeChoicePropertyEditor;
 import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidLegoEv3SensorPortChoicePropertyEditor;
 import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidLegoEv3UltrasonicSensorModeChoicePropertyEditor;
 import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidLegoNxtSensorPortChoicePropertyEditor;
+import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidMapScaleUnitsPropertyEditor;
+import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidMapTypePropertyEditor;
 import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidScreenAnimationChoicePropertyEditor;
 import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidScreenOrientationChoicePropertyEditor;
 import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidSensorDistIntervalChoicePropertyEditor;
 import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidSensorTimeIntervalChoicePropertyEditor;
 import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidSizingChoicePropertyEditor;
 import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidTextReceivingPropertyEditor;
+import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidThemeChoicePropertyEditor;
 import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidToastLengthChoicePropertyEditor;
-import com.google.appinventor.client.editor.youngandroid.properties.
-       YoungAndroidVerticalAlignmentChoicePropertyEditor;
+import com.google.appinventor.client.editor.youngandroid.properties.YoungAndroidVerticalAlignmentChoicePropertyEditor;
 import com.google.appinventor.client.properties.BadPropertyEditorException;
 import com.google.appinventor.client.properties.Property;
+import com.google.appinventor.client.widgets.properties.ChoicePropertyEditor;
 import com.google.appinventor.client.widgets.properties.CountryChoicePropertyEditor;
 import com.google.appinventor.client.widgets.properties.EditableProperties;
 import com.google.appinventor.client.widgets.properties.EditableProperty;
@@ -92,7 +98,7 @@ public class PropertiesUtil {
     for (ComponentDatabaseInterface.PropertyDefinition property : propertyDefintions) {
       mockComponent.addProperty(property.getName(), property.getDefaultValue(),
           ComponentsTranslation.getPropertyName(property.getCaption()),
-          PropertiesUtil.createPropertyEditor(property.getEditorType(), editor));
+          PropertiesUtil.createPropertyEditor(property.getEditorType(), property.getDefaultValue(), editor, property.getEditorArgs()));
       /*OdeLog.log("Property Caption: " + property.getCaption() + ", "
           + TranslationComponentProperty.getName(property.getCaption()));*/
     }
@@ -167,7 +173,7 @@ public class PropertiesUtil {
   /*
    * Creates a new property editor.
    */
-  public static PropertyEditor createPropertyEditor(String editorType, DesignerEditor editor) {
+  public static PropertyEditor createPropertyEditor(String editorType, String defaultValue, DesignerEditor editor, String[] editorArgs) {
     if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_HORIZONTAL_ALIGNMENT)) {
       return new YoungAndroidHorizontalAlignmentChoicePropertyEditor();
     } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_VERTICAL_ALIGNMENT)) {
@@ -184,13 +190,19 @@ public class PropertiesUtil {
     } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_BUTTON_SHAPE)) {
       return new YoungAndroidButtonShapeChoicePropertyEditor();
     } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_COLOR)) {
-      return new YoungAndroidColorChoicePropertyEditor();
+      return new YoungAndroidColorChoicePropertyEditor(defaultValue);
     } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_COMPONENT)) {
       return new YoungAndroidComponentSelectorPropertyEditor(editor);
     } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_FLOAT)) {
       return new FloatPropertyEditor();
+    } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_GEOGRAPHIC_POINT)) {
+      return new YoungAndroidGeographicPointPropertyEditor();
+    } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_GEOJSON_TYPE)) {
+      return new YoungAndroidGeoJSONPropertyEditor(editor);
     } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_INTEGER)) {
       return new IntegerPropertyEditor();
+    } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_LATITUDE)) {
+      return new YoungAndroidFloatRangePropertyEditor(-90, 90);
     } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_LEGO_EV3_SENSOR_PORT)) {
       return new YoungAndroidLegoEv3SensorPortChoicePropertyEditor();
     } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_LEGO_EV3_COLOR_SENSOR_MODE)) {
@@ -199,11 +211,21 @@ public class PropertiesUtil {
       return new YoungAndroidLegoEv3UltrasonicSensorModeChoicePropertyEditor();
     } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_LEGO_EV3_GYRO_SENSOR_MODE)) {
       return new YoungAndroidLegoEv3GyroSensorModeChoicePropertyEditor();
+    } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_CHOICES)) {
+      return new ChoicePropertyEditor(editorArgs);
     } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_LEGO_NXT_SENSOR_PORT)) {
       return new YoungAndroidLegoNxtSensorPortChoicePropertyEditor();
     } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_LEGO_NXT_GENERATED_COLOR)) {
       return new YoungAndroidColorChoicePropertyEditor(
-          YoungAndroidColorChoicePropertyEditor.NXT_GENERATED_COLORS);
+          YoungAndroidColorChoicePropertyEditor.NXT_GENERATED_COLORS, defaultValue);
+    } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_LONGITUDE)) {
+      return new YoungAndroidFloatRangePropertyEditor(-180, 180);
+    } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_MAP_TYPE)) {
+      return new YoungAndroidMapTypePropertyEditor();
+    } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_MAP_UNIT_SYSTEM)) {
+      return new YoungAndroidMapScaleUnitsPropertyEditor();
+    } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_MAP_ZOOM)) {
+      return new YoungAndroidIntegerRangePropertyEditor(1, 18);
     } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_NON_NEGATIVE_FLOAT)) {
       return new NonNegativeFloatPropertyEditor();
     } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_NON_NEGATIVE_INTEGER)) {
@@ -222,6 +244,8 @@ public class PropertiesUtil {
       return new YoungAndroidAlignmentChoicePropertyEditor();
     } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_TEXTAREA)) {
       return new TextAreaPropertyEditor();
+    } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_THEME)) {
+      return new YoungAndroidThemeChoicePropertyEditor();
     } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_TOAST_LENGTH)) {
       return new YoungAndroidToastLengthChoicePropertyEditor();
     } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_TYPEFACE)) {
@@ -242,6 +266,10 @@ public class PropertiesUtil {
       return new ScalingChoicePropertyEditor();
     } else if (editorType.equals(PropertyTypeConstants.PROPERTY_TYPE_FIREBASE_URL)) {
       return new YoungAndroidDefaultURLPropertyEditor("DEFAULT");
+    } else if (editorType.startsWith(PropertyTypeConstants.PROPERTY_TYPE_COMPONENT + ":")) {
+      String type = editorType.substring(PropertyTypeConstants.PROPERTY_TYPE_COMPONENT.length() + 2);
+      type = type.substring(type.lastIndexOf('.') + 1);
+      return new YoungAndroidComponentSelectorPropertyEditor(editor, Collections.singleton(type));
     } else {
       return new TextPropertyEditor();
     }

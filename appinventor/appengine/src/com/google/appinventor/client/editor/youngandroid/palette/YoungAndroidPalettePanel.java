@@ -6,6 +6,7 @@
 
 package com.google.appinventor.client.editor.youngandroid.palette;
 
+import com.google.appinventor.client.ComponentsTranslation;
 import com.google.appinventor.client.editor.simple.SimpleComponentDatabase;
 import com.google.appinventor.client.editor.simple.palette.AbstractPalettePanel;
 import com.google.appinventor.client.editor.simple.palette.SimplePalettePanel;
@@ -16,6 +17,8 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+
+import static com.google.appinventor.client.Ode.MESSAGES;
 
 /**
  * Panel showing Simple components which can be dropped onto the Young Android
@@ -47,7 +50,7 @@ public class YoungAndroidPalettePanel extends AbstractPalettePanel<SimpleCompone
   }
 
   private void initExtensionPanel() {
-    Anchor addComponentAnchor = new Anchor("Import extension");
+    Anchor addComponentAnchor = new Anchor(MESSAGES.importExtensionMenuItem());
     addComponentAnchor.setStylePrimaryName("ode-ExtensionAnchor");
     addComponentAnchor.addClickHandler(new ClickHandler() {
       @Override

@@ -19,7 +19,8 @@ import com.google.gwt.user.client.ui.Widget;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+
+import static com.google.appinventor.client.Ode.MESSAGES;
 
 /**
  * Base implementation for the palette panel.
@@ -58,8 +59,15 @@ public abstract class AbstractPalettePanel<T extends ComponentDatabaseInterface,
         VerticalPanel categoryPanel = new VerticalPanel();
         categoryPanel.setWidth("100%");
         categoryPanels.put(category, categoryPanel);
-        stackPalette.add(categoryPanel,
-            ComponentsTranslation.getCategoryName(category.getName()));
+        // The production version will not include a mapping for Extension because
+        // only compile-time categories are included. This allows us to i18n the
+        // Extension title for the palette.
+        String title = ComponentCategory.EXTENSION.equals(category) ?
+          MESSAGES.extensionComponentPallette() :
+          ComponentsTranslation.getCategoryName(category.getName());
+        stackPalette.add(categoryPanel, title);
+        //stackPalette.add(categoryPanel,
+        //    ComponentsTranslation.getCategoryName(category.getName()));
       }
     }
 
@@ -118,7 +126,11 @@ public abstract class AbstractPalettePanel<T extends ComponentDatabaseInterface,
     if (simplePaletteItems.containsKey(componentTypeName)) { // We are upgrading
       removeComponent(componentTypeName);
     }
+    int version = componentDatabase.getComponentVersion(componentTypeName);
+    String versionName = componentDatabase.getComponentVersionName(componentTypeName);
+    String dateBuilt = componentDatabase.getComponentBuildDate(componentTypeName);
     String helpString = componentDatabase.getHelpString(componentTypeName);
+    String helpUrl = componentDatabase.getHelpUrl(componentTypeName);
     String categoryDocUrlString = componentDatabase.getCategoryDocUrlString(componentTypeName);
     String categoryString = componentDatabase.getCategoryString(componentTypeName);
     Boolean showOnPalette = componentDatabase.getShowOnPalette(componentTypeName);
@@ -127,8 +139,8 @@ public abstract class AbstractPalettePanel<T extends ComponentDatabaseInterface,
     ComponentCategory category = ComponentCategory.valueOf(categoryString);
     if (showOnPalette && showCategory(category)) {
       SimplePaletteItem item = new SimplePaletteItem(
-          new SimpleComponentDescriptor(componentTypeName, helpString, categoryDocUrlString,
-              showOnPalette, nonVisible, external, factory),
+          new SimpleComponentDescriptor(componentTypeName, editor, version, versionName, dateBuilt, helpString, helpUrl,
+              categoryDocUrlString, showOnPalette, nonVisible, external, factory),
             dropTargetProvider);
       simplePaletteItems.put(componentTypeName, item);
       addPaletteItem(item, category);

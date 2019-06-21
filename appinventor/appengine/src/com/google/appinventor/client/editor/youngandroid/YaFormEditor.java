@@ -8,11 +8,13 @@ package com.google.appinventor.client.editor.youngandroid;
 
 import static com.google.appinventor.client.Ode.MESSAGES;
 
+import com.google.appinventor.client.ErrorReporter;
 import com.google.appinventor.client.Ode;
 import com.google.appinventor.client.OdeAsyncCallback;
 import com.google.appinventor.client.boxes.PaletteBox;
 import com.google.appinventor.client.editor.ProjectEditor;
 import com.google.appinventor.client.editor.designer.DesignerEditor;
+import com.google.appinventor.client.editor.simple.ComponentNotFoundException;
 import com.google.appinventor.client.editor.simple.SimpleComponentDatabase;
 import com.google.appinventor.client.editor.simple.SimpleNonVisibleComponentsPanel;
 import com.google.appinventor.client.editor.simple.components.MockComponent;
@@ -53,6 +55,9 @@ import java.util.Map;
  */
 public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, MockForm,
     YoungAndroidPalettePanel, SimpleComponentDatabase> {
+
+  private static final String ERROR_EXISTING_UUID = "Component with UUID \"%1$s\" already exists.";
+  private static final String ERROR_NONEXISTENT_UUID = "No component exists with UUID \"%1$s\".";
 
   // JSON parser
   private static final JSONParser JSON_PARSER = new ClientJsonParser();
@@ -255,8 +260,13 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
     if (YoungAndroidFormUpgrader.upgradeSourceProperties(propertiesObject.getProperties())) {
       String upgradedContent = YoungAndroidSourceAnalyzer.generateSourceFile(propertiesObject);
       fileContentHolder.setFileContent(upgradedContent);
-
-      Ode.getInstance().getProjectService().save(Ode.getInstance().getSessionId(),
+      Ode ode = Ode.getInstance();
+      if (ode.isReadOnly()) {   // Do not attempt to save out the project if we are in readonly mode
+        if (afterUpgradeComplete != null) {
+          afterUpgradeComplete.execute(); // But do call the afterUpgradeComplete call
+        }
+      } else {
+        Ode.getInstance().getProjectService().save(Ode.getInstance().getSessionId(),
           getProjectId(), getFileId(), upgradedContent,
           new OdeAsyncCallback<Long>(MESSAGES.saveError()) {
             @Override
@@ -267,6 +277,7 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
               }
             }
           });
+      }
     } else {
       // No upgrade was necessary.
       // Execute the afterUpgradeComplete command if one was given.
@@ -280,7 +291,15 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
   protected void onFileLoaded(String content) {
     JSONObject propertiesObject = YoungAndroidSourceAnalyzer.parseSourceFile(
         content, JSON_PARSER);
-    root = createMockForm(propertiesObject.getProperties().get("Properties").asObject());
+    try {
+      root = createMockForm(propertiesObject.getProperties().get("Properties").asObject());
+    } catch(ComponentNotFoundException e) {
+      Ode.getInstance().recordCorruptProject(getProjectId(), getProjectRootNode().getName(),
+          e.getMessage());
+      ErrorReporter.reportError(MESSAGES.noComponentFound(e.getComponentName(),
+          getProjectRootNode().getName()));
+      throw e;
+    }
 
     // Initialize the nonVisibleComponentsPanel and visibleComponentsPanel.
     nonVisibleComponentsPanel.setRoot(root);
@@ -296,7 +315,6 @@ public final class YaFormEditor extends DesignerEditor<YoungAndroidFormNode, Moc
   private MockForm createMockForm(JSONObject propertiesObject) {
     return (MockForm) createMockComponent(propertiesObject, null, MockForm.TYPE);
   }
-
 
   @Override
   public void getBlocksImage(Callback<String, String> callback) {

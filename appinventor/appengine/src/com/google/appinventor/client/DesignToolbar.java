@@ -141,6 +141,7 @@ public class DesignToolbar extends Toolbar {
     }
   }
 
+  private static final String WIDGET_NAME_TUTORIAL_TOGGLE = "TutorialToggle";
   private static final String WIDGET_NAME_ADDFORM = "AddForm";
   private static final String WIDGET_NAME_REMOVEFORM = "RemoveForm";
   private static final String WIDGET_NAME_ADDVRSCREEN = "AddVRScreen";
@@ -190,6 +191,10 @@ public class DesignToolbar extends Toolbar {
     // width of palette minus cellspacing/border of buttons
     toolbar.setCellWidth(projectNameLabel, "222px");
 
+    addButton(new ToolbarItem(WIDGET_NAME_TUTORIAL_TOGGLE,
+        MESSAGES.toggleTutorialButton(), new ToogleTutorialAction()));
+    setButtonVisible(WIDGET_NAME_TUTORIAL_TOGGLE, false); // Don't show unless needed
+
     List<DropDownItem> screenItems = Lists.newArrayList();
     addDropDownButton(WIDGET_NAME_SCREENS_DROPDOWN, MESSAGES.screensButton(), screenItems);
 
@@ -212,6 +217,19 @@ public class DesignToolbar extends Toolbar {
     // Gray out the Designer button and enable the blocks button
     toggleEditor(false);
     Ode.getInstance().getTopToolbar().updateFileMenuButtons(0);
+  }
+
+  private class ToogleTutorialAction implements Command {
+    @Override
+    public void execute() {
+      Ode ode = Ode.getInstance();
+      boolean visible = ode.isTutorialVisible();
+      if (visible) {
+        ode.setTutorialVisible(false);
+      } else {
+        ode.setTutorialVisible(true);
+      }
+    }
   }
 
   private class AddAction implements Command {
@@ -712,6 +730,14 @@ public class DesignToolbar extends Toolbar {
 
   public View getCurrentView() {
     return currentView;
+  }
+
+  public void setTutorialToggleVisible(boolean value) {
+    if (value) {
+      setButtonVisible(WIDGET_NAME_TUTORIAL_TOGGLE, true);
+    } else {
+      setButtonVisible(WIDGET_NAME_TUTORIAL_TOGGLE, false);
+    }
   }
 
 }

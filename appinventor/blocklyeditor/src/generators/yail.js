@@ -1,5 +1,5 @@
 // -*- mode: java; c-basic-offset: 2; -*-
-// Copyright 2012 Massachusetts Institute of Technology. All rights reserved.
+// Copyright 2012-2019 Massachusetts Institute of Technology. All rights reserved.
 
 /**
  * @fileoverview Helper functions for generating Yail for blocks.
@@ -35,6 +35,9 @@ Blockly.Yail.ORDER_NONE = 99;          // (...)
 Blockly.Yail.YAIL_ADD_COMPONENT = "(add-component ";
 Blockly.Yail.YAIL_ADD_TO_LIST = "(add-to-list ";
 Blockly.Yail.YAIL_BEGIN = "(begin ";
+// This "break" symbol must match the one that is used in the
+// foreach macro, forrange and while macros
+Blockly.Yail.YAIL_BREAK = "*yail-break*";
 Blockly.Yail.YAIL_CALL_COMPONENT_METHOD = "(call-component-method ";
 Blockly.Yail.YAIL_CALL_COMPONENT_TYPE_METHOD = "(call-component-type-method ";
 Blockly.Yail.YAIL_CALL_YAIL_PRIMITIVE = "(call-yail-primitive ";
@@ -50,6 +53,7 @@ Blockly.Yail.YAIL_COMPONENT_REMOVE = "(remove-component ";
 Blockly.Yail.YAIL_COMPONENT_TYPE = "component";
 Blockly.Yail.YAIL_DEFINE = "(def ";
 Blockly.Yail.YAIL_DEFINE_EVENT = "(define-event ";
+Blockly.Yail.YAIL_DEFINE_GENERIC_EVENT = '(define-generic-event ';
 Blockly.Yail.YAIL_DEFINE_FORM = "(define-form ";
 Blockly.Yail.YAIL_DO_AFTER_FORM_CREATION = "(do-after-form-creation ";
 Blockly.Yail.YAIL_DOUBLE_QUOTE = "\"";
@@ -124,7 +128,8 @@ Blockly.Yail.getFormYail = function(formJson, packageName, forRepl, workspace) {
   }
 
   if (!forRepl) {
-    code.push(Blockly.Yail.getYailPrelude(packageName, formName));
+    code.push(Blockly.Yail.getYailPrelude(packageName, formName,
+      !jsonObject.Properties['Theme'] || jsonObject.Properties['Theme'] === 'Classic'));
   }
     
   var componentMap = workspace.buildComponentMap([], [], false, false);
@@ -206,12 +211,14 @@ Blockly.Yail.getDeepNames = function(componentJson, componentNames) {
  * @returns {String} Yail code
  * @private
 */
-Blockly.Yail.getYailPrelude = function(packageName, formName) {
+Blockly.Yail.getYailPrelude = function(packageName, formName, classicTheme) {
  return "#|\n$Source $Yail\n|#\n\n"
      + Blockly.Yail.YAIL_DEFINE_FORM
      + packageName
      + Blockly.Yail.YAIL_SPACER
      + formName
+     + Blockly.Yail.YAIL_SPACER
+     + (classicTheme ? "#t" : "#f")
      + Blockly.Yail.YAIL_CLOSE_BLOCK
      + "(require <com.google.youngandroid.runtime>)\n";
 };
@@ -386,15 +393,43 @@ Blockly.Yail.getFormPropertiesLines = function(formName, componentJson, includeC
  * @param {Blockly.ComponentDatabase} componentDb The workspace's database of components and types.
  * @returns {Array} code strings
  * @private
+ *
+ * Hack Note (JIS): We do not output a property setter line for the TutorialURL
+ * property. This property is only for use within the designer and has no meaning
+ * within an Android app. It is harmless to output it, once we have deployed a new
+ * companion (version > 2.41). Once such a Companion is deployed, the exception
+ * for TutorialURL below (and this comment) can be removed.
  */
 Blockly.Yail.getPropertySettersLines = function(componentJson, componentName, componentDb) {
   var code = [];
-  for (var prop in componentJson) {
-    if (prop.charAt(0) != "$" && prop != "Uuid") {
-      code.push(Blockly.Yail.getPropertySetterString(componentName, componentJson.$Type, prop, 
-        componentJson[prop], componentDb));
+
+  var type = componentDb.getType(componentJson['$Type']);
+  function shouldSendProperty(prop, info) {
+    return (prop.charAt(0) !== '$' && prop !== 'Uuid' && prop !== 'TutorialURL') ||
+      (info && info['alwaysSend']);
+  }
+  // Gather all of the properties together
+  var propsToSend = Object.keys(componentJson);
+  for (var prop in type['properties']) {
+    var property = type['properties'][prop];
+    if (property['alwaysSend'] && !(prop in componentJson)) {
+      propsToSend.push(property['name']);
     }
   }
+  // Keep ordering so default properties will still be sent in the right position.
+  propsToSend.sort();
+  // Construct the code
+  propsToSend.forEach(function(prop) {
+    var info = type['properties'][prop];
+    if (shouldSendProperty(prop, info)) {
+      var value = componentJson[prop];
+      if (!Boolean(value) && value !== '') {
+        value = info['defaultValue'];
+      }
+      code.push(Blockly.Yail.getPropertySetterString(componentName, componentJson['$Type'], prop,
+        value, componentDb));
+    }
+  });
   return code;
 };
 
@@ -414,8 +449,12 @@ Blockly.Yail.getPropertySetterString = function(componentName, componentType, pr
   var code = Blockly.Yail.YAIL_SET_AND_COERCE_PROPERTY + Blockly.Yail.YAIL_QUOTE + 
     componentName + Blockly.Yail.YAIL_SPACER + Blockly.Yail.YAIL_QUOTE + propertyName + 
     Blockly.Yail.YAIL_SPACER;
-  var propType = Blockly.Yail.YAIL_QUOTE +
-    componentDb.getPropertyForType(componentType, propertyName).type;
+  var propDef = componentDb.getPropertyForType(componentType, propertyName);
+  // If a designer property does not have a corresponding block property, then propDef will be
+  // undefined. In this case, we assume "any" as the type. A corresponding fix is included in
+  // ComponentProcessor to enforce that newer components/extensions always have both a designer
+  // and block definition.
+  var propType = Blockly.Yail.YAIL_QUOTE + (propDef ? propDef.type : "any");
   var value = Blockly.Yail.getPropertyValueString(propertyValue, propType);
   code = code.concat(value + Blockly.Yail.YAIL_SPACER + propType + Blockly.Yail.YAIL_CLOSE_BLOCK);
   return code;
@@ -496,9 +535,9 @@ Blockly.Yail.quotifyForREPL = function(s) {
     for (var i = 0; i < len; i++) {
       c = s.charAt(i);
       if (c == '\\') {
-        // If this is \n don't slashify the backslash
+        // If this is \n, \t or \r don't slashify the backslash
         // TODO(user): Make this cleaner and more general
-        if (!(i == lastIndex) && s.charAt(i + 1) == 'n') {
+        if (!(i == lastIndex) && (s.charAt(i + 1) == 'n' || s.charAt(i + 1) == 't' || s.charAt(i + 1) == 'r')) {
           sb.push(c);
           sb.push(s.charAt(i + 1));
           i = i + 1;

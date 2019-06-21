@@ -481,4 +481,16 @@ public abstract class BlocksEditor<S extends SourceNode, T extends DesignerEdito
     items[2] = BlockSelectorBox.getBlockSelectorBox().getGenericComponentsTree(root);
     sourceStructureExplorer.updateTree(items, itemToSelect);
   }
+
+  public static native void resendAssetsAndExtensions()/*-{
+    if (top.ReplState && top.ReplState.state == Blockly.ReplMgr.rsState.CONNECTED) {
+      Blockly.ReplMgr.resendAssetsAndExtensions();
+    }
+  }-*/;
+
+  public static native void resendExtensionsList()/*-{
+    if (top.ReplState && top.ReplState.state == Blockly.ReplMgr.rsState.CONNECTED) {
+      Blockly.ReplMgr.loadExtensions();
+    }
+  }-*/;
 }
